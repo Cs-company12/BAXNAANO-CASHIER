@@ -1,328 +1,335 @@
 <!doctype html>
 <html lang="so">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Foorno Ubax Supermarket System - v3 (Barcode Integrated)</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <style>
-    body { background: #f4fbff; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
-    .brand { color:#0d6efd; font-weight:700; }
-    .low-badge { background:#ffc107; color:#000; padding:3px 7px; border-radius:6px; font-weight:600; }
-    .card { box-shadow: 0 1px 6px rgba(13,110,253,0.06); }
-    .small-muted { font-size:0.85rem; color:#6c757d; }
-    .table-sm td, .table-sm th { vertical-align: middle; }
-    .suggestions { position: absolute; z-index:50; background:#fff; width:100%; border:1px solid #ddd; max-height:240px; overflow:auto; }
-    .suggest-item { padding:8px; cursor:pointer; }
-    .suggest-item:hover { background:#f1f7ff; }
-    .customer-info { background:#fff; border:1px solid #e9ecef; padding:10px; border-radius:6px; margin-top:8px; }
-    .muted-small { font-size:0.85rem; color:#6c757d; }
-    .btn-sm-compact { padding:.25rem .5rem; font-size:.78rem; }
-    .centered { text-align:center; }
-    .nav-small { font-size:0.9rem; }
-    @media print {
-      @page { size: A5; margin: 10mm; }
-      body * { visibility: hidden; }
-      #printArea, #printArea * { visibility: visible; }
-      #printArea { position: absolute; left: 0; top: 0; width: 100%; display:flex; align-items:center; justify-content:center; }
-      #printArea .receipt { width:100%; text-align:center; font-family: Arial, sans-serif; }
-    }
-    @media (max-width:768px) { .container { padding-left:10px; padding-right:10px; } }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Foorno Ubax Supermarket System - v4 (Stable)</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+<style>
+  body { background:#f4fbff; font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+  .brand { color:#0d6efd; font-weight:700; }
+  .low-badge { background:#ffc107; color:#000; padding:3px 7px; border-radius:6px; font-weight:600; }
+  .card { box-shadow:0 1px 6px rgba(13,110,253,0.06); }
+  .small-muted { font-size:0.85rem; color:#6c757d; }
+  .table-sm td, .table-sm th { vertical-align: middle; }
+  .suggestions { position:absolute; z-index:50; background:#fff; width:100%; border:1px solid #ddd; max-height:240px; overflow:auto; }
+  .suggest-item { padding:8px; cursor:pointer; }
+  .suggest-item:hover { background:#f1f7ff; }
+  .customer-info { background:#fff; border:1px solid #e9ecef; padding:10px; border-radius:6px; margin-top:8px; }
+  .muted-small { font-size:0.85rem; color:#6c757d; }
+  .btn-sm-compact { padding:.25rem .5rem; font-size:.78rem; }
+  .centered { text-align:center; }
+  .nav-small { font-size:0.9rem; }
+  /* small barcode code text for receipts */
+  .print-barcode-code { font-size:10px; margin-top:4px; }
+  @media print {
+    @page { size:A5; margin:10mm; }
+    body * { visibility:hidden; }
+    #printArea, #printArea * { visibility:visible; }
+    #printArea { position:absolute; left:0; top:0; width:100%; display:flex; align-items:center; justify-content:center; }
+    #printArea .receipt { width:100%; text-align:center; font-family: Arial, sans-serif; }
+  }
+  @media (max-width:768px) { .container { padding-left:10px; padding-right:10px; } }
+</style>
 </head>
 <body>
-  <nav class="navbar navbar-light bg-white border-bottom">
-    <div class="container-fluid d-flex justify-content-between align-items-center">
-      <span class="navbar-brand brand">Foorno Ubax Supermarket System</span>
-      <div id="nav-right" class="nav-small"></div>
-    </div>
-  </nav>
+<nav class="navbar navbar-light bg-white border-bottom">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <span class="navbar-brand brand">Foorno Ubax Supermarket System</span>
+    <div id="nav-right" class="nav-small"></div>
+  </div>
+</nav>
 
-  <div class="container py-4" id="app">
-    <!-- LOGIN -->
-    <div id="loginView" class="row justify-content-center">
-      <div class="col-md-5">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <h4 class="mb-3 text-center">Admin Login</h4>
-            <form id="loginForm" autocomplete="off">
-              <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input id="loginUser" class="form-control" autocomplete="off" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input id="loginPass" type="password" class="form-control" autocomplete="new-password" required>
-              </div>
-              <button class="btn btn-primary w-100">GALI</button>
-            </form>
-            <p class="small-muted mt-2">Fadlan geli username & password — password lama soo bandhigayo.</p>
-          </div>
+<div class="container py-4" id="app">
+  <!-- LOGIN -->
+  <div id="loginView" class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h4 class="mb-3 text-center">Admin Login</h4>
+          <form id="loginForm" autocomplete="off">
+            <div class="mb-3">
+              <label class="form-label">Username</label>
+              <input id="loginUser" class="form-control" autocomplete="off" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input id="loginPass" type="password" class="form-control" autocomplete="new-password" required>
+            </div>
+            <button class="btn btn-primary w-100">GALI</button>
+          </form>
+          <p class="small-muted mt-2">Fadlan geli username & password — password lama soo bandhigayo.</p>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- MAIN -->
-    <div id="mainView" style="display:none;">
-      <div class="row g-3">
-        <div class="col-md-3">
+  <!-- MAIN -->
+  <div id="mainView" style="display:none;">
+    <div class="row g-3">
+      <div class="col-md-3">
+        <div class="card p-3">
+          <h6>Tirakoob</h6>
+          <div class="mt-2">
+            <div class="mb-2 small-muted">Items guud</div>
+            <h4 id="statItems">0</h4>
+          </div>
+          <div class="mt-2">
+            <div class="mb-2 small-muted">Items ku dhow inay dhamaadaan</div>
+            <h4 id="statLow">0</h4>
+          </div>
+          <div class="mt-2">
+            <div class="mb-2 small-muted">Iibka maanta (Net: Paid - Refunds)</div>
+            <h4 id="statToday">0.00</h4>
+          </div>
+          <div class="mt-3 d-grid gap-2">
+            <button class="btn btn-sm btn-outline-secondary" onclick="go('dashboard')">Dashboard</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="go('items')">Manage Items</button>
+            <button class="btn btn-sm btn-success" onclick="go('sales')">Iib Cusub</button>
+            <button class="btn btn-sm btn-primary" onclick="go('reports')">Reports</button>
+            <button class="btn btn-sm btn-warning" onclick="go('barcode')">Barcode Generator</button>
+            <button class="btn btn-sm btn-danger" id="logoutBtnSide" onclick="logout()">Logout</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-9">
+        <!-- Dashboard -->
+        <div id="dashboardView">
+          <div class="card p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5>Dashboard</h5>
+              <div>
+                <span class="me-3">Admin: <b id="adminName">admin</b></span>
+              </div>
+            </div>
+            <p class="small-muted mt-2">Ku soo dhawow Foorno Ubax — halkaan ka maamul items, iibka iyo warbixinnada.</p>
+          </div>
+
           <div class="card p-3">
-            <h6>Tirakoob</h6>
-            <div class="mt-2">
-              <div class="mb-2 small-muted">Items guud</div>
-              <h4 id="statItems">0</h4>
+            <h6>Items Ku Dhaw</h6>
+            <div id="lowItemsList"></div>
+          </div>
+        </div>
+
+        <!-- ITEMS -->
+        <div id="itemsView" style="display:none;">
+          <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
+            <h5>Maareynta Items</h5>
+            <div>
+              <button class="btn btn-outline-secondary me-2" onclick="go('dashboard')">Dashboard</button>
+              <button class="btn btn-primary" id="showAddItemBtn">Add Item</button>
             </div>
-            <div class="mt-2">
-              <div class="mb-2 small-muted">Items ku dhow inay dhamaadaan</div>
-              <h4 id="statLow">0</h4>
-            </div>
-            <div class="mt-2">
-              <div class="mb-2 small-muted">Iibka maanta (Paid only)</div>
-              <h4 id="statToday">0.00</h4>
-            </div>
-            <div class="mt-3 d-grid gap-2">
-              <button class="btn btn-sm btn-outline-secondary" onclick="go('dashboard')">Dashboard</button>
-              <button class="btn btn-sm btn-outline-secondary" onclick="go('items')">Manage Items</button>
-              <button class="btn btn-sm btn-success" onclick="go('sales')">Iib Cusub</button>
-              <button class="btn btn-sm btn-primary" onclick="go('reports')">Reports</button>
-              <button class="btn btn-sm btn-warning" onclick="go('barcode')">Barcode Generator</button>
-              <button class="btn btn-sm btn-danger" id="logoutBtnSide" onclick="logout()">Logout</button>
+          </div>
+
+          <div class="card p-3 mb-3">
+            <form id="addItemForm" class="row g-2">
+              <input type="hidden" id="editItemId">
+              <div class="col-md-4"><input id="itemName" class="form-control" placeholder="Magaca item" required></div>
+              <div class="col-md-2"><input id="itemPrice" class="form-control" placeholder="Qiime" type="number" step="0.01" required></div>
+              <div class="col-md-2"><input id="itemQty" class="form-control" placeholder="Tirada" type="number" required></div>
+              <div class="col-md-2"><input id="itemLow" class="form-control" placeholder="Threshold" type="number" value="5" required></div>
+              <div class="col-md-2"><button class="btn btn-success w-100" id="saveItemBtn">Ku dar / Update</button></div>
+            </form>
+          </div>
+
+          <div class="card p-3">
+            <h6>Liiska Items</h6>
+            <input id="searchItem" class="form-control mb-2" placeholder="Raadi item...">
+            <div style="max-height:420px; overflow:auto;">
+              <table class="table table-sm">
+                <thead><tr><th>Magac</th><th>Qiime</th><th>Tirada</th><th>Threshold</th><th>Action</th></tr></thead>
+                <tbody id="itemsTable"></tbody>
+              </table>
             </div>
           </div>
         </div>
 
-        <div class="col-md-9">
-          <!-- Dashboard -->
-          <div id="dashboardView">
-            <div class="card p-3 mb-3">
-              <div class="d-flex justify-content-between align-items-center">
-                <h5>Dashboard</h5>
-                <div>
-                  <span class="me-3">Admin: <b id="adminName">admin</b></span>
-                </div>
-              </div>
-              <p class="small-muted mt-2">Ku soo dhawow Foorno Ubax — halkaan ka maamul items, iibka iyo warbixinnada.</p>
-            </div>
-
-            <div class="card p-3">
-              <h6>Items Ku Dhaw</h6>
-              <div id="lowItemsList"></div>
+        <!-- SALES -->
+        <div id="salesView" style="display:none;">
+          <div class="card p-3 mb-3 d-flex justify-content-between">
+            <h5>Iib Cusub</h5>
+            <div>
+              <button class="btn btn-outline-secondary" onclick="go('dashboard')">Dashboard</button>
+              <button class="btn btn-outline-secondary" onclick="go('items')">Items</button>
+              <button class="btn btn-outline-secondary" onclick="go('reports')">Reports</button>
             </div>
           </div>
 
-          <!-- ITEMS -->
-          <div id="itemsView" style="display:none;">
-            <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
-              <h5>Maareynta Items</h5>
-              <div>
-                <button class="btn btn-outline-secondary me-2" onclick="go('dashboard')">Dashboard</button>
-                <button class="btn btn-primary" id="showAddItemBtn">Add Item</button>
+          <div class="row g-3">
+            <div class="col-md-6 position-relative">
+              <div class="card p-3">
+                <h6>Item-yada</h6>
+                <input id="saleSearch" class="form-control mb-2" placeholder="Raadi item...">
+                <div id="saleSuggest" class="suggestions" style="display:none;"></div>
+                <div id="saleItemsList" style="max-height:320px; overflow:auto;"></div>
               </div>
             </div>
 
-            <div class="card p-3 mb-3">
-              <form id="addItemForm" class="row g-2">
-                <input type="hidden" id="editItemId">
-                <div class="col-md-4"><input id="itemName" class="form-control" placeholder="Magaca item" required></div>
-                <div class="col-md-2"><input id="itemPrice" class="form-control" placeholder="Qiime" type="number" step="0.01" required></div>
-                <div class="col-md-2"><input id="itemQty" class="form-control" placeholder="Tirada" type="number" required></div>
-                <div class="col-md-2"><input id="itemLow" class="form-control" placeholder="Threshold" type="number" value="5" required></div>
-                <div class="col-md-2"><button class="btn btn-success w-100" id="saveItemBtn">Ku dar / Update</button></div>
-              </form>
-            </div>
+            <div class="col-md-6">
+              <div class="card p-3">
+                <h6>Cart</h6>
+                <div id="cartArea"><p class="text-muted">Cart waa madhan yahay.</p></div>
 
-            <div class="card p-3">
-              <h6>Liiska Items</h6>
-              <input id="searchItem" class="form-control mb-2" placeholder="Raadi item...">
-              <div style="max-height:420px; overflow:auto;">
-                <table class="table table-sm">
-                  <thead><tr><th>Magac</th><th>Qiime</th><th>Tirada</th><th>Threshold</th><th>Action</th></tr></thead>
-                  <tbody id="itemsTable"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- SALES -->
-          <div id="salesView" style="display:none;">
-            <div class="card p-3 mb-3 d-flex justify-content-between">
-              <h5>Iib Cusub</h5>
-              <div>
-                <button class="btn btn-outline-secondary" onclick="go('dashboard')">Dashboard</button>
-                <button class="btn btn-outline-secondary" onclick="go('items')">Items</button>
-                <button class="btn btn-outline-secondary" onclick="go('reports')">Reports</button>
-              </div>
-            </div>
-
-            <div class="row g-3">
-              <div class="col-md-6 position-relative">
-                <div class="card p-3">
-                  <h6>Item-yada</h6>
-                  <input id="saleSearch" class="form-control mb-2" placeholder="Raadi item...">
-                  <div id="saleSuggest" class="suggestions" style="display:none;"></div>
-                  <div id="saleItemsList" style="max-height:320px; overflow:auto;"></div>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="card p-3">
-                  <h6>Cart</h6>
-                  <div id="cartArea"><p class="text-muted">Cart waa madhan yahay.</p></div>
-
-                  <div class="mt-3 d-flex gap-2 align-items-center">
-                    <select id="paymentType" class="form-select w-auto">
-                      <option value="Paid">Paid</option>
-                      <option value="Credit">Credit</option>
-                    </select>
-                    <div style="flex:1; position:relative;">
-                      <input id="creditName" class="form-control" placeholder="Magaca macaamiisha (credit)" style="display:none;">
-                      <div id="creditSuggest" class="suggestions" style="display:none;"></div>
-                      <div id="creditInfo" style="display:none;" class="customer-info">
-                        <div><strong id="creditInfoName"></strong></div>
-                        <div class="muted-small">Balance: <b id="creditInfoBalance">0.00</b> USD</div>
-                        <div class="mt-2">
-                          <button class="btn btn-sm btn-outline-success" id="payBalanceBtn">Pay Balance</button>
-                        </div>
-                        <div class="mt-2">
-                          <small class="muted-small">Items hore u iibsaday:</small>
-                          <ul id="creditHistory" class="mb-0" style="max-height:120px; overflow:auto; padding-left:16px;"></ul>
-                        </div>
+                <div class="mt-3 d-flex gap-2 align-items-center">
+                  <select id="paymentType" class="form-select w-auto">
+                    <option value="Paid">Paid</option>
+                    <option value="Credit">Credit</option>
+                  </select>
+                  <div style="flex:1; position:relative;">
+                    <input id="creditName" class="form-control" placeholder="Magaca macaamiisha (credit)" style="display:none;">
+                    <div id="creditSuggest" class="suggestions" style="display:none;"></div>
+                    <div id="creditInfo" style="display:none;" class="customer-info">
+                      <div><strong id="creditInfoName"></strong></div>
+                      <div class="muted-small">Balance: <b id="creditInfoBalance">0.00</b> USD</div>
+                      <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-success" id="payBalanceBtn">Pay Balance</button>
+                      </div>
+                      <div class="mt-2">
+                        <small class="muted-small">Items hore u iibsaday:</small>
+                        <ul id="creditHistory" class="mb-0" style="max-height:120px; overflow:auto; padding-left:16px;"></ul>
                       </div>
                     </div>
-                    <button id="saveSaleBtn" class="btn btn-success ms-auto">Save Iib</button>
                   </div>
+                  <button id="saveSaleBtn" class="btn btn-success ms-auto">Save Iib</button>
+                </div>
 
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPORTS -->
+        <div id="reportsView" style="display:none;">
+          <div class="card p-3 mb-3 d-flex justify-content-between">
+            <h5>Warbixinno</h5>
+            <div>
+              <button class="btn btn-outline-secondary" onclick="go('dashboard')">Dashboard</button>
+            </div>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="card p-3 mb-3">
+                <h6>Iibka Maanta & Guud</h6>
+                <h3 id="reportTodayTotal">0.00</h3>
+                <div id="reportTodayPaid" class="small-muted"></div>
+                <div class="mt-3">
+                  <h6>Credit Customers</h6>
+                  <ul id="reportCredits" class="list-group"></ul>
+                </div>
+              </div>
+              <div class="card p-3">
+                <h6>Return (Celinta)</h6>
+                <p class="small-muted">Geli Order ID si aad u celiso (max 24 saac gudahood)</p>
+                <div class="d-flex gap-2">
+                  <input id="returnId" class="form-control" placeholder="Order ID (e.g. INV-4821 )">
+                  <button class="btn btn-warning" id="doReturnBtn">Process Return</button>
+                </div>
+                <div id="returnList" class="mt-3"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card p-3 mb-3">
+                <h6>Items ku dhow inay dhamaadaan</h6>
+                <ul id="reportLow" class="list-group"></ul>
+              </div>
+              <div class="card p-3">
+                <h6>Iibyo & Taariikh</h6>
+                <div style="max-height:240px; overflow:auto;">
+                  <table class="table table-sm">
+                    <thead><tr><th>ID</th><th>Date</th><th>Total</th><th>Type</th></tr></thead>
+                    <tbody id="salesTable"></tbody>
+                  </table>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- REPORTS -->
-          <div id="reportsView" style="display:none;">
-            <div class="card p-3 mb-3 d-flex justify-content-between">
-              <h5>Warbixinno</h5>
-              <div>
-                <button class="btn btn-outline-secondary" onclick="go('dashboard')">Dashboard</button>
-              </div>
-            </div>
-
-            <div class="row g-3">
-              <div class="col-md-6">
-                <div class="card p-3 mb-3">
-                  <h6>Iibka Maanta & Guud</h6>
-                  <h3 id="reportTodayTotal">0.00</h3>
-                  <div class="mt-3">
-                    <h6>Credit Customers</h6>
-                    <ul id="reportCredits" class="list-group"></ul>
-                  </div>
-                </div>
-
-                <div class="card p-3">
-                  <h6>Return (Celinta)</h6>
-                  <p class="small-muted">Geli Order ID si aad u celiso (max 24 saac gudahood)</p>
-                  <div class="d-flex gap-2">
-                    <input id="returnId" class="form-control" placeholder="Order ID (e.g. INV-4821 )">
-                    <button class="btn btn-warning" id="doReturnBtn">Process Return</button>
-                  </div>
-                  <div id="returnList" class="mt-3"></div>
-                </div>
-              </div>
-
-              <div class="col-md-6">
-                <div class="card p-3 mb-3">
-                  <h6>Items ku dhow inay dhamaadaan</h6>
-                  <ul id="reportLow" class="list-group"></ul>
-                </div>
-
-                <div class="card p-3">
-                  <h6>Iibyo & Taariikh</h6>
-                  <div style="max-height:240px; overflow:auto;">
-                    <table class="table table-sm">
-                      <thead><tr><th>ID</th><th>Date</th><th>Total</th><th>Type</th></tr></thead>
-                      <tbody id="salesTable"></tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
+        <!-- BARCODE GENERATOR VIEW -->
+        <div id="barcodeView" style="display:none;">
+          <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
+            <h5>Barcode Generator</h5>
+            <div>
+              <button class="btn btn-outline-secondary me-2" onclick="go('items')">Items</button>
+              <button class="btn btn-outline-secondary" onclick="go('sales')">Sales</button>
             </div>
           </div>
 
-          <!-- BARCODE GENERATOR VIEW -->
-          <div id="barcodeView" style="display:none;">
-            <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
-              <h5>Barcode Generator</h5>
-              <div>
-                <button class="btn btn-outline-secondary me-2" onclick="go('items')">Items</button>
-                <button class="btn btn-outline-secondary" onclick="go('sales')">Sales</button>
-              </div>
-            </div>
-
-            <div class="card p-3">
-              <h6>Daabac Barcode</h6>
-              <div id="barcodeItemsList" style="max-height:420px; overflow:auto;"></div>
-            </div>
+          <div class="card p-3">
+            <h6>Daabac Barcode</h6>
+            <div id="barcodeItemsList" style="max-height:420px; overflow:auto;"></div>
           </div>
+        </div>
 
-        </div> <!-- /col-md-9 -->
-      </div> <!-- /row -->
-    </div> <!-- /mainView -->
-  </div> <!-- /container -->
-
-  <!-- hidden print area -->
-  <div id="printArea" style="display:none;">
-    <div class="receipt p-3">
-      <div style="font-size:18px; font-weight:700;">Foorno Ubax Supermarket System</div>
-      <div id="printContent" style="margin-top:10px;"></div>
-      <div style="margin-top:10px; font-size:12px;" id="printFooter"></div>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- hidden barcode scan input -->
-  <input id="barcodeScanInput" type="text" style="position:absolute; top:-120px; left:-120px; opacity:0;">
+<!-- hidden print area -->
+<div id="printArea" style="display:none;">
+  <div class="receipt p-3">
+    <div style="font-size:18px; font-weight:700;">Foorno Ubax Supermarket System</div>
+    <div id="printContent" style="margin-top:10px;"></div>
+    <div style="margin-top:10px; font-size:12px;" id="printFooter"></div>
+  </div>
+</div>
+
+<!-- hidden barcode scan input -->
+<input id="barcodeScanInput" type="text" style="position:absolute; top:-120px; left:-120px; opacity:0;">
 
 <script>
 /* ===========================
    Storage keys & admin
-   =========================== */
-const KEY_ITEMS = 'foorno_ubax_items_v3';
-const KEY_SALES = 'foorno_ubax_sales_v3';
-const KEY_CUSTOMERS = 'foorno_ubax_customers_v3';
-const KEY_RETURNS = 'foorno_ubax_returns_v3';
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = '12345';
+=========================== */
+const KEY_ITEMS='foorno_ubax_items_v4';
+const KEY_SALES='foorno_ubax_sales_v4';
+const KEY_CUSTOMERS='foorno_ubax_customers_v4';
+const KEY_RETURNS='foorno_ubax_returns_v4';
+const ADMIN_USER='admin';
+const ADMIN_PASS='1111'; // <-- password you requested
 
-function load(key){ try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ return []; } }
-function save(key,data){ localStorage.setItem(key, JSON.stringify(data)); }
-function uid(p='id'){ return p + '_' + Date.now() + '_' + Math.floor(Math.random()*9000+1000); }
+function load(k){ try{ return JSON.parse(localStorage.getItem(k) || '[]'); } catch(e){ return []; } }
+function save(k,d){ localStorage.setItem(k, JSON.stringify(d)); }
+function uid(p='id'){ return p+'_'+Date.now()+'_'+Math.floor(Math.random()*9000+1000); }
 
+/* --- NEW: short ID helper --- */
+function shortId(prefix = "ID") {
+  const part = Math.floor(1000 + Math.random() * 9000);
+  return `${prefix}-${part}`;
+}
+
+/* initial data load */
 let items = load(KEY_ITEMS);
 let sales = load(KEY_SALES);
 let customers = load(KEY_CUSTOMERS);
 let returns = load(KEY_RETURNS);
 
 /* seed items if empty */
-if (!items || items.length === 0) {
-  items = [
-    { id: uid('it'), name: 'Rice 5kg', price: 10.00, quantity: 10, low:5 },
-    { id: uid('it'), name: 'Sugar 2kg', price: 3.50, quantity: 8, low:5 },
-    { id: uid('it'), name: 'Bread', price: 0.50, quantity: 20, low:5 }
+if(!items || items.length===0){
+  items=[
+    { id: uid('it'), name:'Rice 5kg', price:10.00, quantity:10, low:5 },
+    { id: uid('it'), name:'Sugar 2kg', price:3.50, quantity:8, low:5 },
+    { id: uid('it'), name:'Bread', price:0.50, quantity:20, low:5 }
   ];
   save(KEY_ITEMS, items);
 }
 
 /* UI refs */
-const loginForm = document.getElementById('loginForm');
-const loginView = document.getElementById('loginView');
-const mainView = document.getElementById('mainView');
-const navRight = document.getElementById('nav-right');
+const loginForm=document.getElementById('loginForm');
+const loginView=document.getElementById('loginView');
+const mainView=document.getElementById('mainView');
+const navRight=document.getElementById('nav-right');
 
 /* show main */
 function showMain(){
-  loginView.style.display = 'none';
-  mainView.style.display = '';
-  navRight.innerHTML = `<div class="d-flex align-items-center"><small class="me-3">Admin: <b>${ADMIN_USER}</b></small></div>`;
+  loginView.style.display='none';
+  mainView.style.display='';
+  document.getElementById('adminName').innerText = ADMIN_USER;
+  navRight.innerHTML=`<div class="d-flex align-items-center"><small class="me-3">Admin: <b>${ADMIN_USER}</b></small></div>`;
   updateStats();
   renderLowList();
   showAlertIfLow();
@@ -330,91 +337,94 @@ function showMain(){
 }
 
 /* logout */
-function logout(){
-  sessionStorage.removeItem('foorno_ubax_logged');
+function logout(){ 
+  try{ sessionStorage.removeItem('foorno_ubax_logged'); } catch(e){}
+  try{ localStorage.removeItem('foorno_ubax_logged'); } catch(e){}
   location.reload();
 }
 document.getElementById('logoutBtnSide').addEventListener('click', logout);
 
-/* login submit */
+/* login submit (fixed) */
 loginForm.addEventListener('submit', function(e){
   e.preventDefault();
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value;
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
-    sessionStorage.setItem('foorno_ubax_logged','1');
+
+  if(u === ADMIN_USER && p === ADMIN_PASS){
+    // set both sessionStorage and localStorage for wider compatibility
+    try{ sessionStorage.setItem('foorno_ubax_logged','true'); } catch(e){}
+    try{ localStorage.setItem('foorno_ubax_logged','true'); } catch(e){}
     showMain();
     Swal.fire('Sax','Waan ku soo dhaweynayaa','success');
-  } else {
-    Swal.fire('Khalad','Username ama password khalad ah','error');
+    return;
   }
+
+  Swal.fire('Khalad','Username ama password khalad ah','error');
 });
-if (sessionStorage.getItem('foorno_ubax_logged')) showMain();
 
-/* NAV */
+/* auto-login if stored */
+try{
+  if(sessionStorage.getItem('foorno_ubax_logged') || localStorage.getItem('foorno_ubax_logged')){
+    showMain();
+  }
+}catch(e){
+  // ignore
+}
+
+/* =========================
+   NAVIGATION + ITEMS CRUD
+=========================== */
 function hideAllViews(){
-  document.getElementById('dashboardView').style.display = 'none';
-  document.getElementById('itemsView').style.display = 'none';
-  document.getElementById('salesView').style.display = 'none';
-  document.getElementById('reportsView').style.display = 'none';
-  document.getElementById('barcodeView').style.display = 'none';
-}
-function go(page){
-  hideAllViews();
-  if (page==='dashboard') document.getElementById('dashboardView').style.display = '';
-  if (page==='items') { document.getElementById('itemsView').style.display = ''; renderItemsTable(); }
-  if (page==='sales') { document.getElementById('salesView').style.display = ''; renderSaleItemsList(); renderCart(); focusScanInput(); }
-  if (page==='reports') { document.getElementById('reportsView').style.display = ''; renderReports(); }
-  if (page==='barcode') { document.getElementById('barcodeView').style.display = ''; renderBarcodeItems(); }
+  document.getElementById('dashboardView').style.display='none';
+  document.getElementById('itemsView').style.display='none';
+  document.getElementById('salesView').style.display='none';
+  document.getElementById('reportsView').style.display='none';
+  document.getElementById('barcodeView').style.display='none';
 }
 
-/* ITEMS CRUD */
+function go(view){
+  hideAllViews();
+  if(view==='dashboard'){ document.getElementById('dashboardView').style.display=''; renderLowList(); }
+  if(view==='items'){ document.getElementById('itemsView').style.display=''; renderItemsTable(); resetItemForm(); }
+  if(view==='sales'){ document.getElementById('salesView').style.display=''; renderSaleItems(); renderCart(); focusBarcodeInput(); }
+  if(view==='reports'){ document.getElementById('reportsView').style.display=''; renderReports(); }
+  if(view==='barcode'){ document.getElementById('barcodeView').style.display=''; renderBarcodeList(); }
+}
+
+/* Items rendering & CRUD (unchanged) */
 const itemsTable = document.getElementById('itemsTable');
+const searchItem = document.getElementById('searchItem');
 const addItemForm = document.getElementById('addItemForm');
 
-function escapeHtml(s){ return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-
 function renderItemsTable(filter=''){
-  items = load(KEY_ITEMS);
-  itemsTable.innerHTML = '';
-  const q = (filter||'').trim().toLowerCase();
+  itemsTable.innerHTML='';
+  const q = (filter || '').toLowerCase();
   items.forEach(it=>{
-    if (q && !it.name.toLowerCase().includes(q)) return;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${escapeHtml(it.name)}</td>
-      <td>${parseFloat(it.price).toFixed(2)}</td>
-      <td>${parseInt(it.quantity)} ${it.quantity <= it.low ? `<span class="ms-2 low-badge">Low</span>` : ''}</td>
-      <td>${parseInt(it.low)}</td>
+    if(q && !it.name.toLowerCase().includes(q)) return;
+    const tr=document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(it.name)}</td>
+      <td>${Number(it.price).toFixed(2)}</td>
+      <td>${it.quantity}</td>
+      <td>${it.low}</td>
       <td>
-        <button class="btn btn-sm btn-secondary me-1" data-act="edit" data-id="${it.id}">Edit</button>
-        <button class="btn btn-sm btn-outline-primary me-1" data-act="print" data-id="${it.id}">Print Barcode</button>
-        <button class="btn btn-sm btn-danger" data-act="del" data-id="${it.id}">Delete</button>
-      </td>`;
+        <button class="btn btn-sm btn-outline-primary me-1" onclick="editItem('${it.id}')">Edit</button>
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteItem('${it.id}')">Delete</button>
+      </td>
+    `;
     itemsTable.appendChild(tr);
   });
 }
-itemsTable.addEventListener('click', function(e){
-  const btn = e.target.closest('button');
-  if (!btn) return;
-  const act = btn.dataset.act, id = btn.dataset.id;
-  if (act === 'edit') {
-    const it = items.find(x=>x.id===id);
-    if (!it) return;
-    document.getElementById('editItemId').value = it.id;
-    document.getElementById('itemName').value = it.name;
-    document.getElementById('itemPrice').value = parseFloat(it.price);
-    document.getElementById('itemQty').value = parseInt(it.quantity);
-    document.getElementById('itemLow').value = parseInt(it.low);
-    window.scrollTo({top:0, behavior:'smooth'});
-  } else if (act === 'del') {
-    Swal.fire({ title:'Ma hubtaa?', text:'Miyaad rabtaa inaad tirtirto itemkan?', icon:'warning', showCancelButton:true })
-    .then(res=>{ if (res.isConfirmed){ items = items.filter(x=>x.id!==id); save(KEY_ITEMS, items); renderItemsTable(document.getElementById('searchItem').value||''); updateStats(); Swal.fire('La tirtiray','Item waa la tirtiray','success'); }});
-  } else if (act === 'print') {
-    const it = items.find(x=>x.id===id);
-    if (!it) return;
-    generateAndPrintBarcode(it);
-  }
-});
+
+function resetItemForm(){
+  document.getElementById('editItemId').value='';
+  document.getElementById('itemName').value='';
+  document.getElementById('itemPrice').value='';
+  document.getElementById('itemQty').value='';
+  document.getElementById('itemLow').value='5';
+  document.getElementById('saveItemBtn').innerText='Ku dar / Update';
+}
+
 addItemForm.addEventListener('submit', function(e){
   e.preventDefault();
   const id = document.getElementById('editItemId').value;
@@ -422,58 +432,553 @@ addItemForm.addEventListener('submit', function(e){
   const price = parseFloat(document.getElementById('itemPrice').value) || 0;
   const qty = parseInt(document.getElementById('itemQty').value) || 0;
   const low = parseInt(document.getElementById('itemLow').value) || 5;
-  if (!name) return Swal.fire('Khalad','Fadlan geli magaca item','error');
-  items = load(KEY_ITEMS);
-  if (id) {
-    items = items.map(it => it.id===id ? {...it, name, price, quantity: qty, low} : it);
-    Swal.fire('La cusbooneysiiyey','Item waa la cusbooneysiiyey','success');
-  } else {
-    items.push({ id: uid('it'), name, price, quantity: qty, low });
-    Swal.fire('La daray','Item cusub waa la daray','success');
-  }
-  save(KEY_ITEMS, items);
-  document.getElementById('editItemId').value = '';
-  addItemForm.reset();
-  renderItemsTable();
-  updateStats();
-});
-document.getElementById('searchItem').addEventListener('input', function(){ renderItemsTable(this.value); });
-document.getElementById('showAddItemBtn').addEventListener('click', function(){ document.getElementById('editItemId').value=''; addItemForm.reset(); window.scrollTo({top:0, behavior:'smooth'}); });
 
-/* SALES + CART + SUGGEST */
-let cart = [];
+  if(!name){ Swal.fire('Khalad','Magaca item waa khasab','error'); return; }
+
+  if(id){
+    // update
+    const it = items.find(x=>x.id===id);
+    if(it){
+      it.name = name; it.price = price; it.quantity = qty; it.low = low;
+      save(KEY_ITEMS, items);
+      Swal.fire('Sax','Item la update gareeyey','success');
+    }
+  } else {
+    const newIt = { id: uid('it'), name, price, quantity: qty, low };
+    items.push(newIt);
+    save(KEY_ITEMS, items);
+    Swal.fire('Sax','Item la daray','success');
+  }
+  renderItemsTable(searchItem.value);
+  updateStats();
+  renderLowList();
+  resetItemForm();
+});
+
+function editItem(id){
+  const it = items.find(x=>x.id===id);
+  if(!it) return;
+  document.getElementById('editItemId').value = it.id;
+  document.getElementById('itemName').value = it.name;
+  document.getElementById('itemPrice').value = it.price;
+  document.getElementById('itemQty').value = it.quantity;
+  document.getElementById('itemLow').value = it.low;
+  document.getElementById('saveItemBtn').innerText='Update Item';
+  go('items');
+}
+
+function deleteItem(id){
+  Swal.fire({
+    title: 'Ma hubtaa?',
+    text: 'Item-kan ma tirtiri doontaa.',
+    icon: 'warning',
+    showCancelButton: true
+  }).then(res=>{
+    if(res.isConfirmed){
+      items = items.filter(x=>x.id!==id);
+      save(KEY_ITEMS, items);
+      renderItemsTable(searchItem.value);
+      updateStats();
+      renderLowList();
+      Swal.fire('La tirtiray','Item waa la tirtiray','success');
+    }
+  });
+}
+
+searchItem.addEventListener('input', (e)=> renderItemsTable(e.target.value));
+
+/* ===========================
+   Sales / Cart
+=========================== */
+let cart = []; // { itemId, name, price, qty, total }
 const saleSearch = document.getElementById('saleSearch');
 const saleSuggest = document.getElementById('saleSuggest');
+const saleItemsList = document.getElementById('saleItemsList');
+const cartArea = document.getElementById('cartArea');
+const paymentType = document.getElementById('paymentType');
+const creditName = document.getElementById('creditName');
+const creditSuggest = document.getElementById('creditSuggest');
+const creditInfo = document.getElementById('creditInfo');
+const creditInfoName = document.getElementById('creditInfoName');
+const creditInfoBalance = document.getElementById('creditInfoBalance');
+const creditHistory = document.getElementById('creditHistory');
+const saveSaleBtn = document.getElementById('saveSaleBtn');
+const payBalanceBtn = document.getElementById('payBalanceBtn');
+const barcodeScanInput = document.getElementById('barcodeScanInput');
 
-function renderSaleItemsList(){
-  items = load(KEY_ITEMS);
-  const container = document.getElementById('saleItemsList');
-  container.innerHTML = '';
+function renderSaleItems(filter=''){
+  saleItemsList.innerHTML='';
+  const q = (filter || '').toLowerCase();
+  items.forEach(it=>{
+    if(q && !it.name.toLowerCase().includes(q)) return;
+    const div=document.createElement('div');
+    div.className='d-flex align-items-center justify-content-between border-bottom py-2';
+    div.innerHTML = `
+      <div>
+        <div><strong>${escapeHtml(it.name)}</strong></div>
+        <div class="small-muted">${Number(it.price).toFixed(2)} | Qty: ${it.quantity}</div>
+      </div>
+      <div>
+        <button class="btn btn-sm btn-success" ${it.quantity<=0?'disabled':''} onclick="addToCart('${it.id}')">Add</button>
+      </div>
+    `;
+    saleItemsList.appendChild(div);
+  });
+}
+
+/* saleSearch suggestions (unchanged) */
+saleSearch.addEventListener('input', (e)=>{
+  const q = e.target.value.trim();
+  // show suggestions dropdown
+  if(!q){ saleSuggest.style.display='none'; saleItemsList.style.display=''; renderSaleItems(); return; }
+  const matches = items.filter(it=>it.name.toLowerCase().includes(q.toLowerCase()));
+  if(matches.length===0){ saleSuggest.style.display='none'; saleItemsList.style.display=''; renderSaleItems(); return; }
+  saleSuggest.innerHTML = '';
+  matches.slice(0,15).forEach(m=>{
+    const div=document.createElement('div');
+    div.className='suggest-item';
+    div.innerText = `${m.name} — ${Number(m.price).toFixed(2)} | Qty: ${m.quantity}`;
+    div.onclick = ()=>{ saleSearch.value = ''; saleSuggest.style.display='none'; addToCart(m.id); };
+    saleSuggest.appendChild(div);
+  });
+  saleSuggest.style.display = 'block';
+  saleItemsList.style.display = 'none';
+});
+
+/* cart operations (unchanged) */
+function addToCart(itemId){
+  const it = items.find(x=>x.id===itemId);
+  if(!it) return;
+  // if quantity available
+  if(it.quantity <= 0){ Swal.fire('Khalad','Tirada item-kan waa eber','error'); return; }
+  const existing = cart.find(c=>c.itemId===itemId);
+  if(existing){
+    if(existing.qty + 1 > it.quantity){ Swal.fire('Khalad','Ma jiro tiro ku filan','error'); return; }
+    existing.qty += 1;
+    existing.total = Number((existing.qty * existing.price).toFixed(2));
+  } else {
+    cart.push({ itemId: it.id, name: it.name, price: Number(it.price), qty: 1, total: Number(it.price) });
+  }
+  renderCart();
+}
+
+function changeCartQty(itemId, delta){
+  const c = cart.find(x=>x.itemId===itemId);
+  if(!c) return;
+  const it = items.find(x=>x.id===itemId);
+  c.qty = Math.max(1, c.qty + delta);
+  if(c.qty > it.quantity){ c.qty = it.quantity; Swal.fire('Fiiro','Tirada la ogolyahay ayaa la gaadhay','info'); }
+  c.total = Number((c.qty * c.price).toFixed(2));
+  renderCart();
+}
+
+function removeCartItem(itemId){
+  cart = cart.filter(x=>x.itemId!==itemId);
+  renderCart();
+}
+
+function renderCart(){
+  if(!cart || cart.length===0){
+    cartArea.innerHTML = '<p class="text-muted">Cart waa madhan yahay.</p>';
+    return;
+  }
+  const div = document.createElement('div');
+  let html = `<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Magac</th><th>Price</th><th>Qty</th><th>Total</th><th></th></tr></thead><tbody>`;
+  cart.forEach(c=>{
+    html += `<tr>
+      <td>${escapeHtml(c.name)}</td>
+      <td>${Number(c.price).toFixed(2)}</td>
+      <td>
+        <div class="d-flex align-items-center">
+          <button class="btn btn-sm btn-outline-secondary me-1" onclick="changeCartQty('${c.itemId}', -1)">-</button>
+          ${c.qty}
+          <button class="btn btn-sm btn-outline-secondary ms-1" onclick="changeCartQty('${c.itemId}', 1)">+</button>
+        </div>
+      </td>
+      <td>${Number(c.total).toFixed(2)}</td>
+      <td><button class="btn btn-sm btn-outline-danger" onclick="removeCartItem('${c.itemId}')">X</button></td>
+    </tr>`;
+  });
+  const subtotal = cart.reduce((s,c)=>s + c.total, 0);
+  html += `</tbody></table></div>
+    <div class="d-flex justify-content-between align-items-center">
+      <div><strong>Subtotal: </strong> ${subtotal.toFixed(2)}</div>
+      <div>
+        <button class="btn btn-sm btn-secondary me-2" onclick="clearCart()">Clear</button>
+        <button class="btn btn-sm btn-primary" onclick="printCartPreview()">Print</button>
+      </div>
+    </div>`;
+  div.innerHTML = html;
+  cartArea.innerHTML = '';
+  cartArea.appendChild(div);
+}
+
+function clearCart(){ cart = []; renderCart(); }
+
+/* payment type toggle */
+paymentType.addEventListener('change', ()=>{
+  if(paymentType.value === 'Credit'){
+    creditName.style.display='block';
+  } else {
+    creditName.style.display='none';
+    creditName.value='';
+    creditInfo.style.display='none';
+  }
+});
+
+creditName.addEventListener('input', (e)=>{
+  const q = (e.target.value || '').toLowerCase();
+  if(!q){ creditSuggest.style.display='none'; return; }
+  const matches = customers.filter(c=>c.name.toLowerCase().includes(q));
+  if(matches.length===0){ creditSuggest.style.display='none'; return; }
+  creditSuggest.innerHTML='';
+  matches.slice(0,10).forEach(m=>{
+    const div=document.createElement('div');
+    div.className='suggest-item';
+    div.innerText = `${m.name} — Balance: ${Number(m.balance || 0).toFixed(2)}`;
+    div.onclick = ()=>{ selectCreditCustomer(m.name); creditSuggest.style.display='none'; };
+    creditSuggest.appendChild(div);
+  });
+  creditSuggest.style.display='block';
+});
+
+function selectCreditCustomer(name){
+  const c = customers.find(x=>x.name===name);
+  if(!c) return;
+  creditInfo.style.display='block';
+  creditInfoName.innerText = c.name;
+  creditInfoBalance.innerText = Number(c.balance || 0).toFixed(2);
+  creditHistory.innerHTML = '';
+  (c.history || []).slice().reverse().forEach(h=>{
+    const li = document.createElement('li');
+    li.className='small-muted';
+    li.innerText = `${h.date} — ${h.note} — ${Number(h.amount).toFixed(2)}`;
+    creditHistory.appendChild(li);
+  });
+  creditName.value = c.name;
+}
+
+/* ===========================
+   Barcode scanner integration
+   (USB HID scanners act like keyboard)
+   We keep a hidden input focused; when Enter received we handle code.
+=========================== */
+function focusBarcodeInput(){ try{ barcodeScanInput.focus(); }catch(e){} }
+window.addEventListener('click', ()=> focusBarcodeInput());
+window.addEventListener('load', ()=> setTimeout(()=> focusBarcodeInput(), 200));
+
+barcodeScanInput.addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){
+    const code = barcodeScanInput.value.trim();
+    barcodeScanInput.value = '';
+    if(!code) return;
+    handleScannedCode(code);
+    e.preventDefault();
+  }
+});
+
+function handleScannedCode(code){
+  // try find by id first, then by name (case-insensitive)
+  let it = items.find(x => x.id === code);
+  if(!it) it = items.find(x => x.name && x.name.toLowerCase() === code.toLowerCase());
+  if(!it){
+    Toast('Khalad','Item la helin: ' + code, 'error');
+    return;
+  }
+  addToCart(it.id);
+  Toast('Sax','Item la daray: ' + it.name, 'success');
+}
+
+/* save sale */
+saveSaleBtn.addEventListener('click', ()=>{
+  if(!cart || cart.length===0){ Swal.fire('Khalad','Cart waa madhan yahay','error'); return; }
+  const total = cart.reduce((s,c)=>s + c.total, 0);
+  const type = paymentType.value;
+  const date = new Date().toISOString();
+  const invoice = shortId('INV'); // <-- short ID
+  const saleObj = { id: invoice, date, items: JSON.parse(JSON.stringify(cart)), total, type };
+  // handle credit
+  if(type === 'Credit'){
+    const cname = (creditName.value || '').trim();
+    if(!cname){ Swal.fire('Khalad','Gali magaca macaamilka (credit)','error'); return; }
+    let c = customers.find(x=>x.name === cname);
+    if(!c){
+      c = { id: uid('cu'), name: cname, balance: 0, history: [] };
+      customers.push(c);
+    }
+    c.balance = Number((c.balance || 0) + total);
+    c.history = c.history || [];
+    c.history.push({ date: (new Date()).toLocaleString(), note: 'Sale ' + invoice, amount: total });
+    save(KEY_CUSTOMERS, customers);
+    saleObj.customer = cname;
+  }
+  // deduct stock
+  cart.forEach(ci=>{
+    const it = items.find(x=>x.id===ci.itemId);
+    if(it){
+      it.quantity = Number(it.quantity) - Number(ci.qty);
+      if(it.quantity < 0) it.quantity = 0;
+    }
+  });
+  // save sale
+  sales.push(saleObj);
+  save(KEY_SALES, sales);
+  save(KEY_ITEMS, items);
+  // capture invoice for printing
+  const printedInvoice = invoice;
+  // clear cart
+  cart = [];
+  renderCart();
+  renderItemsTable();
+  updateStats();
+  renderLowList();
+  renderSaleItems();
+  // Print the receipt now (showing INV)
+  printSaleReceipt(printedInvoice);
+  Swal.fire('Sax','Iibka waa la keydiyey: ' + invoice, 'success');
+});
+
+/* print sale receipt (shows INV on print) */
+function printSaleReceipt(invoiceId){
+  const lastSale = sales.find(s=>s.id === invoiceId);
+  if(!lastSale) return;
+  let html = `<div style="text-align:center"><div style="font-weight:700">Foorno Ubax</div><div style="font-size:12px;margin-top:4px;">Invoice: <strong>${escapeHtml(invoiceId)}</strong></div><div style="margin-top:6px;">${(new Date(lastSale.date)).toLocaleString()}</div></div><hr>`;
+  html += `<table style="width:100%"><thead><tr><th align="left">Item</th><th>Qty</th><th style="text-align:right">Total</th></tr></thead><tbody>`;
+  lastSale.items.forEach(i=> html += `<tr><td>${escapeHtml(i.name)}</td><td>${i.qty}</td><td style="text-align:right">${Number(i.total).toFixed(2)}</td></tr>`);
+  html += `</tbody></table><hr><div style="text-align:right"><strong>Total: ${Number(lastSale.total).toFixed(2)}</strong></div>`;
+  document.getElementById('printContent').innerHTML = html;
+  document.getElementById('printFooter').innerText = 'Mahadsanid - Foorno Ubax';
+  const pa = document.getElementById('printArea');
+  pa.style.display='block';
+  window.print();
+  pa.style.display='none';
+}
+
+/* print cart preview (before save) - shows a preview INV */
+function printCartPreview(){
+  if(!cart || cart.length===0){ Swal.fire('Khalad','Cart madhan','error'); return; }
+  const previewInv = shortId('INV');
+  let html = `<div style="text-align:center"><div style="font-weight:700">Foorno Ubax</div><div style="font-size:12px;margin-top:4px;">Invoice Preview: <strong>${escapeHtml(previewInv)}</strong></div><div style="margin-top:6px;">${(new Date()).toLocaleString()}</div></div><hr>`;
+  html += `<table style="width:100%"><thead><tr><th align="left">Item</th><th>Qty</th><th style="text-align:right">Total</th></tr></thead><tbody>`;
+  cart.forEach(c=> html += `<tr><td>${escapeHtml(c.name)}</td><td>${c.qty}</td><td style="text-align:right">${c.total.toFixed(2)}</td></tr>`);
+  html += `</tbody></table><hr><div style="text-align:right"><strong>Total: ${cart.reduce((s,c)=>s + c.total,0).toFixed(2)}</strong></div>`;
+  document.getElementById('printContent').innerHTML = html;
+  document.getElementById('printFooter').innerText = 'Thank you - Foorno Ubax';
+  const pa = document.getElementById('printArea');
+  pa.style.display='block';
+  window.print();
+  pa.style.display='none';
+}
+
+/* ===========================
+   Reports / Returns / Low stock
+=========================== */
+
+function renderReports(){
+  // today totals: Paid and Refunds -> Net = Paid - Refunds
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const dd = String(today.getDate()).padStart(2,'0');
+  const start = `${yyyy}-${mm}-${dd}`;
+  let paidToday = 0;
+  sales.forEach(s=>{
+    if(s.type === 'Paid' && s.date && s.date.startsWith(start)) paidToday += Number(s.total);
+  });
+  // refunds today (from returns array)
+  let refundsToday = 0;
+  returns.forEach(r=>{
+    if(r.date && r.date.startsWith(start)) refundsToday += Number(r.total);
+  });
+  const netToday = Number((paidToday - refundsToday).toFixed(2));
+  document.getElementById('reportTodayTotal').innerText = netToday.toFixed(2);
+  document.getElementById('reportTodayPaid').innerText = `Paid: ${paidToday.toFixed(2)} | Refunds: ${refundsToday.toFixed(2)}`;
+
+  // sales table
+  const salesTable = document.getElementById('salesTable');
+  salesTable.innerHTML='';
+  sales.slice().reverse().forEach(s=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td>${s.id}</td><td>${(new Date(s.date)).toLocaleString()}</td><td>${Number(s.total).toFixed(2)}</td><td>${s.type}</td>`;
+    salesTable.appendChild(tr);
+  });
+
+  // credits
+  renderCustomersReport();
+
+  // returns list
+  const returnList = document.getElementById('returnList');
+  returnList.innerHTML = '';
+  returns.slice().reverse().forEach(r=>{
+    const div = document.createElement('div');
+    div.className='border p-2 mb-2';
+    div.innerHTML = `<div><strong>${r.id}</strong> - ${r.date}</div><div class="small-muted">Total: ${Number(r.total).toFixed(2)}</div>`;
+    returnList.appendChild(div);
+  });
+
+  // low items
+  const reportLow = document.getElementById('reportLow');
+  reportLow.innerHTML='';
+  const lowItems = items.filter(it=> it.quantity <= it.low);
+  lowItems.forEach(it=>{
+    const li = document.createElement('li');
+    li.className='list-group-item';
+    li.innerHTML = `${escapeHtml(it.name)} — Qty: ${it.quantity}`;
+    reportLow.appendChild(li);
+  });
+
+  // also update stats area
+  updateStats();
+}
+
+function renderCustomersReport(){
+  const reportCredits = document.getElementById('reportCredits');
+  reportCredits.innerHTML='';
+  customers.forEach(c=>{
+    const li = document.createElement('li');
+    li.className='list-group-item d-flex justify-content-between align-items-center';
+    li.innerHTML = `<div>${escapeHtml(c.name)}<div class="small-muted">History: ${(c.history || []).length} tx</div></div><div><strong>${Number(c.balance||0).toFixed(2)}</strong></div>`;
+    reportCredits.appendChild(li);
+  });
+}
+
+/* process returns: record refund (short REF id), restore stock, do NOT delete sale */
+document.getElementById('doReturnBtn').addEventListener('click', ()=>{
+  const id = document.getElementById('returnId').value.trim();
+  if(!id){ Swal.fire('Khalad','Gali Order ID','error'); return; }
+  const sale = sales.find(s=>s.id === id);
+  if(!sale){ Swal.fire('Khalad','Order ID lama helin','error'); return; }
+  // simple rule: allow return within 24 hours
+  const saleTime = new Date(sale.date).getTime();
+  const now = Date.now();
+  if(now - saleTime > 24*60*60*1000){ Swal.fire('Khalad','Waqtiga celinta wuu dhaafay (24h)','error'); return; }
+  // process: add back quantities
+  sale.items.forEach(si=>{
+    const it = items.find(x=>x.id===si.itemId);
+    if(it) it.quantity = Number(it.quantity) + Number(si.qty);
+  });
+  // create return record (short REF)
+  const r = { id: shortId('REF'), date: new Date().toISOString(), saleId: sale.id, total: sale.total };
+  returns.push(r);
+  save(KEY_RETURNS, returns);
+  save(KEY_ITEMS, items);
+  // update reports/stats - we show net (Paid - Refunds)
+  renderReports();
+  renderItemsTable();
+  updateStats();
+  Swal.fire('Sax','Celinta waa la diiwaangeliyey: ' + r.id,'success').then(()=>{
+    // optional: print refund receipt (shows REF)
+    printRefundReceipt(r);
+  });
+});
+
+/* print refund receipt (shows REF) */
+function printRefundReceipt(refund){
+  const html = `<div style="text-align:center"><div style="font-weight:700">Foorno Ubax</div><div style="font-size:12px;margin-top:4px;">Refund ID: <strong>${escapeHtml(refund.id)}</strong></div><div style="margin-top:6px;">${(new Date(refund.date)).toLocaleString()}</div></div><hr>
+    <div style="text-align:left"><strong>Sale ID: </strong> ${escapeHtml(refund.saleId)}</div>
+    <div style="text-align:right; margin-top:6px;"><strong>Amount Returned: ${Number(refund.total).toFixed(2)}</strong></div>`;
+  document.getElementById('printContent').innerHTML = html;
+  document.getElementById('printFooter').innerText = 'Mahadsanid - Foorno Ubax';
+  const pa = document.getElementById('printArea');
+  pa.style.display='block';
+  window.print();
+  pa.style.display='none';
+}
+
+/* low stock helpers (unchanged) */
+function renderLowList(){
+  const lowItemsList = document.getElementById('lowItemsList');
+  lowItemsList.innerHTML = '';
+  const low = items.filter(it=>it.quantity <= it.low);
+  document.getElementById('statLow').innerText = low.length;
+  low.slice(0,10).forEach(it=>{
+    const div = document.createElement('div');
+    div.className='d-flex justify-content-between align-items-center border-bottom py-2';
+    div.innerHTML = `<div><strong>${escapeHtml(it.name)}</strong><div class="small-muted">Qty: ${it.quantity} | Threshold: ${it.low}</div></div><div><span class="low-badge">LOW</span></div>`;
+    lowItemsList.appendChild(div);
+  });
+}
+
+function showAlertIfLow(){
+  const low = items.filter(it=>it.quantity <= it.low);
+  if(low.length > 0){
+    // show non-intrusive toast
+    Toast('Warning', `Waxaa jira ${low.length} item(yo) oo u dhow inay dhamaadaan`, 'warning');
+  }
+}
+
+/* statistics */
+function updateStats(){
+  document.getElementById('statItems').innerText = items.length;
+  document.getElementById('statLow').innerText = items.filter(it=>it.quantity <= it.low).length;
+  // today paid total and refunds -> net
+  const today = new Date();
+  const start = today.toISOString().slice(0,10);
+  let paidToday = 0;
+  sales.forEach(s=>{ if(s.type==='Paid' && s.date && s.date.startsWith(start)) paidToday += Number(s.total); });
+  let refundsToday = 0;
+  returns.forEach(r=>{ if(r.date && r.date.startsWith(start)) refundsToday += Number(r.total); });
+  const net = Number((paidToday - refundsToday).toFixed(2));
+  document.getElementById('statToday').innerText = net.toFixed(2);
+}
+
+/* ===========================
+   Barcode generator & print (unchanged except small code display)
+=========================== */
+function renderBarcodeList(){
+  const box = document.getElementById('barcodeItemsList');
+  box.innerHTML = '';
   items.forEach(it=>{
     const div = document.createElement('div');
-    div.className = 'd-flex align-items-center justify-content-between p-2 border-bottom';
-    div.innerHTML = `<div><strong>${escapeHtml(it.name)}</strong><br><small>${parseFloat(it.price).toFixed(2)} USD — Qty: ${it.quantity}</small> ${it.quantity <= it.low ? ' <span class="low-badge ms-2">Low</span>' : ''}</div>
-      <div style="min-width:160px">
-        <input type="number" value="1" min="1" max="${it.quantity}" class="form-control form-control-sm mb-1 addQty" data-id="${it.id}" style="width:80px; display:inline-block; margin-right:6px;">
-        <button class="btn btn-sm btn-primary w-100 addToCart" data-id="${it.id}">Add</button>
-      </div>`;
-    container.appendChild(div);
+    div.className='d-flex justify-content-between align-items-center border-bottom py-2';
+    div.innerHTML = `<div><strong>${escapeHtml(it.name)}</strong><div class="small-muted">Price: ${Number(it.price).toFixed(2)}</div></div><div><svg id="bc-${it.id}"></svg><div class="mt-1"><button class="btn btn-sm btn-outline-secondary" onclick="printBarcode('${it.id}')">Print</button></div></div>`;
+    box.appendChild(div);
+    // generate barcode
+    try{
+      JsBarcode(`#bc-${it.id}`, it.id, { format: "CODE128", displayValue: false, width:1, height:30 });
+    }catch(e){}
   });
-  saleSearch.value = '';
-  hideSuggest();
 }
-document.getElementById('saleItemsList').addEventListener('click', function(e){
-  const btn = e.target.closest('button.addToCart');
-  if (!btn) return;
-  const id = btn.dataset.id;
-  const qtyInput = btn.parentElement.querySelector('.addQty');
-  let q = parseInt(qtyInput.value) || 1;
-  const it = items.find(x=>x.id===id);
-  if (!it) return Swal.fire('Error','Item lama helin','error');
-  if (q > it.quantity) return Swal.fire('Error',`Kaliya ${it.quantity} ayaa la heli karaa`,`error`);
-  addToCart(id,q);
-  // NOTE: barcode print is NOT triggered on Add anymore (user requested)
-});
-saleSearch.addEventListener('input', function(){
-  const q = this.value.trim().toLowerCase();
-  if (!q) {
+
+function printBarcode(itemId){
+  const it = items.find(x=>x.id===itemId);
+  if(!it) return;
+  const svg = document.querySelector(`#bc-${itemId}`);
+  if(!svg) return;
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = `<div style="text-align:center"><div style="font-weight:700">${escapeHtml(it.name)}</div>` + svg.outerHTML + `<div class="print-barcode-code">${it.id}</div></div>`;
+  document.getElementById('printContent').innerHTML = wrapper.innerHTML;
+  document.getElementById('printFooter').innerText = 'Foorno Ubax';
+  const pa = document.getElementById('printArea');
+  pa.style.display='block';
+  window.print();
+  pa.style.display='none';
+}
+
+/* ===========================
+   Utilities
+=========================== */
+function escapeHtml(unsafe) {
+  if(unsafe === null || unsafe === undefined) return '';
+  return String(unsafe).replace(/[&<>"'`=\/]/g, function (s) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/':'&#x2F;'}[s]);
+  });
+}
+
+function Toast(title, text, icon='info'){
+  Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3500, icon, title, text });
+}
+
+/* init render */
+renderItemsTable();
+renderSaleItems();
+renderBarcodeList();
+renderReports();
+
+/* helper to render customers report on load */
+function renderCustomersReportOnLoad(){ renderCustomersReport(); }
+renderCustomersReportOnLoad();
+
+</script>
+</body>
+</html>
