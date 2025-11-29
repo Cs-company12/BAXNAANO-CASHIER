@@ -3,26 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Foorno Ubax Supermarket System - v4 (Stable)</title>
+<title>Supermarket System - v4 (Final Fix)</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 <style>
-  body { background:#f4fbff; font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
-  .brand { color:#0d6efd; font-weight:700; }
+  :root{ --bg:#f4fbff; --brand:#0d6efd; --muted:#6c757d; }
+  html,body{ height:100%; }
+  body { background:var(--bg); font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+  .brand { color:var(--brand); font-weight:700; }
   .low-badge { background:#ffc107; color:#000; padding:3px 7px; border-radius:6px; font-weight:600; }
   .card { box-shadow:0 1px 6px rgba(13,110,253,0.06); }
-  .small-muted { font-size:0.85rem; color:#6c757d; }
+  .small-muted { font-size:0.85rem; color:var(--muted); }
   .table-sm td, .table-sm th { vertical-align: middle; }
-  .suggestions { position:absolute; z-index:50; background:#fff; width:100%; border:1px solid #ddd; max-height:240px; overflow:auto; }
+  .suggestions { position:absolute; z-index:2000; background:#fff; width:100%; border:1px solid #ddd; max-height:240px; overflow:auto; display:none; box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
   .suggest-item { padding:8px; cursor:pointer; }
   .suggest-item:hover { background:#f1f7ff; }
   .customer-info { background:#fff; border:1px solid #e9ecef; padding:10px; border-radius:6px; margin-top:8px; }
-  .muted-small { font-size:0.85rem; color:#6c757d; }
+  .muted-small { font-size:0.85rem; color:var(--muted); }
   .btn-sm-compact { padding:.25rem .5rem; font-size:.78rem; }
   .centered { text-align:center; }
   .nav-small { font-size:0.9rem; }
-  /* small barcode code text for receipts */
   .print-barcode-code { font-size:10px; margin-top:4px; }
   @media print {
     @page { size:A5; margin:10mm; }
@@ -32,12 +33,16 @@
     #printArea .receipt { width:100%; text-align:center; font-family: Arial, sans-serif; }
   }
   @media (max-width:768px) { .container { padding-left:10px; padding-right:10px; } }
+  /* keep hidden scanner input reachable for focus but out of sight */
+  #barcodeScanInput { position:fixed; left:-9999px; top:50%; opacity:0; width:1px; height:1px; }
+  /* ensure pointer events available (fix overlay issues) */
+  .container * { pointer-events: auto; }
 </style>
 </head>
 <body>
 <nav class="navbar navbar-light bg-white border-bottom">
   <div class="container-fluid d-flex justify-content-between align-items-center">
-    <span class="navbar-brand brand">Foorno Ubax Supermarket System</span>
+    <span class="navbar-brand brand">Supermarket System</span>
     <div id="nav-right" class="nav-small"></div>
   </div>
 </nav>
@@ -52,15 +57,15 @@
           <form id="loginForm" autocomplete="off">
             <div class="mb-3">
               <label class="form-label">Username</label>
-              <input id="loginUser" class="form-control" autocomplete="off" required>
+              <input id="loginUser" class="form-control" autocomplete="off" value="admin" type="text">
             </div>
             <div class="mb-3">
               <label class="form-label">Password</label>
-              <input id="loginPass" type="password" class="form-control" autocomplete="new-password" required>
+              <input id="loginPass" type="password" class="form-control" autocomplete="new-password" placeholder="Geli password-ka">
             </div>
-            <button class="btn btn-primary w-100">GALI</button>
+            <button type="submit" class="btn btn-primary w-100">GALI</button>
           </form>
-          <p class="small-muted mt-2">Fadlan geli username & password — password lama soo bandhigayo.</p>
+          <p class="small-muted mt-2">Fadlan geli username & password — password waa la gali karaa (lama sii diyaarin).</p>
         </div>
       </div>
     </div>
@@ -91,6 +96,12 @@
             <button class="btn btn-sm btn-primary" onclick="go('reports')">Reports</button>
             <button class="btn btn-sm btn-warning" onclick="go('barcode')">Barcode Generator</button>
             <button class="btn btn-sm btn-danger" id="logoutBtnSide" onclick="logout()">Logout</button>
+            <div class="d-grid gap-1 mt-2">
+              <button class="btn btn-sm btn-outline-secondary" onclick="exportBackup()">Export Backup</button>
+              <label class="btn btn-sm btn-outline-secondary mb-0">
+                Import Backup <input id="importBackupFile" type="file" accept=".json" style="display:none" onchange="importBackup(event)">
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -105,7 +116,7 @@
                 <span class="me-3">Admin: <b id="adminName">admin</b></span>
               </div>
             </div>
-            <p class="small-muted mt-2">Ku soo dhawow Foorno Ubax — halkaan ka maamul items, iibka iyo warbixinnada.</p>
+            <p class="small-muted mt-2">Ku soo dhawow — maamul items, iibka iyo warbixinnada.</p>
           </div>
 
           <div class="card p-3">
@@ -120,30 +131,38 @@
             <h5>Maareynta Items</h5>
             <div>
               <button class="btn btn-outline-secondary me-2" onclick="go('dashboard')">Dashboard</button>
-              <button class="btn btn-primary" id="showAddItemBtn">Add Item</button>
+              <button class="btn btn-primary" id="showAddItemBtn" onclick="showAddItemForm()">Add Item</button>
             </div>
           </div>
 
-          <div class="card p-3 mb-3">
+          <div class="card p-3 mb-3" id="addItemCard" style="display:none;">
             <form id="addItemForm" class="row g-2">
               <input type="hidden" id="editItemId">
               <div class="col-md-4"><input id="itemName" class="form-control" placeholder="Magaca item" required></div>
               <div class="col-md-2"><input id="itemPrice" class="form-control" placeholder="Qiime" type="number" step="0.01" required></div>
               <div class="col-md-2"><input id="itemQty" class="form-control" placeholder="Tirada" type="number" required></div>
               <div class="col-md-2"><input id="itemLow" class="form-control" placeholder="Threshold" type="number" value="5" required></div>
-              <div class="col-md-2"><button class="btn btn-success w-100" id="saveItemBtn">Ku dar / Update</button></div>
+              <div class="col-md-2"><button type="submit" class="btn btn-success w-100" id="saveItemBtn">Ku dar / Update</button></div>
             </form>
           </div>
 
           <div class="card p-3">
             <h6>Liiska Items</h6>
-            <input id="searchItem" class="form-control mb-2" placeholder="Raadi item...">
+            <div class="d-flex gap-2 mb-2">
+              <input id="searchItem" class="form-control" placeholder="Raadi item..." style="flex:1;">
+              <select id="pageSizeSelect" class="form-select w-auto" style="max-width:100px;">
+                <option value="8">8</option>
+                <option value="12" selected>12</option>
+                <option value="20">20</option>
+              </select>
+            </div>
             <div style="max-height:420px; overflow:auto;">
               <table class="table table-sm">
                 <thead><tr><th>Magac</th><th>Qiime</th><th>Tirada</th><th>Threshold</th><th>Action</th></tr></thead>
                 <tbody id="itemsTable"></tbody>
               </table>
             </div>
+            <nav><ul id="itemsPagination" class="pagination"></ul></nav>
           </div>
         </div>
 
@@ -163,8 +182,9 @@
               <div class="card p-3">
                 <h6>Item-yada</h6>
                 <input id="saleSearch" class="form-control mb-2" placeholder="Raadi item...">
-                <div id="saleSuggest" class="suggestions" style="display:none;"></div>
+                <div id="saleSuggest" class="suggestions"></div>
                 <div id="saleItemsList" style="max-height:320px; overflow:auto;"></div>
+                <div class="small-muted mt-2">Haddii aad u isticmaalayso barcode scanner, hubi in scanner-ku diro 'Enter' ama uu paste gareeyo.</div>
               </div>
             </div>
 
@@ -180,7 +200,7 @@
                   </select>
                   <div style="flex:1; position:relative;">
                     <input id="creditName" class="form-control" placeholder="Magaca macaamiisha (credit)" style="display:none;">
-                    <div id="creditSuggest" class="suggestions" style="display:none;"></div>
+                    <div id="creditSuggest" class="suggestions"></div>
                     <div id="creditInfo" style="display:none;" class="customer-info">
                       <div><strong id="creditInfoName"></strong></div>
                       <div class="muted-small">Balance: <b id="creditInfoBalance">0.00</b> USD</div>
@@ -272,43 +292,36 @@
 <!-- hidden print area -->
 <div id="printArea" style="display:none;">
   <div class="receipt p-3">
-    <div style="font-size:18px; font-weight:700;">Foorno Ubax Supermarket System</div>
+    <div style="font-size:18px; font-weight:700;">Supermarket System</div>
     <div id="printContent" style="margin-top:10px;"></div>
     <div style="margin-top:10px; font-size:12px;" id="printFooter"></div>
   </div>
 </div>
 
-<!-- hidden barcode scan input -->
-<input id="barcodeScanInput" type="text" style="position:absolute; top:-120px; left:-120px; opacity:0;">
+<!-- hidden barcode scan input (focusable) -->
+<input id="barcodeScanInput" type="text" tabindex="0" aria-hidden="true">
 
 <script>
 /* ===========================
-   Storage keys & admin
+   Storage keys & helpers
 =========================== */
-const KEY_ITEMS='foorno_ubax_items_v4';
-const KEY_SALES='foorno_ubax_sales_v4';
-const KEY_CUSTOMERS='foorno_ubax_customers_v4';
-const KEY_RETURNS='foorno_ubax_returns_v4';
-const ADMIN_USER='admin';
-const ADMIN_PASS='1111'; // <-- password you requested
+const KEY_ITEMS='super_items_v4';
+const KEY_SALES='super_sales_v4';
+const KEY_CUSTOMERS='super_customers_v4';
+const KEY_RETURNS='super_returns_v4';
 
 function load(k){ try{ return JSON.parse(localStorage.getItem(k) || '[]'); } catch(e){ return []; } }
 function save(k,d){ localStorage.setItem(k, JSON.stringify(d)); }
 function uid(p='id'){ return p+'_'+Date.now()+'_'+Math.floor(Math.random()*9000+1000); }
+function shortId(prefix = "ID") { const part = Math.floor(1000 + Math.random() * 9000); return `${prefix}-${part}`; }
 
-/* --- NEW: short ID helper --- */
-function shortId(prefix = "ID") {
-  const part = Math.floor(1000 + Math.random() * 9000);
-  return `${prefix}-${part}`;
-}
-
-/* initial data load */
+/* initial data */
 let items = load(KEY_ITEMS);
 let sales = load(KEY_SALES);
 let customers = load(KEY_CUSTOMERS);
 let returns = load(KEY_RETURNS);
 
-/* seed items if empty */
+/* seed if empty */
 if(!items || items.length===0){
   items=[
     { id: uid('it'), name:'Rice 5kg', price:10.00, quantity:10, low:5 },
@@ -324,12 +337,17 @@ const loginView=document.getElementById('loginView');
 const mainView=document.getElementById('mainView');
 const navRight=document.getElementById('nav-right');
 
+/* ensure login fields editable and blank password */
+document.getElementById('loginUser').removeAttribute('readonly');
+document.getElementById('loginPass').removeAttribute('readonly');
+document.getElementById('loginPass').value = '';
+
 /* show main */
 function showMain(){
   loginView.style.display='none';
   mainView.style.display='';
-  document.getElementById('adminName').innerText = ADMIN_USER;
-  navRight.innerHTML=`<div class="d-flex align-items-center"><small class="me-3">Admin: <b>${ADMIN_USER}</b></small></div>`;
+  document.getElementById('adminName').innerText = document.getElementById('loginUser').value || 'admin';
+  navRight.innerHTML=`<div class="d-flex align-items-center"><small class="me-3">Admin: <b>${escapeHtml(document.getElementById('loginUser').value||'admin')}</b></small></div>`;
   updateStats();
   renderLowList();
   showAlertIfLow();
@@ -337,70 +355,59 @@ function showMain(){
 }
 
 /* logout */
-function logout(){ 
-  try{ sessionStorage.removeItem('foorno_ubax_logged'); } catch(e){}
-  try{ localStorage.removeItem('foorno_ubax_logged'); } catch(e){}
-  location.reload();
-}
+function logout(){ try{ sessionStorage.removeItem('super_logged'); } catch(e){} location.reload(); }
 document.getElementById('logoutBtnSide').addEventListener('click', logout);
 
-/* login submit (fixed) */
+/* login (require non-empty password) */
 loginForm.addEventListener('submit', function(e){
   e.preventDefault();
-  const u = document.getElementById('loginUser').value.trim();
+  const u = document.getElementById('loginUser').value.trim() || 'admin';
   const p = document.getElementById('loginPass').value;
-
-  if(u === ADMIN_USER && p === ADMIN_PASS){
-    // set both sessionStorage and localStorage for wider compatibility
-    try{ sessionStorage.setItem('foorno_ubax_logged','true'); } catch(e){}
-    try{ localStorage.setItem('foorno_ubax_logged','true'); } catch(e){}
-    showMain();
-    Swal.fire('Sax','Waan ku soo dhaweynayaa','success');
-    return;
-  }
-
-  Swal.fire('Khalad','Username ama password khalad ah','error');
+  if(!p){ Swal.fire('Khalad','Fadlan geli password','error'); return; }
+  try{ sessionStorage.setItem('super_logged','true'); }catch(e){}
+  showMain();
+  Swal.fire('Sax','Waan ku soo dhaweynayaa','success');
 });
 
-/* auto-login if stored */
-try{
-  if(sessionStorage.getItem('foorno_ubax_logged') || localStorage.getItem('foorno_ubax_logged')){
-    showMain();
-  }
-}catch(e){
-  // ignore
-}
-
 /* =========================
-   NAVIGATION + ITEMS CRUD
+   NAV + ITEMS CRUD (with pagination)
 =========================== */
 function hideAllViews(){
-  document.getElementById('dashboardView').style.display='none';
-  document.getElementById('itemsView').style.display='none';
-  document.getElementById('salesView').style.display='none';
-  document.getElementById('reportsView').style.display='none';
-  document.getElementById('barcodeView').style.display='none';
+  ['dashboardView','itemsView','salesView','reportsView','barcodeView'].forEach(id=>document.getElementById(id).style.display='none');
 }
-
 function go(view){
   hideAllViews();
   if(view==='dashboard'){ document.getElementById('dashboardView').style.display=''; renderLowList(); }
   if(view==='items'){ document.getElementById('itemsView').style.display=''; renderItemsTable(); resetItemForm(); }
-  if(view==='sales'){ document.getElementById('salesView').style.display=''; renderSaleItems(); renderCart(); focusBarcodeInput(); }
+  if(view==='sales'){ document.getElementById('salesView').style.display=''; renderSaleItems(); renderCart(); focusBarcodeInput(); startSalesRefocus(); }
   if(view==='reports'){ document.getElementById('reportsView').style.display=''; renderReports(); }
   if(view==='barcode'){ document.getElementById('barcodeView').style.display=''; renderBarcodeList(); }
 }
 
-/* Items rendering & CRUD (unchanged) */
+/* Items */
 const itemsTable = document.getElementById('itemsTable');
 const searchItem = document.getElementById('searchItem');
 const addItemForm = document.getElementById('addItemForm');
+const pageSizeSelect = document.getElementById('pageSizeSelect');
+const itemsPagination = document.getElementById('itemsPagination');
+
+let currentPage = 1;
+let pageSize = parseInt(pageSizeSelect.value || 12);
+
+function showAddItemForm(){ document.getElementById('addItemCard').style.display = ''; window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 function renderItemsTable(filter=''){
   itemsTable.innerHTML='';
   const q = (filter || '').toLowerCase();
-  items.forEach(it=>{
-    if(q && !it.name.toLowerCase().includes(q)) return;
+  const filtered = items.filter(it => !q || it.name.toLowerCase().includes(q) || (it.code && it.code.toLowerCase().includes(q)) || (it.id && it.id.toLowerCase().includes(q)));
+  pageSize = parseInt(pageSizeSelect.value) || 12;
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total / pageSize));
+  if(currentPage > pages) currentPage = pages;
+  const startIdx = (currentPage - 1) * pageSize;
+  const pageItems = filtered.slice(startIdx, startIdx + pageSize);
+
+  pageItems.forEach(it=>{
     const tr=document.createElement('tr');
     tr.innerHTML = `
       <td>${escapeHtml(it.name)}</td>
@@ -414,7 +421,20 @@ function renderItemsTable(filter=''){
     `;
     itemsTable.appendChild(tr);
   });
+
+  renderPagination(pages);
 }
+function renderPagination(pages){
+  itemsPagination.innerHTML = '';
+  if(pages <= 1) return;
+  for(let p=1;p<=pages;p++){
+    const li = document.createElement('li');
+    li.className = `page-item ${p===currentPage?'active':''}`;
+    li.innerHTML = `<a class="page-link" href="#" onclick="gotoPage(${p});return false;">${p}</a>`;
+    itemsPagination.appendChild(li);
+  }
+}
+function gotoPage(p){ currentPage = p; renderItemsTable(searchItem.value); }
 
 function resetItemForm(){
   document.getElementById('editItemId').value='';
@@ -423,8 +443,42 @@ function resetItemForm(){
   document.getElementById('itemQty').value='';
   document.getElementById('itemLow').value='5';
   document.getElementById('saveItemBtn').innerText='Ku dar / Update';
+  document.getElementById('addItemCard').style.display = 'none';
 }
 
+/* backup helpers */
+function exportBackup(){
+  const snapshot = { items, sales, customers, returns, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url;
+  a.download = `super_backup_${(new Date()).toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  Toast('Backup','Backup waa la dhoofiyey','success');
+}
+function importBackup(e){
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = function(){ 
+    try{
+      const d = JSON.parse(reader.result);
+      if(d.items) items = d.items;
+      if(d.sales) sales = d.sales;
+      if(d.customers) customers = d.customers;
+      if(d.returns) returns = d.returns;
+      save(KEY_ITEMS, items); save(KEY_SALES, sales); save(KEY_CUSTOMERS, customers); save(KEY_RETURNS, returns);
+      currentPage = 1;
+      renderItemsTable(); renderSaleItems(); renderReports(); updateStats();
+      Toast('Import','Backup waa la soo raray','success');
+    }catch(err){
+      Swal.fire('Khalad','File aan sax ahayn','error');
+    }
+  };
+  reader.readAsText(f);
+}
+
+/* add/update item (auto-backup) */
 addItemForm.addEventListener('submit', function(e){
   e.preventDefault();
   const id = document.getElementById('editItemId').value;
@@ -434,27 +488,25 @@ addItemForm.addEventListener('submit', function(e){
   const low = parseInt(document.getElementById('itemLow').value) || 5;
 
   if(!name){ Swal.fire('Khalad','Magaca item waa khasab','error'); return; }
+  autoBackup('before_item_save');
 
   if(id){
-    // update
     const it = items.find(x=>x.id===id);
-    if(it){
-      it.name = name; it.price = price; it.quantity = qty; it.low = low;
-      save(KEY_ITEMS, items);
-      Swal.fire('Sax','Item la update gareeyey','success');
-    }
+    if(it){ it.name = name; it.price = price; it.quantity = qty; it.low = low; save(KEY_ITEMS, items); Swal.fire('Sax','Item la update gareeyey','success'); }
   } else {
     const newIt = { id: uid('it'), name, price, quantity: qty, low };
     items.push(newIt);
     save(KEY_ITEMS, items);
     Swal.fire('Sax','Item la daray','success');
   }
+  currentPage = 1;
   renderItemsTable(searchItem.value);
   updateStats();
   renderLowList();
   resetItemForm();
 });
 
+/* edit/delete */
 function editItem(id){
   const it = items.find(x=>x.id===id);
   if(!it) return;
@@ -464,19 +516,16 @@ function editItem(id){
   document.getElementById('itemQty').value = it.quantity;
   document.getElementById('itemLow').value = it.low;
   document.getElementById('saveItemBtn').innerText='Update Item';
+  document.getElementById('addItemCard').style.display = '';
   go('items');
 }
-
 function deleteItem(id){
-  Swal.fire({
-    title: 'Ma hubtaa?',
-    text: 'Item-kan ma tirtiri doontaa.',
-    icon: 'warning',
-    showCancelButton: true
-  }).then(res=>{
+  Swal.fire({ title: 'Ma hubtaa?', text: 'Item-kan ma tirtiri doontaa.', icon: 'warning', showCancelButton: true }).then(res=>{
     if(res.isConfirmed){
+      autoBackup('before_delete_item');
       items = items.filter(x=>x.id!==id);
       save(KEY_ITEMS, items);
+      currentPage = 1;
       renderItemsTable(searchItem.value);
       updateStats();
       renderLowList();
@@ -485,12 +534,13 @@ function deleteItem(id){
   });
 }
 
-searchItem.addEventListener('input', (e)=> renderItemsTable(e.target.value));
+searchItem.addEventListener('input', debounce((e)=> { currentPage = 1; renderItemsTable(e.target.value); }, 250));
+pageSizeSelect.addEventListener('change', ()=> { currentPage = 1; renderItemsTable(searchItem.value); });
 
 /* ===========================
-   Sales / Cart
+   Sales / Cart + barcode scan
 =========================== */
-let cart = []; // { itemId, name, price, qty, total }
+let cart = []; 
 const saleSearch = document.getElementById('saleSearch');
 const saleSuggest = document.getElementById('saleSuggest');
 const saleItemsList = document.getElementById('saleItemsList');
@@ -526,10 +576,9 @@ function renderSaleItems(filter=''){
   });
 }
 
-/* saleSearch suggestions (unchanged) */
-saleSearch.addEventListener('input', (e)=>{
+/* suggestions for sale search */
+saleSearch.addEventListener('input', debounce((e)=>{
   const q = e.target.value.trim();
-  // show suggestions dropdown
   if(!q){ saleSuggest.style.display='none'; saleItemsList.style.display=''; renderSaleItems(); return; }
   const matches = items.filter(it=>it.name.toLowerCase().includes(q.toLowerCase()));
   if(matches.length===0){ saleSuggest.style.display='none'; saleItemsList.style.display=''; renderSaleItems(); return; }
@@ -543,13 +592,12 @@ saleSearch.addEventListener('input', (e)=>{
   });
   saleSuggest.style.display = 'block';
   saleItemsList.style.display = 'none';
-});
+}, 200));
 
-/* cart operations (unchanged) */
+/* cart ops */
 function addToCart(itemId){
   const it = items.find(x=>x.id===itemId);
   if(!it) return;
-  // if quantity available
   if(it.quantity <= 0){ Swal.fire('Khalad','Tirada item-kan waa eber','error'); return; }
   const existing = cart.find(c=>c.itemId===itemId);
   if(existing){
@@ -561,7 +609,6 @@ function addToCart(itemId){
   }
   renderCart();
 }
-
 function changeCartQty(itemId, delta){
   const c = cart.find(x=>x.itemId===itemId);
   if(!c) return;
@@ -571,12 +618,7 @@ function changeCartQty(itemId, delta){
   c.total = Number((c.qty * c.price).toFixed(2));
   renderCart();
 }
-
-function removeCartItem(itemId){
-  cart = cart.filter(x=>x.itemId!==itemId);
-  renderCart();
-}
-
+function removeCartItem(itemId){ cart = cart.filter(x=>x.itemId!==itemId); renderCart(); }
 function renderCart(){
   if(!cart || cart.length===0){
     cartArea.innerHTML = '<p class="text-muted">Cart waa madhan yahay.</p>';
@@ -612,10 +654,9 @@ function renderCart(){
   cartArea.innerHTML = '';
   cartArea.appendChild(div);
 }
-
 function clearCart(){ cart = []; renderCart(); }
 
-/* payment type toggle */
+/* payment / credit */
 paymentType.addEventListener('change', ()=>{
   if(paymentType.value === 'Credit'){
     creditName.style.display='block';
@@ -625,8 +666,7 @@ paymentType.addEventListener('change', ()=>{
     creditInfo.style.display='none';
   }
 });
-
-creditName.addEventListener('input', (e)=>{
+creditName.addEventListener('input', debounce((e)=>{
   const q = (e.target.value || '').toLowerCase();
   if(!q){ creditSuggest.style.display='none'; return; }
   const matches = customers.filter(c=>c.name.toLowerCase().includes(q));
@@ -640,8 +680,7 @@ creditName.addEventListener('input', (e)=>{
     creditSuggest.appendChild(div);
   });
   creditSuggest.style.display='block';
-});
-
+}, 200));
 function selectCreditCustomer(name){
   const c = customers.find(x=>x.name===name);
   if(!c) return;
@@ -659,14 +698,28 @@ function selectCreditCustomer(name){
 }
 
 /* ===========================
-   Barcode scanner integration
-   (USB HID scanners act like keyboard)
-   We keep a hidden input focused; when Enter received we handle code.
+   Barcode scanning (robust)
+   supports paste, Enter, global HID buffer
 =========================== */
-function focusBarcodeInput(){ try{ barcodeScanInput.focus(); }catch(e){} }
+function focusBarcodeInput(){ try{ barcodeScanInput.focus(); barcodeScanInput.select(); }catch(e){} }
 window.addEventListener('click', ()=> focusBarcodeInput());
+window.addEventListener('focus', ()=> focusBarcodeInput());
 window.addEventListener('load', ()=> setTimeout(()=> focusBarcodeInput(), 200));
 
+let salesRefocusInterval = null;
+function startSalesRefocus(){
+  if(salesRefocusInterval) clearInterval(salesRefocusInterval);
+  salesRefocusInterval = setInterval(()=> { if(document.getElementById('salesView').style.display!=='none') focusBarcodeInput(); }, 1500);
+}
+
+/* paste handling */
+barcodeScanInput.addEventListener('paste', function(e){
+  setTimeout(()=> {
+    const code = barcodeScanInput.value.trim();
+    barcodeScanInput.value = '';
+    if(code) handleScannedCode(code);
+  }, 50);
+});
 barcodeScanInput.addEventListener('keydown', function(e){
   if(e.key === 'Enter'){
     const code = barcodeScanInput.value.trim();
@@ -677,12 +730,81 @@ barcodeScanInput.addEventListener('keydown', function(e){
   }
 });
 
+/* HID keyboard buffer */
+let scannerBuffer = '';
+let lastKeyTime = 0;
+const SCANNER_TIMEOUT = 60; // ms
+document.addEventListener('keydown', (e)=>{
+  // ignore when typing in inputs/textareas (so normal typing unaffected)
+  const tag = document.activeElement && document.activeElement.tagName;
+  if(tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement === barcodeScanInput) return;
+
+  const now = Date.now();
+  if(now - lastKeyTime > SCANNER_TIMEOUT){
+    scannerBuffer = '';
+  }
+  lastKeyTime = now;
+
+  if(e.key.length === 1){
+    scannerBuffer += e.key;
+  } else if(e.key === 'Enter'){
+    const code = scannerBuffer.trim();
+    scannerBuffer = '';
+    if(code){
+      handleScannedCode(code);
+    }
+  }
+});
+
+/* scanned-code handling (auto-add option) */
 function handleScannedCode(code){
-  // try find by id first, then by name (case-insensitive)
-  let it = items.find(x => x.id === code);
-  if(!it) it = items.find(x => x.name && x.name.toLowerCase() === code.toLowerCase());
+  go('sales');
+  const cnorm = (code||'').toString().trim();
+  // find by id, code property or name exact
+  let it = items.find(x => (x.id && x.id === cnorm) || (x.code && x.code === cnorm));
+  if(!it) it = items.find(x => x.name && x.name.toLowerCase() === cnorm.toLowerCase());
   if(!it){
-    Toast('Khalad','Item la helin: ' + code, 'error');
+    Swal.fire({
+      title: 'Item lama helin',
+      html: `Barcode: <b>${escapeHtml(cnorm)}</b><br>Ma rabtaa inaad item cusub ku abuurto oo aad ku darto cart-ka?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Haa, abuuri',
+      cancelButtonText: 'Maya'
+    }).then(res=>{
+      if(res.isConfirmed){
+        Swal.fire({
+          title: 'Faahfaahin Item Cusub',
+          html:
+            `<input id="swal_item_name" class="swal2-input" placeholder="Magac">` +
+            `<input id="swal_item_price" class="swal2-input" placeholder="Qiime (e.g. 1.50)">` +
+            `<input id="swal_item_qty" class="swal2-input" placeholder="Tirada (e.g. 10)">`,
+          preConfirm: ()=> {
+            const name = document.getElementById('swal_item_name').value.trim();
+            const price = parseFloat(document.getElementById('swal_item_price').value) || 0;
+            const qty = parseInt(document.getElementById('swal_item_qty').value) || 0;
+            if(!name) { Swal.showValidationMessage('Magac waa khasab'); return false; }
+            return { name, price, qty };
+          },
+          showCancelButton: true
+        }).then(choice=>{
+          if(choice.isConfirmed && choice.value){
+            const { name, price, qty } = choice.value;
+            autoBackup('before_auto_add_from_scan');
+            const newIt = { id: uid('it'), name, price, quantity: qty, low: 5, code: cnorm };
+            items.push(newIt);
+            save(KEY_ITEMS, items);
+            currentPage = 1;
+            renderItemsTable();
+            renderSaleItems();
+            addToCart(newIt.id);
+            Toast('Sax','Item cusub ayaa la abuuray oo cart lagu daray','success');
+          }
+        });
+      } else {
+        Toast('Info','Scan la diiday','info');
+      }
+    });
     return;
   }
   addToCart(it.id);
@@ -695,278 +817,123 @@ saveSaleBtn.addEventListener('click', ()=>{
   const total = cart.reduce((s,c)=>s + c.total, 0);
   const type = paymentType.value;
   const date = new Date().toISOString();
-  const invoice = shortId('INV'); // <-- short ID
+  const invoice = shortId('INV');
   const saleObj = { id: invoice, date, items: JSON.parse(JSON.stringify(cart)), total, type };
-  // handle credit
   if(type === 'Credit'){
     const cname = (creditName.value || '').trim();
     if(!cname){ Swal.fire('Khalad','Gali magaca macaamilka (credit)','error'); return; }
     let c = customers.find(x=>x.name === cname);
-    if(!c){
-      c = { id: uid('cu'), name: cname, balance: 0, history: [] };
-      customers.push(c);
-    }
+    if(!c){ c = { id: uid('cu'), name: cname, balance: 0, history: [] }; customers.push(c); }
     c.balance = Number((c.balance || 0) + total);
     c.history = c.history || [];
     c.history.push({ date: (new Date()).toLocaleString(), note: 'Sale ' + invoice, amount: total });
     save(KEY_CUSTOMERS, customers);
     saleObj.customer = cname;
   }
-  // deduct stock
+  autoBackup('before_save_sale');
   cart.forEach(ci=>{
     const it = items.find(x=>x.id===ci.itemId);
-    if(it){
-      it.quantity = Number(it.quantity) - Number(ci.qty);
-      if(it.quantity < 0) it.quantity = 0;
-    }
+    if(it){ it.quantity = Number(it.quantity) - Number(ci.qty); if(it.quantity < 0) it.quantity = 0; }
   });
-  // save sale
   sales.push(saleObj);
   save(KEY_SALES, sales);
   save(KEY_ITEMS, items);
-  // capture invoice for printing
   const printedInvoice = invoice;
-  // clear cart
   cart = [];
   renderCart();
   renderItemsTable();
   updateStats();
   renderLowList();
   renderSaleItems();
-  // Print the receipt now (showing INV)
   printSaleReceipt(printedInvoice);
   Swal.fire('Sax','Iibka waa la keydiyey: ' + invoice, 'success');
 });
 
-/* print sale receipt (shows INV on print) */
+/* print helpers */
 function printSaleReceipt(invoiceId){
   const lastSale = sales.find(s=>s.id === invoiceId);
   if(!lastSale) return;
-  let html = `<div style="text-align:center"><div style="font-weight:700">Foorno Ubax</div><div style="font-size:12px;margin-top:4px;">Invoice: <strong>${escapeHtml(invoiceId)}</strong></div><div style="margin-top:6px;">${(new Date(lastSale.date)).toLocaleString()}</div></div><hr>`;
+  let html = `<div style="text-align:center"><div style="font-weight:700">Supermarket</div><div style="font-size:12px;margin-top:4px;">Invoice: <strong>${escapeHtml(invoiceId)}</strong></div><div style="margin-top:6px;">${(new Date(lastSale.date)).toLocaleString()}</div></div><hr>`;
   html += `<table style="width:100%"><thead><tr><th align="left">Item</th><th>Qty</th><th style="text-align:right">Total</th></tr></thead><tbody>`;
   lastSale.items.forEach(i=> html += `<tr><td>${escapeHtml(i.name)}</td><td>${i.qty}</td><td style="text-align:right">${Number(i.total).toFixed(2)}</td></tr>`);
   html += `</tbody></table><hr><div style="text-align:right"><strong>Total: ${Number(lastSale.total).toFixed(2)}</strong></div>`;
   document.getElementById('printContent').innerHTML = html;
-  document.getElementById('printFooter').innerText = 'Mahadsanid - Foorno Ubax';
-  const pa = document.getElementById('printArea');
-  pa.style.display='block';
-  window.print();
-  pa.style.display='none';
+  document.getElementById('printFooter').innerText = 'Mahadsanid - Supermarket';
+  const pa = document.getElementById('printArea'); pa.style.display='block'; window.print(); pa.style.display='none';
 }
-
-/* print cart preview (before save) - shows a preview INV */
 function printCartPreview(){
   if(!cart || cart.length===0){ Swal.fire('Khalad','Cart madhan','error'); return; }
   const previewInv = shortId('INV');
-  let html = `<div style="text-align:center"><div style="font-weight:700">Foorno Ubax</div><div style="font-size:12px;margin-top:4px;">Invoice Preview: <strong>${escapeHtml(previewInv)}</strong></div><div style="margin-top:6px;">${(new Date()).toLocaleString()}</div></div><hr>`;
+  let html = `<div style="text-align:center"><div style="font-weight:700">Supermarket</div><div style="font-size:12px;margin-top:4px;">Invoice Preview: <strong>${escapeHtml(previewInv)}</strong></div><div style="margin-top:6px;">${(new Date()).toLocaleString()}</div></div><hr>`;
   html += `<table style="width:100%"><thead><tr><th align="left">Item</th><th>Qty</th><th style="text-align:right">Total</th></tr></thead><tbody>`;
   cart.forEach(c=> html += `<tr><td>${escapeHtml(c.name)}</td><td>${c.qty}</td><td style="text-align:right">${c.total.toFixed(2)}</td></tr>`);
   html += `</tbody></table><hr><div style="text-align:right"><strong>Total: ${cart.reduce((s,c)=>s + c.total,0).toFixed(2)}</strong></div>`;
   document.getElementById('printContent').innerHTML = html;
-  document.getElementById('printFooter').innerText = 'Thank you - Foorno Ubax';
-  const pa = document.getElementById('printArea');
-  pa.style.display='block';
-  window.print();
-  pa.style.display='none';
+  document.getElementById('printFooter').innerText = 'Mahadsanid - Supermarket';
+  const pa = document.getElementById('printArea'); pa.style.display='block'; window.print(); pa.style.display='none';
 }
 
-/* ===========================
-   Reports / Returns / Low stock
-=========================== */
-
+/* Reports / returns / low stock */
 function renderReports(){
-  // today totals: Paid and Refunds -> Net = Paid - Refunds
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth()+1).padStart(2,'0');
-  const dd = String(today.getDate()).padStart(2,'0');
+  const today = new Date(); const yyyy = today.getFullYear(); const mm = String(today.getMonth()+1).padStart(2,'0'); const dd = String(today.getDate()).padStart(2,'0');
   const start = `${yyyy}-${mm}-${dd}`;
-  let paidToday = 0;
-  sales.forEach(s=>{
-    if(s.type === 'Paid' && s.date && s.date.startsWith(start)) paidToday += Number(s.total);
-  });
-  // refunds today (from returns array)
-  let refundsToday = 0;
-  returns.forEach(r=>{
-    if(r.date && r.date.startsWith(start)) refundsToday += Number(r.total);
-  });
+  let paidToday = 0; sales.forEach(s=>{ if(s.type==='Paid' && s.date && s.date.startsWith(start)) paidToday += Number(s.total); });
+  let refundsToday = 0; returns.forEach(r=>{ if(r.date && r.date.startsWith(start)) refundsToday += Number(r.total); });
   const netToday = Number((paidToday - refundsToday).toFixed(2));
   document.getElementById('reportTodayTotal').innerText = netToday.toFixed(2);
   document.getElementById('reportTodayPaid').innerText = `Paid: ${paidToday.toFixed(2)} | Refunds: ${refundsToday.toFixed(2)}`;
-
-  // sales table
-  const salesTable = document.getElementById('salesTable');
-  salesTable.innerHTML='';
-  sales.slice().reverse().forEach(s=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML = `<td>${s.id}</td><td>${(new Date(s.date)).toLocaleString()}</td><td>${Number(s.total).toFixed(2)}</td><td>${s.type}</td>`;
-    salesTable.appendChild(tr);
-  });
-
-  // credits
+  const salesTable = document.getElementById('salesTable'); salesTable.innerHTML='';
+  sales.slice().reverse().forEach(s=>{ const tr=document.createElement('tr'); tr.innerHTML = `<td>${s.id}</td><td>${(new Date(s.date)).toLocaleString()}</td><td>${Number(s.total).toFixed(2)}</td><td>${s.type}</td>`; salesTable.appendChild(tr); });
   renderCustomersReport();
-
-  // returns list
-  const returnList = document.getElementById('returnList');
-  returnList.innerHTML = '';
-  returns.slice().reverse().forEach(r=>{
-    const div = document.createElement('div');
-    div.className='border p-2 mb-2';
-    div.innerHTML = `<div><strong>${r.id}</strong> - ${r.date}</div><div class="small-muted">Total: ${Number(r.total).toFixed(2)}</div>`;
-    returnList.appendChild(div);
-  });
-
-  // low items
-  const reportLow = document.getElementById('reportLow');
-  reportLow.innerHTML='';
+  const returnList = document.getElementById('returnList'); returnList.innerHTML = '';
+  returns.slice().reverse().forEach(r=>{ const div = document.createElement('div'); div.className='border p-2 mb-2'; div.innerHTML = `<div><strong>${r.id}</strong> - ${r.date}</div><div class="small-muted">Total: ${Number(r.total).toFixed(2)}</div>`; returnList.appendChild(div); });
+  const reportLow = document.getElementById('reportLow'); reportLow.innerHTML='';
   const lowItems = items.filter(it=> it.quantity <= it.low);
-  lowItems.forEach(it=>{
-    const li = document.createElement('li');
-    li.className='list-group-item';
-    li.innerHTML = `${escapeHtml(it.name)} — Qty: ${it.quantity}`;
-    reportLow.appendChild(li);
-  });
-
-  // also update stats area
+  lowItems.forEach(it=>{ const li = document.createElement('li'); li.className='list-group-item'; li.innerHTML = `${escapeHtml(it.name)} — Qty: ${it.quantity}`; reportLow.appendChild(li); });
   updateStats();
 }
+function renderCustomersReport(){ const reportCredits = document.getElementById('reportCredits'); reportCredits.innerHTML=''; customers.forEach(c=>{ const li = document.createElement('li'); li.className='list-group-item d-flex justify-content-between align-items-center'; li.innerHTML = `<div>${escapeHtml(c.name)}<div class="small-muted">History: ${(c.history || []).length} tx</div></div><div><strong>${Number(c.balance||0).toFixed(2)}</strong></div>`; reportCredits.appendChild(li); }); }
 
-function renderCustomersReport(){
-  const reportCredits = document.getElementById('reportCredits');
-  reportCredits.innerHTML='';
-  customers.forEach(c=>{
-    const li = document.createElement('li');
-    li.className='list-group-item d-flex justify-content-between align-items-center';
-    li.innerHTML = `<div>${escapeHtml(c.name)}<div class="small-muted">History: ${(c.history || []).length} tx</div></div><div><strong>${Number(c.balance||0).toFixed(2)}</strong></div>`;
-    reportCredits.appendChild(li);
-  });
-}
-
-/* process returns: record refund (short REF id), restore stock, do NOT delete sale */
+/* returns */
 document.getElementById('doReturnBtn').addEventListener('click', ()=>{
-  const id = document.getElementById('returnId').value.trim();
-  if(!id){ Swal.fire('Khalad','Gali Order ID','error'); return; }
-  const sale = sales.find(s=>s.id === id);
-  if(!sale){ Swal.fire('Khalad','Order ID lama helin','error'); return; }
-  // simple rule: allow return within 24 hours
-  const saleTime = new Date(sale.date).getTime();
-  const now = Date.now();
-  if(now - saleTime > 24*60*60*1000){ Swal.fire('Khalad','Waqtiga celinta wuu dhaafay (24h)','error'); return; }
-  // process: add back quantities
-  sale.items.forEach(si=>{
-    const it = items.find(x=>x.id===si.itemId);
-    if(it) it.quantity = Number(it.quantity) + Number(si.qty);
-  });
-  // create return record (short REF)
+  const id = document.getElementById('returnId').value.trim(); if(!id){ Swal.fire('Khalad','Gali Order ID','error'); return; }
+  const sale = sales.find(s=>s.id === id); if(!sale){ Swal.fire('Khalad','Order ID lama helin','error'); return; }
+  const saleTime = new Date(sale.date).getTime(); const now = Date.now(); if(now - saleTime > 24*60*60*1000){ Swal.fire('Khalad','Waqtiga celinta wuu dhaafay (24h)','error'); return; }
+  sale.items.forEach(si=>{ const it = items.find(x=>x.id===si.itemId); if(it) it.quantity = Number(it.quantity) + Number(si.qty); });
+  autoBackup('before_return');
   const r = { id: shortId('REF'), date: new Date().toISOString(), saleId: sale.id, total: sale.total };
-  returns.push(r);
-  save(KEY_RETURNS, returns);
-  save(KEY_ITEMS, items);
-  // update reports/stats - we show net (Paid - Refunds)
-  renderReports();
-  renderItemsTable();
-  updateStats();
-  Swal.fire('Sax','Celinta waa la diiwaangeliyey: ' + r.id,'success').then(()=>{
-    // optional: print refund receipt (shows REF)
-    printRefundReceipt(r);
-  });
+  returns.push(r); save(KEY_RETURNS, returns); save(KEY_ITEMS, items);
+  renderReports(); renderItemsTable(); updateStats();
+  Swal.fire('Sax','Celinta waa la diiwaangeliyey: ' + r.id,'success').then(()=> printRefundReceipt(r));
 });
-
-/* print refund receipt (shows REF) */
-function printRefundReceipt(refund){
-  const html = `<div style="text-align:center"><div style="font-weight:700">Foorno Ubax</div><div style="font-size:12px;margin-top:4px;">Refund ID: <strong>${escapeHtml(refund.id)}</strong></div><div style="margin-top:6px;">${(new Date(refund.date)).toLocaleString()}</div></div><hr>
+function printRefundReceipt(refund){ const html = `<div style="text-align:center"><div style="font-weight:700">Supermarket</div><div style="font-size:12px;margin-top:4px;">Refund ID: <strong>${escapeHtml(refund.id)}</strong></div><div style="margin-top:6px;">${(new Date(refund.date)).toLocaleString()}</div></div><hr>
     <div style="text-align:left"><strong>Sale ID: </strong> ${escapeHtml(refund.saleId)}</div>
-    <div style="text-align:right; margin-top:6px;"><strong>Amount Returned: ${Number(refund.total).toFixed(2)}</strong></div>`;
-  document.getElementById('printContent').innerHTML = html;
-  document.getElementById('printFooter').innerText = 'Mahadsanid - Foorno Ubax';
-  const pa = document.getElementById('printArea');
-  pa.style.display='block';
-  window.print();
-  pa.style.display='none';
-}
+    <div style="text-align:right; margin-top:6px;"><strong>Amount Returned: ${Number(refund.total).toFixed(2)}</strong></div>`; document.getElementById('printContent').innerHTML = html; document.getElementById('printFooter').innerText = 'Mahadsanid - Supermarket'; const pa = document.getElementById('printArea'); pa.style.display='block'; window.print(); pa.style.display='none'; }
 
-/* low stock helpers (unchanged) */
-function renderLowList(){
-  const lowItemsList = document.getElementById('lowItemsList');
-  lowItemsList.innerHTML = '';
-  const low = items.filter(it=>it.quantity <= it.low);
-  document.getElementById('statLow').innerText = low.length;
-  low.slice(0,10).forEach(it=>{
-    const div = document.createElement('div');
-    div.className='d-flex justify-content-between align-items-center border-bottom py-2';
-    div.innerHTML = `<div><strong>${escapeHtml(it.name)}</strong><div class="small-muted">Qty: ${it.quantity} | Threshold: ${it.low}</div></div><div><span class="low-badge">LOW</span></div>`;
-    lowItemsList.appendChild(div);
-  });
-}
+/* low stock helpers & stats */
+function renderLowList(){ const lowItemsList = document.getElementById('lowItemsList'); lowItemsList.innerHTML = ''; const low = items.filter(it=>it.quantity <= it.low); document.getElementById('statLow').innerText = low.length; low.slice(0,10).forEach(it=>{ const div = document.createElement('div'); div.className='d-flex justify-content-between align-items-center border-bottom py-2'; div.innerHTML = `<div><strong>${escapeHtml(it.name)}</strong><div class="small-muted">Qty: ${it.quantity} | Threshold: ${it.low}</div></div><div><span class="low-badge">LOW</span></div>`; lowItemsList.appendChild(div); }); }
+function showAlertIfLow(){ const low = items.filter(it=>it.quantity <= it.low); if(low.length > 0) Toast('Warning', `Waxaa jira ${low.length} item(yo) oo u dhow inay dhamaadaan`, 'warning'); }
+function updateStats(){ document.getElementById('statItems').innerText = items.length; document.getElementById('statLow').innerText = items.filter(it=>it.quantity <= it.low).length; const today = new Date(); const start = today.toISOString().slice(0,10); let paidToday = 0; sales.forEach(s=>{ if(s.type==='Paid' && s.date && s.date.startsWith(start)) paidToday += Number(s.total); }); let refundsToday = 0; returns.forEach(r=>{ if(r.date && r.date.startsWith(start)) refundsToday += Number(r.total); }); const net = Number((paidToday - refundsToday).toFixed(2)); document.getElementById('statToday').innerText = net.toFixed(2); }
 
-function showAlertIfLow(){
-  const low = items.filter(it=>it.quantity <= it.low);
-  if(low.length > 0){
-    // show non-intrusive toast
-    Toast('Warning', `Waxaa jira ${low.length} item(yo) oo u dhow inay dhamaadaan`, 'warning');
-  }
-}
+/* barcode generator */
+function renderBarcodeList(){ const box = document.getElementById('barcodeItemsList'); box.innerHTML = ''; items.forEach(it=>{ const div = document.createElement('div'); div.className='d-flex justify-content-between align-items-center border-bottom py-2'; div.innerHTML = `<div><strong>${escapeHtml(it.name)}</strong><div class="small-muted">Price: ${Number(it.price).toFixed(2)}</div></div><div><svg id="bc-${it.id}"></svg><div class="mt-1"><button class="btn btn-sm btn-outline-secondary" onclick="printBarcode('${it.id}')">Print</button></div></div>`; box.appendChild(div); try{ JsBarcode(`#bc-${it.id}`, it.id, { format: "CODE128", displayValue: false, width:1, height:30 }); }catch(e){} }); }
+function printBarcode(itemId){ const it = items.find(x=>x.id===itemId); if(!it) return; const svg = document.querySelector(`#bc-${itemId}`); if(!svg) return; const wrapper = document.createElement('div'); wrapper.innerHTML = `<div style="text-align:center"><div style="font-weight:700">${escapeHtml(it.name)}</div>` + svg.outerHTML + `<div class="print-barcode-code">${it.id}</div></div>`; document.getElementById('printContent').innerHTML = wrapper.innerHTML; document.getElementById('printFooter').innerText = 'Supermarket'; const pa = document.getElementById('printArea'); pa.style.display='block'; window.print(); pa.style.display='none'; }
 
-/* statistics */
-function updateStats(){
-  document.getElementById('statItems').innerText = items.length;
-  document.getElementById('statLow').innerText = items.filter(it=>it.quantity <= it.low).length;
-  // today paid total and refunds -> net
-  const today = new Date();
-  const start = today.toISOString().slice(0,10);
-  let paidToday = 0;
-  sales.forEach(s=>{ if(s.type==='Paid' && s.date && s.date.startsWith(start)) paidToday += Number(s.total); });
-  let refundsToday = 0;
-  returns.forEach(r=>{ if(r.date && r.date.startsWith(start)) refundsToday += Number(r.total); });
-  const net = Number((paidToday - refundsToday).toFixed(2));
-  document.getElementById('statToday').innerText = net.toFixed(2);
-}
+/* Utilities */
+function escapeHtml(unsafe) { if(unsafe === null || unsafe === undefined) return ''; return String(unsafe).replace(/[&<>"'`=\/]/g, function (s) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/':'&#x2F;'}[s]); }); }
+function Toast(title, text, icon='info'){ Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, icon, title, text }); }
+function debounce(fn, wait){ let t; return function(){ const args = arguments; clearTimeout(t); t = setTimeout(()=> fn.apply(this,args), wait); }; }
 
-/* ===========================
-   Barcode generator & print (unchanged except small code display)
-=========================== */
-function renderBarcodeList(){
-  const box = document.getElementById('barcodeItemsList');
-  box.innerHTML = '';
-  items.forEach(it=>{
-    const div = document.createElement('div');
-    div.className='d-flex justify-content-between align-items-center border-bottom py-2';
-    div.innerHTML = `<div><strong>${escapeHtml(it.name)}</strong><div class="small-muted">Price: ${Number(it.price).toFixed(2)}</div></div><div><svg id="bc-${it.id}"></svg><div class="mt-1"><button class="btn btn-sm btn-outline-secondary" onclick="printBarcode('${it.id}')">Print</button></div></div>`;
-    box.appendChild(div);
-    // generate barcode
-    try{
-      JsBarcode(`#bc-${it.id}`, it.id, { format: "CODE128", displayValue: false, width:1, height:30 });
-    }catch(e){}
-  });
-}
-
-function printBarcode(itemId){
-  const it = items.find(x=>x.id===itemId);
-  if(!it) return;
-  const svg = document.querySelector(`#bc-${itemId}`);
-  if(!svg) return;
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = `<div style="text-align:center"><div style="font-weight:700">${escapeHtml(it.name)}</div>` + svg.outerHTML + `<div class="print-barcode-code">${it.id}</div></div>`;
-  document.getElementById('printContent').innerHTML = wrapper.innerHTML;
-  document.getElementById('printFooter').innerText = 'Foorno Ubax';
-  const pa = document.getElementById('printArea');
-  pa.style.display='block';
-  window.print();
-  pa.style.display='none';
-}
-
-/* ===========================
-   Utilities
-=========================== */
-function escapeHtml(unsafe) {
-  if(unsafe === null || unsafe === undefined) return '';
-  return String(unsafe).replace(/[&<>"'`=\/]/g, function (s) {
-    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/':'&#x2F;'}[s]);
-  });
-}
-
-function Toast(title, text, icon='info'){
-  Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3500, icon, title, text });
+/* auto backup helper */
+function autoBackup(tag='auto'){
+  try{
+    const snap = { items, sales, customers, returns, tag, ts: new Date().toISOString() };
+    const key = 'super_quick_backup';
+    localStorage.setItem(key, JSON.stringify(snap));
+    const historyKey = 'super_backup_history';
+    let hist = []; try{ hist = JSON.parse(localStorage.getItem(historyKey) || '[]'); }catch(e){ hist = []; }
+    hist.unshift({ key, ts: snap.ts, tag }); if(hist.length>12) hist = hist.slice(0,12); localStorage.setItem(historyKey, JSON.stringify(hist));
+  }catch(e){ console.warn('backup failed', e); }
 }
 
 /* init render */
@@ -974,10 +941,7 @@ renderItemsTable();
 renderSaleItems();
 renderBarcodeList();
 renderReports();
-
-/* helper to render customers report on load */
-function renderCustomersReportOnLoad(){ renderCustomersReport(); }
-renderCustomersReportOnLoad();
+function renderCustomersReportOnLoad(){ renderCustomersReport(); } renderCustomersReportOnLoad();
 
 </script>
 </body>
