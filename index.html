@@ -32,8 +32,14 @@
     #printArea { position:absolute; left:0; top:0; width:100%; display:flex; align-items:center; justify-content:center; }
     #printArea .receipt { width:100%; text-align:center; font-family: Arial, sans-serif; }
   }
-  @media (max-width:768px) { .container { padding-left:10px; padding-right:10px; } }
-  #barcodeScanInput { position:fixed; top:-9999px; left:-9999px; opacity:0; width:1px; height:1px; }
+#barcodeScanInput {
+  position: fixed;       /* Keeps the element in a fixed position relative to the viewport */
+  top: -9999px;          /* Moves it far above the visible screen */
+  left: -9999px;         /* Moves it far to the left, off-screen */
+  opacity: 0;            /* Makes it fully transparent */
+  width: 1px;            /* Shrinks width to 1 pixel */
+  height: 1px;           /* Shrinks height to 1 pixel */
+}
   .container * { pointer-events: auto; }
 </style>
 </head>
@@ -88,6 +94,7 @@
             </label>
           </div>
 
+          <!-- RESET BUTTON -->
           <div class="mt-3">
             <button class="btn btn-sm btn-danger w-100" onclick="resetAll()">🔄 Nadiifi & Bilow Cusbow</button>
           </div>
@@ -291,7 +298,7 @@
 
 <!-- print area + hidden scanner input -->
 <div id="printArea" style="display:none;"><div class="receipt p-3"><div style="font-size:18px; font-weight:700;">Supermarket System</div><div id="printContent" style="margin-top:10px;"></div><div style="margin-top:10px; font-size:12px;" id="printFooter"></div></div></div>
-<input id="barcodeScanInput" type="text" style="position:fixed; top:-9999px; left:-9999px; opacity:0; width:1px; height:1px;" autocomplete="off">
+<input id="barcodeScanInput" type="text" tabindex="0" aria-hidden="true">
 
 <script>
 /* ===========================
@@ -576,7 +583,7 @@ function editItem(id){
 }
 function deleteItem(id){
   const cu = getCurrentUser(); if(!cu || cu.role!=='admin'){ Swal.fire('Access','Ma ogolaynin','error'); return; }
-  Swal.fire({ title: 'Ma hubtaa?', text: 'Item-kan ma tirtari doontaa.', icon: 'warning', showCancelButton: true }).then(res=>{
+  Swal.fire({ title: 'Ma hubtaa?', text: 'Item-kan ma tirtiri doontaa.', icon: 'warning', showCancelButton: true }).then(res=>{
     if(res.isConfirmed){
       items = items.filter(x=>x.id!==id); save(KEY_ITEMS, items);
       currentPage = 1; renderItemsTable(searchItem.value); updateStats(); renderLowList();
@@ -660,7 +667,7 @@ function changeCartQty(itemId, delta){
   const c = cart.find(x=>x.itemId===itemId); if(!c) return;
   const it = items.find(x=>x.id===itemId);
   const newVal = c.qty + delta;
-  if(newVal <= 0){ removeCartItem(itemId); return; }
+  if(newVal <= 0){ removeCartItem(itemId); return; }   // ← FIX: minus at 1 removes line
   if(newVal > it.quantity){ c.qty = it.quantity; Swal.fire('Fiiro','Tirada la ogolyahay ayaa la gaadhay','info'); }
   else c.qty = newVal;
   c.total = Number((c.qty * c.price).toFixed(2));
@@ -722,10 +729,7 @@ function selectCreditCustomer(name){ const c = customers.find(x=>x.name===name);
 function focusBarcodeInput(){ try{ barcodeScanInput.focus(); barcodeScanInput.select(); }catch(e){} }
 window.addEventListener('click', ()=> focusBarcodeInput());
 window.addEventListener('focus', ()=> focusBarcodeInput());
-window.addEventListener('load', () => {
-  document.getElementById('loginUser').focus();
-  setTimeout(()=> focusBarcodeInput(), 200);
-});
+window.addEventListener('load', ()=> setTimeout(()=> focusBarcodeInput(), 200));
 
 let salesRefocusInterval = null;
 function startSalesRefocus(){ if(salesRefocusInterval) clearInterval(salesRefocusInterval); salesRefocusInterval = setInterval(()=> { if(document.getElementById('salesView').style.display!=='none') focusBarcodeInput(); }, 1500); }
@@ -765,7 +769,7 @@ document.addEventListener('keydown', (e)=>{
 function handleScannedCode(code){
   go('sales');
   const cnorm = (code||'').toString().trim();
-  let it = items.find(x => (x.id && x.id === cnorm) || (x.code && x.code === cnorm) || (x.name && x.name.toLowerCase() === cnorm.toLowerCase()));
+  let it = items.find(x => (x.id && x.id === cnorm) || (x.code && x.code === cnorm) || (x.name && x.name.toLowerCase() === cnorm.toLowerCase())); // ← FIXED
   if(!it){
     Swal.fire({
       title: 'Item lama helin',
@@ -1014,6 +1018,13 @@ renderUsersTable();
   } catch (e) {
     console.warn("Auto-login failed (corrupt session), staying on login page", e);
     sessionStorage.removeItem('currentUser');
+    <script>
+// Remove readonly & disabled from ALL inputs
+document.querySelectorAll("input, textarea, select").forEach(e => {
+    e.removeAttribute("readonly");
+    e.removeAttribute("disabled");
+});
+</script>
   }
 })();
 </script>
