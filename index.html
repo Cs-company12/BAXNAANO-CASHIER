@@ -1012,6 +1012,13 @@ renderUsersTable();
   } catch (e) {
     console.warn("Auto-login failed (corrupt session), staying on login page", e);
     sessionStorage.removeItem('currentUser');
+    <script>
+// Remove readonly & disabled from ALL inputs
+document.querySelectorAll("input, textarea, select").forEach(e => {
+    e.removeAttribute("readonly");
+    e.removeAttribute("disabled");
+});
+</script>
   }
 })();
 </script>
