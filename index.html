@@ -3,31 +3,48 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Foorno Ubax – Admin + Cashier (Fixed)</title>
+  <title>Foorno Ubax – Admin + Cashier</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
   <style>
-    :root{--bg-main:#f4fbff;--bg-card:#ffffff;--primary:#0d6efd;--primary-light:#75b0fd;--danger:#dc3545;--success:#28a745;--warning:#ffc107;--text:#212529;--text-muted:#6c757d;--radius:14px;--shadow:0 8px 32px rgba(13,110,253,.08);--transition:all .25s ease}
-    body.dark{--bg-main:#0f172a;--bg-card:#1e293b;--text:#e2e8f0;--text-muted:#94a3b8}
-    body{background:var(--bg-main);color:var(--text);font-family:"Segoe UI",Roboto,Arial,sans-serif;transition:var(--transition)}
-    .card{background:var(--bg-card);border:none;border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem}
-    .btn{border-radius:10px;font-weight:600;border:none;transition:var(--transition);padding:.45rem .9rem}
-    .form-control,.form-select{border-radius:10px}
-    .table-sm thead th{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:none;font-weight:600}
-    .low-badge{background:var(--warning);color:#000;font-size:.7rem;padding:4px 8px;border-radius:10px}
-    .suggestions{position:absolute;z-index:1050;background:var(--bg-card);border:1px solid #e6e6e6;max-height:240px;overflow:auto;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.06);width:100%}
-    .suggest-item{padding:.5rem;border-bottom:1px solid #f1f1f1;cursor:pointer}
-    #themeToggle{position:fixed;bottom:20px;right:20px;z-index:1050;border-radius:50%;width:46px;height:46px}
+    :root{--bg-main:#f4fbff;--bg-card:#ffffff;--primary:#0d6efd;--primary-light:#75b0fd;--danger:#dc3545;--success:#28a745;--warning:#ffc107;--text:#212529;--text-muted:#6c757d;--radius:16px;--shadow:0 8px 32px rgba(13,110,253,.08);--transition:all .3s ease}
+    body.dark{--bg-main:#0f172a;--bg-card:#1e293b;--text:#e2e8f0;--text-muted:#94a3b8;--shadow:0 8px 32px rgba(0,0,0,.25)}
+    body{background:var(--bg-main);color:var(--text);font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;transition:var(--transition)}
+    .card{background:var(--bg-card);border:none;border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:var(--transition)}
+    .card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 12px 40px rgba(13,110,253,.15)}
+    .btn{border-radius:12px;font-weight:600;border:none;transition:var(--transition);padding:.55rem 1.1rem}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-light));box-shadow:0 4px 15px rgba(13,110,253,.3)}
+    .btn-primary:hover{box-shadow:0 6px 20px rgba(13,110,253,.45);transform:translateY(-2px)}
+    .btn-success{background:linear-gradient(135deg,var(--success),#34ce57);box-shadow:0 4px 15px rgba(40,167,69,.3)}
+    .btn-danger{background:linear-gradient(135deg,var(--danger),#e35d6a);box-shadow:0 4px 15px rgba(220,53,69,.3)}
+    .btn-outline-secondary{border:1.5px solid #ced4da;color:var(--text-muted)}
+    .btn-outline-secondary:hover{background:#e9ecef;color:var(--text);border-color:#e9ecef;transform:translateY(-2px)}
+    .form-control,.form-select{border-radius:12px;border:1.5px solid #ced4da;background:var(--bg-card);color:var(--text);transition:var(--transition)}
+    .form-control:focus,.form-select:focus{border-color:var(--primary);box-shadow:0 0 0 .25rem rgba(13,110,253,.25);background:#fff}
+    .table-sm{border-collapse:separate;border-spacing:0 8px}
+    .table-sm thead th{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:none;font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;border-radius:8px;padding:.75rem}
+    .table-sm tbody tr{background:var(--bg-card);border-radius:var(--radius);box-shadow:0 2px 8px rgba(0,0,0,.05);transition:var(--transition)}
+    .table-sm tbody tr:hover{transform:scale(1.015);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+    .table-sm td{border:none;vertical-align:middle;padding:.75rem}
+    .low-badge{background:var(--warning);color:#000;font-size:.7rem;padding:4px 8px;border-radius:10px;font-weight:700;box-shadow:0 2px 6px rgba(255,193,7,.3)}
+    #statItems,#statLow,#statToday{font-weight:800;font-size:2rem;background:linear-gradient(135deg,var(--primary),var(--primary-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .suggestions{border-radius:var(--radius);box-shadow:var(--shadow);border:1.5px solid #dee2e6;background:var(--bg-card);position:absolute;z-index:1050;max-height:220px;overflow:auto;width:100%}
+    .suggest-item{border-radius:8px;margin:2px 0;transition:var(--transition);padding:8px}
+    .suggest-item:hover{background-color:#e7f1ff;transform:translateX(4px);cursor:pointer}
+    #scanCamModal .modal-content{background:var(--bg-card);border-radius:var(--radius);box-shadow:0 20px 50px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1)}
+    #printArea .receipt{background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+    .barcode{display:block;width:100%;height:50px;margin-bottom:10px;border-radius:6px}
+    #themeToggle{position:fixed;bottom:20px;right:20px;z-index:1050;border-radius:50%;width:50px;height:50px;font-size:1.4rem;box-shadow:0 4px 15px rgba(0,0,0,.2)}
     .muted-small{color:var(--text-muted);font-size:12px}
   </style>
 </head>
 <body>
 <nav class="navbar navbar-light bg-white border-bottom">
   <div class="container-fluid">
-    <span class="navbar-brand">Foorno Ubax – Admin + Cashier</span>
+    <span class="navbar-brand brand">Foorno Ubax – Admin + Cashier</span>
     <div id="nav-right"></div>
   </div>
 </nav>
@@ -53,7 +70,7 @@
   <div id="mainView" style="display:none;">
     <div class="row g-3">
       <div class="col-md-3">
-        <div class="card">
+        <div class="card p-3">
           <h6>Tirakoob</h6>
           <div class="mt-2"><div class="mb-2 small-muted">Items guud</div><h4 id="statItems">0</h4></div>
           <div class="mt-2"><div class="mb-2 small-muted">Items ku dhow inay dhamaadaan</div><h4 id="statLow">0</h4></div>
@@ -63,25 +80,24 @@
       </div>
 
       <div class="col-md-9">
+        <!-- DASHBOARD -->
         <div id="dashboardView">
-          <div class="card mb-3 d-flex justify-content-between align-items-center">
-            <h5>Dashboard</h5>
-            <div><span class="me-3">User: <b id="userName">-</b></span><span class="me-3">Role: <b id="userRole">-</b></span></div>
+          <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
+            <h5>Dashboard</h5><div><span class="me-3">User: <b id="userName">-</b></span><span class="me-3">Role: <b id="userRole">-</b></span></div>
           </div>
-          <div class="card mb-3"><h6>Items Ku Dhaw</h6><div id="lowItemsList"></div></div>
+          <div class="card p-3"><h6>Items Ku Dhaw</h6><div id="lowItemsList"></div></div>
         </div>
 
         <!-- ITEMS -->
         <div id="itemsView" style="display:none;">
-          <div class="card mb-3 d-flex justify-content-between align-items-center">
+          <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
             <h5>Maareynta Items</h5>
             <div>
               <button class="btn btn-outline-secondary me-2" onclick="go('dashboard')">Dashboard</button>
               <button class="btn btn-primary" id="showAddItemBtn">Add Item</button>
             </div>
           </div>
-
-          <div class="card mb-3">
+          <div class="card p-3 mb-3">
             <form id="addItemForm" class="row g-2">
               <input type="hidden" id="editItemId">
               <div class="col-md-4"><input id="itemName" class="form-control" placeholder="Magaca item" required></div>
@@ -91,8 +107,7 @@
               <div class="col-md-2"><button class="btn btn-success w-100" id="saveItemBtn">Ku dar / Update</button></div>
             </form>
           </div>
-
-          <div class="card">
+          <div class="card p-3">
             <h6>Liiska Items</h6>
             <input id="searchItem" class="form-control mb-2" placeholder="Raadi item...">
             <div style="max-height:420px; overflow:auto;">
@@ -106,7 +121,7 @@
 
         <!-- SALES -->
         <div id="salesView" style="display:none;">
-          <div class="card mb-3 d-flex justify-content-between">
+          <div class="card p-3 mb-3 d-flex justify-content-between">
             <h5>Iib Cusub</h5>
             <div>
               <button class="btn btn-outline-secondary" onclick="go('dashboard')">Dashboard</button>
@@ -114,27 +129,18 @@
               <button class="btn btn-outline-secondary" onclick="go('reports')">Reports</button>
             </div>
           </div>
-
           <div class="row g-3">
             <div class="col-md-6 position-relative">
-              <div class="card">
+              <div class="card p-3">
                 <h6>Item-yada</h6>
-                <!-- Manual barcode input (fallback) -->
-                <div class="d-flex gap-2 mb-2">
-                  <input id="barcodeInput" class="form-control form-control-sm" placeholder="Geli barcode ama scan (ka dib Enter)">
-                  <button class="btn btn-sm btn-outline-secondary" id="barcodeAddBtn">Add</button>
-                </div>
-
                 <input id="saleSearch" class="form-control mb-2" placeholder="Raadi item...">
                 <div id="saleSuggest" class="suggestions" style="display:none;"></div>
-                <button class="btn btn-sm btn-outline-primary mb-2" onclick="openScan()">📷 Scan Camera</button>
-                <div id="scanCamModal" style="display:none;margin-top:10px"></div>
+                <button class="btn btn-sm btn-outline-primary mb-2" onclick="openScan()">📷 Scan</button>
                 <div id="saleItemsList" style="max-height:320px; overflow:auto;"></div>
               </div>
             </div>
-
             <div class="col-md-6">
-              <div class="card">
+              <div class="card p-3">
                 <h6>Cart</h6>
                 <div id="cartArea"><p class="text-muted">Cart waa madhan yahay.</p></div>
                 <div class="mt-3 d-flex gap-2 align-items-center">
@@ -145,7 +151,7 @@
                   <div style="flex:1; position:relative;">
                     <input id="creditName" class="form-control" placeholder="Magaca ama Number-ka macaamiisha (credit)" style="display:none;">
                     <div id="creditSuggest" class="suggestions" style="display:none;"></div>
-                    <div id="creditInfo" style="display:none;" class="customer-info mt-2">
+                    <div id="creditInfo" style="display:none;" class="customer-info">
                       <div><strong id="creditInfoName"></strong></div>
                       <div class="muted-small">Balance: <b id="creditInfoBalance">0.00</b> USD</div>
                       <div class="mt-2"><button class="btn btn-sm btn-outline-success" id="payBalanceBtn">Pay Balance</button></div>
@@ -162,14 +168,13 @@
 
         <!-- REPORTS -->
         <div id="reportsView" style="display:none;">
-          <div class="card mb-3 d-flex justify-content-between align-items-center">
+          <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
             <h5>Warbixinno</h5>
             <div id="cashierFilterDiv"></div>
           </div>
-
           <div class="row g-3">
             <div class="col-md-6">
-              <div class="card mb-3">
+              <div class="card p-3 mb-3">
                 <h6>Iibka Maanta & Guud</h6>
                 <div class="d-flex gap-2 mb-2">
                   <input id="searchSales" class="form-control form-control-sm" placeholder="Search by Order ID / Customer / Phone">
@@ -181,8 +186,7 @@
                   <ul id="reportCredits" class="list-group"></ul>
                 </div>
               </div>
-
-              <div class="card">
+              <div class="card p-3">
                 <h6>Return (Celinta)</h6>
                 <p class="small-muted">Geli Order ID si aad u celiso (max 24 saac gudahood)</p>
                 <div class="d-flex gap-2">
@@ -192,14 +196,12 @@
                 <div id="returnList" class="mt-3"></div>
               </div>
             </div>
-
             <div class="col-md-6">
-              <div class="card mb-3">
+              <div class="card p-3 mb-3">
                 <h6>Items ku dhow inay dhamaadaan</h6>
                 <ul id="reportLow" class="list-group"></ul>
               </div>
-
-              <div class="card">
+              <div class="card p-3">
                 <h6>Iibyo & Taariikh</h6>
                 <div style="max-height:240px; overflow:auto;">
                   <table class="table table-sm">
@@ -214,20 +216,20 @@
 
         <!-- USERS (admin only) -->
         <div id="usersView" style="display:none;">
-          <div class="card mb-3 d-flex justify-content-between align-items-center">
+          <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
             <h5>Maareynta Users</h5>
             <div>
               <button class="btn btn-outline-secondary me-2" onclick="go('dashboard')">Dashboard</button>
               <button class="btn btn-primary" id="showAddUserBtn">Add Cashier</button>
             </div>
           </div>
-
-          <div class="card mb-3">
+          <div class="card p-3 mb-3">
             <form id="addUserForm" class="row g-2">
               <input type="hidden" id="editUserId">
               <div class="col-md-4"><input id="userName" class="form-control" placeholder="Username" required></div>
               <div class="col-md-3"><input id="userPass" type="password" class="form-control" placeholder="Password" required></div>
               <div class="col-md-3">
+                <!-- Role fixed to cashier to enforce single-admin rule -->
                 <select id="userRole" class="form-select" required>
                   <option value="cashier">Cashier</option>
                 </select>
@@ -235,8 +237,7 @@
               <div class="col-md-2"><button class="btn btn-success w-100" id="saveUserBtn">Save User</button></div>
             </form>
           </div>
-
-          <div class="card">
+          <div class="card p-3">
             <h6>Users</h6>
             <table class="table table-sm">
               <thead><tr><th>Username</th><th>Role</th><th>Action</th></tr></thead>
@@ -245,10 +246,10 @@
           </div>
         </div>
 
-      </div>
-    </div>
-  </div>
-</div>
+      </div><!-- /col-md-9 -->
+    </div><!-- /row -->
+  </div><!-- /mainView -->
+</div><!-- /container -->
 
 <!-- hidden print areas -->
 <div id="printArea" style="display:none;">
@@ -260,90 +261,65 @@
   </div>
 </div>
 
-<!-- scan camera modal markup -->
-<div id="scanCamModalWrapper"></div>
+<!-- camera scan modal -->
+<div id="scanCamModal" class="modal">
+  <div style="margin:40px auto;width:90%;max-width:400px;background:var(--bg-card);color:var(--text);border-radius:var(--radius);padding:15px">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <b>Scan barcode</b>
+      <button onclick="closeScan()" class="btn btn-sm btn-danger">✕</button>
+    </div>
+    <div id="qr-reader" style="width:100%"></div>
+  </div>
+</div>
 
 <!-- theme toggle -->
 <button id="themeToggle" class="btn btn-outline-secondary" onclick="document.body.classList.toggle('dark');this.innerHTML=document.body.classList.contains('dark')?'☀️':'🌙'">🌙</button>
 
 <script>
 /* =================  CONFIG  ================= */
-const KEY_ITEMS   = 'foorno_ubax_items_v5';
-const KEY_SALES   = 'foorno_ubax_sales_v5';
-const KEY_USERS   = 'foorno_ubax_users_v5';
-const KEY_CUST    = 'foorno_ubax_customers_v5';
-const KEY_RETURNS = 'foorno_ubax_returns_v5';
+const KEY_ITEMS   = 'foorno_ubax_items_v4';
+const KEY_SALES   = 'foorno_ubax_sales_v4';
+const KEY_USERS   = 'foorno_ubax_users_v4';
+const KEY_CUST    = 'foorno_ubax_customers_v4';
+const KEY_RETURNS = 'foorno_ubax_returns_v4';
 
 function load(k){try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return []}}
 function save(k,d){localStorage.setItem(k,JSON.stringify(d))}
 function uid(p='id'){return p+'_'+Date.now()+'_'+Math.floor(Math.random()*9000+1000)}
-function escapeHtml(s){return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
+function escapeHtml(s){return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
 
-/* helper makeBarcode (fallback) */
-function makeBarcode(id){
-  // produce simple fallback string from id (if id numeric-like it will pad leading zeros)
-  try{
-    const numeric = parseInt(id.replace(/\D/g,'')) || null;
-    if(numeric) return String(numeric).padStart(12,'0');
-  }catch(e){}
-  // else return id itself (alphanumeric)
-  return String(id);
-}
-
-/* initial data */
 let items = load(KEY_ITEMS), sales = load(KEY_SALES), customers = load(KEY_CUST), returns = load(KEY_RETURNS);
 let users = load(KEY_USERS);
-
-/* seed admin if empty; ensure at least one admin exists */
+/* seed admin if empty (ensure single admin) */
 if(!users.length){
   users=[{id:uid('u'),username:'admin',password:'12345',role:'admin'}];
   save(KEY_USERS,users);
 } else {
+  // ensure at least one admin exists; if none, create default admin
   if(!users.find(u=>u.role==='admin')){
     users.unshift({id:uid('u'),username:'admin',password:'12345',role:'admin'});
     save(KEY_USERS,users);
   }
 }
-
-/* seed some items if empty */
-if(!items.length){
-  items=[
-    {id:uid('it'),name:'Rice 5kg',price:10,quantity:10,low:5},
-    {id:uid('it'),name:'Sugar 2kg',price:3.5,quantity:8,low:5},
-    {id:uid('it'),name:'Bread',price:.5,quantity:20,low:5}
-  ];
-  save(KEY_ITEMS,items);
-}
+/* seed items if empty */
+if(!items.length){items=[{id:uid('it'),name:'Rice 5kg',price:10,quantity:10,low:5},{id:uid('it'),name:'Sugar 2kg',price:3.5,quantity:8,low:5},{id:uid('it'),name:'Bread',price:.5,quantity:20,low:5}];save(KEY_ITEMS,items)}
 
 /* =================  AUTH  ================= */
 let currentUser = null;
 const loginForm=document.getElementById('loginForm'),loginView=document.getElementById('loginView'),mainView=document.getElementById('mainView');
-
 function showMain(){
-  loginView.style.display='none';
-  mainView.style.display='';
-  updateStats();
-  renderLowList();
-  showAlertIfLow();
-  buildNav();
-  go('dashboard');
+  loginView.style.display='none';mainView.style.display='';updateStats();renderLowList();showAlertIfLow();buildNav();go('dashboard')
 }
-
-function logout(){ sessionStorage.removeItem('foorno_ubax_user'); location.reload() }
-
+function logout(){sessionStorage.removeItem('foorno_ubax_user');location.reload()}
 loginForm.addEventListener('submit',e=>{
   e.preventDefault();
-  const u=document.getElementById('loginUser').value.trim(), p=document.getElementById('loginPass').value;
+  const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;
   users=load(KEY_USERS);
   const user=users.find(x=>x.username===u&&x.password===p);
-  if(user){ sessionStorage.setItem('foorno_ubax_user',JSON.stringify(user)); currentUser=user; showMain(); Swal.fire('Sax','Waan ku soo dhaweynayaa','success') }
-  else Swal.fire('Khalad','Username ama password khalad ah','error')
-});
-
-window.addEventListener('DOMContentLoaded',()=>{
-  const u=sessionStorage.getItem('foorno_ubax_user');
-  if(u){ currentUser=JSON.parse(u); showMain() } else { hideAllViews() }
-});
+  if(user){sessionStorage.setItem('foorno_ubax_user',JSON.stringify(user));currentUser=user;showMain();Swal.fire('Sax','Waan ku soo dhaweynayaa','success')}
+  else{Swal.fire('Khalad','Username ama password khalad ah','error')}
+})
+window.addEventListener('DOMContentLoaded',()=>{const u=sessionStorage.getItem('foorno_ubax_user');if(u){currentUser=JSON.parse(u);showMain()}else{hideAllViews()}})
 
 /* =================  NAV / PERMISSIONS  ================= */
 function hideAllViews(){
@@ -355,413 +331,222 @@ function hideAllViews(){
 }
 function go(page){
   hideAllViews();
-  if(page==='dashboard') document.getElementById('dashboardView').style.display='';
-  if(page==='items'){ document.getElementById('itemsView').style.display=''; renderItemsTable() }
-  if(page==='sales'){ document.getElementById('salesView').style.display=''; renderSaleItemsList() }
-  if(page==='reports'){ document.getElementById('reportsView').style.display=''; renderReports() }
-  if(page==='users' && currentUser.role==='admin'){ document.getElementById('usersView').style.display=''; renderUsersTable() }
-  if(page==='users' && currentUser.role!=='admin') Swal.fire('Restricted','Admin only','warning')
+  if(page==='dashboard')document.getElementById('dashboardView').style.display='';
+  if(page==='items'){document.getElementById('itemsView').style.display='';renderItemsTable()}
+  if(page==='sales'){document.getElementById('salesView').style.display='';renderSaleItemsList()}
+  if(page==='reports'){document.getElementById('reportsView').style.display='';renderReports()}
+  if(page==='users' && currentUser.role==='admin'){document.getElementById('usersView').style.display='';renderUsersTable()}
+  if(page==='users' && currentUser.role!=='admin')Swal.fire('Restricted','Admin only','warning')
 }
 function buildNav(){
-  const nav=document.getElementById('navMenu'); nav.innerHTML='';
+  const nav=document.getElementById('navMenu');nav.innerHTML='';
   nav.innerHTML+=`<button class="btn btn-sm btn-outline-secondary w-100 mb-2" onclick="go('items')">Manage Items</button>`;
   nav.innerHTML+=`<button class="btn btn-sm btn-success w-100 mb-2" onclick="go('sales')">Iib Cusub</button>`;
   nav.innerHTML+=`<button class="btn btn-sm btn-primary w-100 mb-2" onclick="go('reports')">Reports</button>`;
-  if(currentUser.role==='admin') nav.innerHTML+=`<button class="btn btn-sm btn-warning w-100 mb-2" onclick="go('users')">Users</button>`;
+  if(currentUser.role==='admin')nav.innerHTML+=`<button class="btn btn-sm btn-warning w-100 mb-2" onclick="go('users')">Users</button>`;
   nav.innerHTML+=`<button class="btn btn-sm btn-danger w-100" onclick="logout()">Logout</button>`;
   document.getElementById('userName').innerText=currentUser.username;
   document.getElementById('userRole').innerText=currentUser.role;
 }
 
 /* =================  ITEMS  ================= */
-const itemsTable=document.getElementById('itemsTable'), addItemForm=document.getElementById('addItemForm');
-
+const itemsTable=document.getElementById('itemsTable'),addItemForm=document.getElementById('addItemForm');
 function renderItemsTable(filter=''){
-  items=load(KEY_ITEMS); itemsTable.innerHTML=''; const q=(filter||'').trim().toLowerCase();
-  items.forEach(it=>{
-    if(q && !it.name.toLowerCase().includes(q)) return;
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${escapeHtml(it.name)}</td><td>${parseFloat(it.price).toFixed(2)}</td><td>${parseInt(it.quantity)} ${it.quantity<=it.low?`<span class="ms-2 low-badge">Low</span>`:''}</td><td>${parseInt(it.low)}</td><td><button class="btn btn-sm btn-secondary me-1" data-act="edit" data-id="${it.id}">Edit</button><button class="btn btn-sm btn-danger" data-act="del" data-id="${it.id}">Delete</button></td>`;
-    itemsTable.appendChild(tr);
-  });
+  items=load(KEY_ITEMS);itemsTable.innerHTML='';const q=(filter||'').trim().toLowerCase();
+  items.forEach(it=>{if(q&&!it.name.toLowerCase().includes(q))return;const tr=document.createElement('tr');tr.innerHTML=`<td>${escapeHtml(it.name)}</td><td>${parseFloat(it.price).toFixed(2)}</td><td>${parseInt(it.quantity)} ${it.quantity<=it.low?`<span class="ms-2 low-badge">Low</span>`:''}</td><td>${parseInt(it.low)}</td><td><button class="btn btn-sm btn-secondary me-1" data-act="edit" data-id="${it.id}">Edit</button><button class="btn btn-sm btn-danger" data-act="del" data-id="${it.id}">Delete</button></td>`;itemsTable.appendChild(tr);});
 }
-
 itemsTable.addEventListener('click',e=>{
-  const btn=e.target.closest('button'); if(!btn) return; const act=btn.dataset.act, id=btn.dataset.id;
-  if(act==='edit'){ items=load(KEY_ITEMS); const it=items.find(x=>x.id===id); if(!it) return; document.getElementById('editItemId').value=it.id; document.getElementById('itemName').value=it.name; document.getElementById('itemPrice').value=parseFloat(it.price); document.getElementById('itemQty').value=parseInt(it.quantity); document.getElementById('itemLow').value=parseInt(it.low); window.scrollTo({top:0,behavior:'smooth'}) }
-  else if(act==='del'){ Swal.fire({title:'Ma hubtaa?',text:'Miyaad rabtaa inaad tirtirto itemkan?',icon:'warning',showCancelButton:true}).then(res=>{ if(res.isConfirmed){ items=items.filter(x=>x.id!==id); save(KEY_ITEMS,items); renderItemsTable(document.getElementById('searchItem').value||''); updateStats(); Swal.fire('La tirtiray','Item waa la tirtiray','success') } }) }
-});
-
+  const btn=e.target.closest('button');if(!btn)return;const act=btn.dataset.act,id=btn.dataset.id;
+  if(act==='edit'){items=load(KEY_ITEMS);const it=items.find(x=>x.id===id);if(!it)return;document.getElementById('editItemId').value=it.id;document.getElementById('itemName').value=it.name;document.getElementById('itemPrice').value=parseFloat(it.price);document.getElementById('itemQty').value=parseInt(it.quantity);document.getElementById('itemLow').value=parseInt(it.low);window.scrollTo({top:0,behavior:'smooth'})}
+  else if(act==='del'){Swal.fire({title:'Ma hubtaa?',text:'Miyaad rabtaa inaad tirtirto itemkan?',icon:'warning',showCancelButton:true}).then(res=>{if(res.isConfirmed){items=items.filter(x=>x.id!==id);save(KEY_ITEMS,items);renderItemsTable(document.getElementById('searchItem').value||'');updateStats();Swal.fire('La tirtiray','Item waa la tirtiray','success')}})}
+})
 addItemForm.addEventListener('submit',e=>{
-  e.preventDefault();
-  const id=document.getElementById('editItemId').value, name=document.getElementById('itemName').value.trim(), price=parseFloat(document.getElementById('itemPrice').value)||0, qty=parseInt(document.getElementById('itemQty').value)||0, low=parseInt(document.getElementById('itemLow').value)||5;
-  if(!name) return Swal.fire('Khalad','Fadlan geli magaca item','error');
-  items=load(KEY_ITEMS);
-  if(id){ items=items.map(it=> it.id===id?{...it,name,price,quantity:qty,low}:it ); Swal.fire('La cusbooneysiiyey','Item waa la cusbooneysiiyey','success') }
-  else { items.push({id:uid('it'),name,price,quantity:qty,low}); Swal.fire('La daray','Item cusub waa la daray','success') }
-  save(KEY_ITEMS,items); document.getElementById('editItemId').value=''; addItemForm.reset(); renderItemsTable(); updateStats();
-});
-
-document.getElementById('searchItem').addEventListener('input',function(){ renderItemsTable(this.value) });
-document.getElementById('showAddItemBtn').addEventListener('click',()=>{ document.getElementById('editItemId').value=''; addItemForm.reset(); window.scrollTo({top:0,behavior:'smooth'})});
+  e.preventDefault();const id=document.getElementById('editItemId').value,name=document.getElementById('itemName').value.trim(),price=parseFloat(document.getElementById('itemPrice').value)||0,qty=parseInt(document.getElementById('itemQty').value)||0,low=parseInt(document.getElementById('itemLow').value)||5;if(!name)return Swal.fire('Khalad','Fadlan geli magaca item','error');items=load(KEY_ITEMS);if(id){items=items.map(it=>it.id===id?{...it,name,price,quantity:qty,low}:it);Swal.fire('La cusbooneysiiyey','Item waa la cusbooneysiiyey','success')}else{items.push({id:uid('it'),name,price,quantity:qty,low});Swal.fire('La daray','Item cusub waa la daray','success')}save(KEY_ITEMS,items);document.getElementById('editItemId').value='';addItemForm.reset();renderItemsTable();updateStats()
+})
+document.getElementById('searchItem').addEventListener('input',function(){renderItemsTable(this.value)})
+document.getElementById('showAddItemBtn').addEventListener('click',()=>{document.getElementById('editItemId').value='';addItemForm.reset();window.scrollTo({top:0,behavior:'smooth'})})
 
 /* =================  SALES + CART  ================= */
 let cart=[];
-const saleSearch=document.getElementById('saleSearch'), saleSuggest=document.getElementById('saleSuggest');
+const saleSearch=document.getElementById('saleSearch'),saleSuggest=document.getElementById('saleSuggest');
+function renderSaleItemsList(){items=load(KEY_ITEMS);const container=document.getElementById('saleItemsList');container.innerHTML='';items.forEach(it=>{const div=document.createElement('div');div.className='d-flex align-items-center justify-content-between p-2 border-bottom';div.innerHTML=`<div><strong>${escapeHtml(it.name)}</strong><br><small>${parseFloat(it.price).toFixed(2)} USD — Qty: ${it.quantity}</small> ${it.quantity<=it.low?' <span class="low-badge ms-2">Low</span>':''}</div><div style="min-width:140px"><input type="number" value="1" min="1" max="${it.quantity}" class="form-control form-control-sm mb-1 addQty" data-id="${it.id}"><button class="btn btn-sm btn-primary w-100 addToCart" data-id="${it.id}">Add</button></div>`;container.appendChild(div)});saleSearch.value='';hideSuggest()}
+document.getElementById('saleItemsList').addEventListener('click',e=>{const btn=e.target.closest('button.addToCart');if(!btn)return;const id=btn.dataset.id,qtyInput=btn.parentElement.querySelector('.addQty');let q=parseInt(qtyInput.value)||1;items=load(KEY_ITEMS);const it=items.find(x=>x.id===id);if(!it)return Swal.fire('Error','Item lama helin','error');if(q>it.quantity)return Swal.fire('Error',`Kaliya ${it.quantity} ayaa la heli karaa`,`error`);addToCart(id,q)})
+saleSearch.addEventListener('input',function(){const q=this.value.trim().toLowerCase();if(!q){renderSaleItemsList();hideSuggest();return}items=load(KEY_ITEMS);const matches=items.filter(it=>it.name.toLowerCase().includes(q));if(!matches.length){hideSuggest();renderSaleItemsList();return}saleSuggest.innerHTML='';matches.forEach(m=>{const d=document.createElement('div');d.className='suggest-item';d.innerHTML=`<strong>${escapeHtml(m.name)}</strong> — ${parseFloat(m.price).toFixed(2)} USD — Qty: ${m.quantity}`;d.dataset.id=m.id;d.addEventListener('click',()=>{addToCart(d.dataset.id,1);hideSuggest();saleSearch.value=''});saleSuggest.appendChild(d)});saleSuggest.style.display='block'})
+function hideSuggest(){saleSuggest.style.display='none';saleSuggest.innerHTML=''}
+function addToCart(id,q=1){items=load(KEY_ITEMS);const it=items.find(x=>x.id===id);if(!it)return;const found=cart.find(x=>x.id===id);if(found){const newQty=found.qty+q; if(newQty>it.quantity){Swal.fire('Stock','Tirada ku filan ma ahan','info');return}found.qty=newQty}else cart.push({id:it.id,name:it.name,price:it.price,qty:q});renderCart();beepScan()}
+function renderCart(){const area=document.getElementById('cartArea');if(!cart.length){area.innerHTML='<p class="text-muted">Cart waa madhan yahay.</p>';return}let html='<table class="table table-sm"><thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Subtotal</th><th></th></tr></thead><tbody>';let total=0;cart.forEach((c,idx)=>{const sub=c.qty*parseFloat(c.price);total+=sub;html+=`<tr><td>${escapeHtml(c.name)}</td><td><input type="number" min="1" value="${c.qty}" class="form-control form-control-sm cartQty" data-i="${idx}" style="width:90px"></td><td>${parseFloat(c.price).toFixed(2)}</td><td>${sub.toFixed(2)}</td><td><button class="btn btn-sm btn-danger removeLine" data-i="${idx}">x</button></td></tr>`});html+=`</tbody></table><div class="text-end"><h5>Total: <span id="cartTotal">${total.toFixed(2)}</span> USD</h5></div>`;area.innerHTML=html}
+document.getElementById('cartArea').addEventListener('click',e=>{const btn=e.target.closest('button.removeLine');if(btn){const i=parseInt(btn.dataset.i);cart.splice(i,1);renderCart();return} const inp=e.target.closest('input.cartQty');if(!inp)return;const i=parseInt(inp.dataset.i);let v=parseInt(inp.value)||1;items=load(KEY_ITEMS);const it=items.find(x=>x.id===cart[i].id);if(v>it.quantity){Swal.fire('Error','Qty exceeds available stock','error');inp.value=cart[i].qty;return}cart[i].qty=v;renderCart()})
 
-function renderSaleItemsList(){ items=load(KEY_ITEMS); const container=document.getElementById('saleItemsList'); container.innerHTML=''; items.forEach(it=>{ const div=document.createElement('div'); div.className='d-flex align-items-center justify-content-between p-2 border-bottom'; div.innerHTML=`<div><strong>${escapeHtml(it.name)}</strong><br><small>${parseFloat(it.price).toFixed(2)} USD — Qty: ${it.quantity}</small> ${it.quantity<=it.low?' <span class="low-badge ms-2">Low</span>':''}</div><div style="min-width:140px"><input type="number" value="1" min="1" max="${it.quantity}" class="form-control form-control-sm mb-1 addQty" data-id="${it.id}"><button class="btn btn-sm btn-primary w-100 addToCart" data-id="${it.id}">Add</button></div>`; container.appendChild(div);}); saleSearch.value=''; hideSuggest() }
-
-document.getElementById('saleItemsList').addEventListener('click',e=>{
-  const btn=e.target.closest('button.addToCart'); if(!btn) return; const id=btn.dataset.id, qtyInput=btn.parentElement.querySelector('.addQty'); let q=parseInt(qtyInput.value)||1;
-  items=load(KEY_ITEMS); const it=items.find(x=>x.id===id); if(!it) return Swal.fire('Error','Item lama helin','error'); if(q>it.quantity) return Swal.fire('Error',`Kaliya ${it.quantity} ayaa la heli karaa`,`error`);
-  addToCart(id,q);
-});
-
-saleSearch.addEventListener('input',function(){
-  const q=this.value.trim().toLowerCase();
-  if(!q){ renderSaleItemsList(); hideSuggest(); return }
-  items=load(KEY_ITEMS);
-  const matches=items.filter(it=> it.name.toLowerCase().includes(q) );
-  if(!matches.length){ hideSuggest(); renderSaleItemsList(); return }
-  saleSuggest.innerHTML='';
-  matches.forEach(m=>{ const d=document.createElement('div'); d.className='suggest-item'; d.innerHTML=`<strong>${escapeHtml(m.name)}</strong> — ${parseFloat(m.price).toFixed(2)} USD — Qty: ${m.quantity}`; d.dataset.id=m.id; d.addEventListener('click',()=>{ addToCart(d.dataset.id,1); hideSuggest(); saleSearch.value='' }); saleSuggest.appendChild(d) });
-  saleSuggest.style.display='block';
-});
-
-function hideSuggest(){ saleSuggest.style.display='none'; saleSuggest.innerHTML='' }
-
-function addToCart(id,q=1){
+/* =================  CAMERA SCAN  ================= */
+let html5Qr;
+function openScan(){
+  document.getElementById('scanCamModal').style.display='block';
+  html5Qr=new Html5Qrcode("qr-reader");
+  html5Qr.start({facingMode:"environment"},{fps:10,qrbox:250},onScanSuccess,()=>{}).catch(err=>Swal.fire('Camera','Unable to access camera','error'))
+}
+function closeScan(){if(html5Qr)html5Qr.stop().then(()=>html5Qr.clear());document.getElementById('scanCamModal').style.display='none'}
+function onScanSuccess(decodedText){
+  const id=decodedText.replace(/^0+/,'');
   items=load(KEY_ITEMS);
   const it=items.find(x=>x.id===id);
-  if(!it) return Swal.fire('Error','Item lama helin','error');
-  const found=cart.find(x=>x.id===id);
-  if(found){
-    const newQty=found.qty+q;
-    if(newQty>it.quantity){ Swal.fire('Stock','Tirada ku filan ma ahan','info'); return }
-    found.qty=newQty;
-  } else {
-    cart.push({id:it.id,name:it.name,price:it.price,qty:q});
-  }
-  renderCart(); beepScan();
-}
-
-function renderCart(){
-  const area=document.getElementById('cartArea');
-  if(!cart.length){ area.innerHTML='<p class="text-muted">Cart waa madhan yahay.</p>'; return }
-  let html='<table class="table table-sm"><thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Subtotal</th><th></th></tr></thead><tbody>';
-  let total=0;
-  cart.forEach((c,idx)=>{ const sub=c.qty*parseFloat(c.price); total+=sub; html+=`<tr><td>${escapeHtml(c.name)}</td><td><input type="number" min="1" value="${c.qty}" class="form-control form-control-sm cartQty" data-i="${idx}" style="width:90px"></td><td>${parseFloat(c.price).toFixed(2)}</td><td>${sub.toFixed(2)}</td><td><button class="btn btn-sm btn-danger removeLine" data-i="${idx}">x</button></td></tr>`});
-  html+=`</tbody></table><div class="text-end"><h5>Total: <span id="cartTotal">${total.toFixed(2)}</span> USD</h5></div>`;
-  area.innerHTML=html;
-}
-
-document.getElementById('cartArea').addEventListener('click',e=>{
-  const btn=e.target.closest('button.removeLine'); if(btn){ const i=parseInt(btn.dataset.i); cart.splice(i,1); renderCart(); return }
-  const inp=e.target.closest('input.cartQty'); if(!inp) return; const i=parseInt(inp.dataset.i); let v=parseInt(inp.value)||1;
-  items=load(KEY_ITEMS); const it=items.find(x=>x.id===cart[i].id); if(v>it.quantity){ Swal.fire('Error','Qty exceeds available stock','error'); inp.value=cart[i].qty; return }
-  cart[i].qty=v; renderCart();
-});
-
-/* =================  CAMERA SCAN (html5-qrcode) + manual barcode input ================= */
-let html5QrScanner = null;
-function openScan(){
-  const wrapper = document.getElementById('scanCamModalWrapper');
-  wrapper.innerHTML = `<div style="margin:10px 0"><div class="card p-2"><div class="d-flex justify-content-between align-items-center mb-2"><b>Scan barcode / QR</b><button class="btn btn-sm btn-danger" id="closeScanBtn">✕</button></div><div id="qr-reader" style="width:100%"></div></div></div>`;
-  document.getElementById('closeScanBtn').addEventListener('click', closeScan);
-  const qrRegion = document.getElementById('qr-reader');
-  html5QrScanner = new Html5Qrcode(/* element id */ "qr-reader");
-  html5QrScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, onScanSuccess, onScanFailure)
-    .catch(err => { Swal.fire('Camera','Unable to access camera: ' + err,'error') });
-}
-function closeScan(){
-  if(html5QrScanner){
-    html5QrScanner.stop().then(()=>{ html5QrScanner.clear(); html5QrScanner = null; document.getElementById('scanCamModalWrapper').innerHTML=''; }).catch(()=>{ document.getElementById('scanCamModalWrapper').innerHTML=''; html5QrScanner=null });
-  } else {
-    document.getElementById('scanCamModalWrapper').innerHTML='';
-  }
-}
-function onScanFailure(error){
-  // optional: console.log('scan failed', error);
-}
-function onScanSuccess(decodedText){
-  if(!decodedText) return;
-  const code = decodedText.trim();
-  // try to find item by id OR by makeBarcode(id) fallback (handles previous label formats)
-  items = load(KEY_ITEMS);
-  let it = items.find(x => x.id === code);
-  if(!it){
-    it = items.find(x => makeBarcode(x.id) === code || makeBarcode(x.id) === code.replace(/^0+/, ''));
-  }
-  if(!it){
-    Swal.fire('Not found','Item with this barcode does not exist','warning');
-    // optionally keep scanning
-    return;
-  }
-  // found: add to cart
-  const exist = cart.find(c=>c.id===it.id);
+  if(!it){Swal.fire('Not found','Item with this barcode does not exist','warning');return}
+  beepScan();
+  const exist=cart.find(c=>c.id===id);
   if(exist){
-    if(exist.qty+1 > it.quantity){ Swal.fire('Stock','Tirada ku filan ma ahan','info'); return; }
-    exist.qty += 1;
-  } else {
-    cart.push({id:it.id,name:it.name,price:it.price,qty:1});
-  }
-  renderCart(); beepScan();
-  // stop scanner (close modal)
-  closeScan();
+    const newQty=exist.qty+1;
+    if(newQty>it.quantity){Swal.fire('Stock','Tirada ku filan ma ahan','info');return}
+    exist.qty=newQty;
+  }else addToCart(id,1);
+  renderCart();closeScan();
 }
-
-/* manual barcode input fallback */
-document.getElementById('barcodeInput').addEventListener('keyup',function(e){
-  if(e.key === 'Enter') handleBarcodeInput();
-});
-document.getElementById('barcodeAddBtn').addEventListener('click', handleBarcodeInput);
-
-function handleBarcodeInput(){
-  const code = document.getElementById('barcodeInput').value.trim();
-  if(!code) return Swal.fire('Error','Fadlan geli barcode','error');
-  // same lookup logic as scanner
-  items = load(KEY_ITEMS);
-  let it = items.find(x => x.id === code);
-  if(!it){
-    it = items.find(x => makeBarcode(x.id) === code || makeBarcode(x.id) === code.replace(/^0+/, ''));
-  }
-  if(!it) return Swal.fire('Not found','Item with this barcode does not exist','warning');
-  addToCart(it.id,1);
-  document.getElementById('barcodeInput').value='';
-}
-
-/* beep */
 function beepScan(){
-  try{
-    const audio=new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE');
-    audio.play().catch(()=>{});
-    document.body.style.background='#e8fff4';
-    setTimeout(()=>document.body.style.background='',140);
-  }catch(e){}
+  const audio=new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE');
+  audio.play().catch(()=>{});
+  document.body.style.transition='background .15s';document.body.style.background='#d1f2eb';
+  setTimeout(()=>document.body.style.background='',150);
 }
 
 /* =================  PAYMENT + CUSTOMER  ================= */
-document.getElementById('paymentType').addEventListener('change',function(){ const v=this.value; const creditName=document.getElementById('creditName'); creditName.style.display = v==='Credit'?'':'none'; if(v!=='Credit') hideCreditInfo() });
-
-const creditInput=document.getElementById('creditName'), creditSuggest=document.getElementById('creditSuggest'), creditInfo=document.getElementById('creditInfo'), creditInfoName=document.getElementById('creditInfoName'), creditInfoBalance=document.getElementById('creditInfoBalance'), creditHistory=document.getElementById('creditHistory'), payBalanceBtn=document.getElementById('payBalanceBtn');
-
-function refreshCustomers(){ customers = load(KEY_CUST) }
-
-creditInput.addEventListener('input', function(){
+document.getElementById('paymentType').addEventListener('change',function(){const v=this.value;const creditName=document.getElementById('creditName');creditName.style.display=v==='Credit'?'':'none';if(v!=='Credit')hideCreditInfo()})
+const creditInput=document.getElementById('creditName'),creditSuggest=document.getElementById('creditSuggest'),creditInfo=document.getElementById('creditInfo'),creditInfoName=document.getElementById('creditInfoName'),creditInfoBalance=document.getElementById('creditInfoBalance'),creditHistory=document.getElementById('creditHistory'),payBalanceBtn=document.getElementById('payBalanceBtn');
+function refreshCustomers(){customers=load(KEY_CUST)}
+creditInput.addEventListener('input',function(){
   const q=this.value.trim().toLowerCase();
-  if(!q){ hideCreditSuggest(); hideCreditInfo(); return }
+  if(!q){hideCreditSuggest();hideCreditInfo();return}
   refreshCustomers();
-  const matches = customers.filter(c=> (c.name && c.name.toLowerCase().includes(q)) || (c.phone && String(c.phone).includes(q)) );
-  if(!matches.length){ hideCreditSuggest(); hideCreditInfo(); return }
+  // match by name or phone (allow numeric phone search)
+  const matches=customers.filter(c=> (c.name&&c.name.toLowerCase().includes(q)) || (c.phone&&String(c.phone).includes(q)) );
+  if(!matches.length){hideCreditSuggest();hideCreditInfo();return}
   creditSuggest.innerHTML='';
-  matches.forEach(m=>{
-    const d=document.createElement('div');
-    d.className='suggest-item';
-    d.innerHTML=`${escapeHtml(m.name)} ${m.phone?`— ${escapeHtml(m.phone)}`:''} — Balance: ${parseFloat(m.balance).toFixed(2)}`;
-    d.dataset.id = m.id;
-    d.addEventListener('click', ()=>{ creditInput.value = m.name; hideCreditSuggest(); showCreditInfoById(m.id) });
-    creditSuggest.appendChild(d);
-  });
+  matches.forEach(m=>{const d=document.createElement('div');d.className='suggest-item';d.innerHTML=`${escapeHtml(m.name)} ${m.phone?`— ${escapeHtml(m.phone)}`:''} — Balance: ${parseFloat(m.balance).toFixed(2)}`;d.dataset.id=m.id;d.addEventListener('click',()=>{creditInput.value=m.name;hideCreditSuggest();showCreditInfoById(m.id)});creditSuggest.appendChild(d)});
   creditSuggest.style.display='block';
-});
-
-function hideCreditSuggest(){ creditSuggest.style.display='none'; creditSuggest.innerHTML='' }
-function showCreditInfoById(cid){
-  refreshCustomers();
-  const c = customers.find(x=>x.id===cid);
-  if(!c) return hideCreditInfo();
-  creditInfo.style.display='block';
-  creditInfoName.innerText = c.name + (c.phone?(' — '+c.phone):'');
-  creditInfoBalance.innerText = parseFloat(c.balance).toFixed(2);
-  const history = (load(KEY_SALES)||[]).filter(s=> s.customer && (s.customer.toLowerCase()===c.name.toLowerCase() || (s.customerPhone && s.customerPhone===c.phone)) );
-  creditHistory.innerHTML='';
-  if(!history.length) creditHistory.innerHTML = '<li class="text-muted">Ma jiraan iibyo hore</li>';
-  else {
-    const itemsBought=[];
-    history.slice().reverse().forEach(s=> s.lines.forEach(l=> itemsBought.push(`${l.name} x${l.qty}`)));
-    const uniqueItems = Array.from(new Set(itemsBought)).slice(0,20);
-    uniqueItems.forEach(it=> creditHistory.innerHTML += `<li>${escapeHtml(it)}</li>`);
-  }
-}
-function showCreditInfoByName(name){ refreshCustomers(); const c = customers.find(x=>x.name.toLowerCase()===name.toLowerCase()); if(!c) return hideCreditInfo(); showCreditInfoById(c.id) }
-function hideCreditInfo(){ creditInfo.style.display='none'; creditInfoName.innerText=''; creditInfoBalance.innerText='0.00'; creditHistory.innerHTML='' }
-
-payBalanceBtn.addEventListener('click', ()=>{
-  const name = creditInput.value.trim();
-  if(!name) return Swal.fire('Error','Fadlan dooro ama geli magaca macaamiisha','error');
-  refreshCustomers();
-  const c = customers.find(x=> x.name.toLowerCase()===name.toLowerCase() || (x.phone && x.phone===name) );
-  if(!c) return Swal.fire('Error','Macaamiilkan lama helin','error');
-  Swal.fire({
-    title:`Bixin balance: ${c.name}`,
-    html:`<input id="sw-amount" type="number" class="swal2-input" placeholder="Lacag (USD)" min="0.01" step="0.01"><input id="sw-pass" type="password" class="swal2-input" placeholder="Geli admin password">`,
-    showCancelButton:true,
-    confirmButtonText:'Bixi',
-    preConfirm:()=>{
-      const amount=parseFloat(document.getElementById('sw-amount').value), pass=document.getElementById('sw-pass').value;
-      if(!amount||amount<=0){ Swal.showValidationMessage('Fadlan geli lacag sax ah'); return false }
-      if(amount>parseFloat(c.balance)){ Swal.showValidationMessage('Lacagta way ka badan tahay balance-ka'); return false }
-      if(!pass){ Swal.showValidationMessage('Fadlan geli password'); return false }
-      users = load(KEY_USERS);
-      const admin = users.find(u=>u.role==='admin' && u.password===pass);
-      if(!admin){ Swal.showValidationMessage('Password khalad ah'); return false }
-      return { amount, pass };
-    }
-  }).then(result=>{
-    if(result.isConfirmed && result.value){
-      const { amount } = result.value;
-      customers = load(KEY_CUST);
-      const cc = customers.find(x=>x.id===c.id);
-      cc.balance = parseFloat((parseFloat(cc.balance)-amount).toFixed(2));
-      if(cc.balance < 0.005) cc.balance = 0;
-      save(KEY_CUST,customers);
-      const salesLocal = load(KEY_SALES);
-      salesLocal.push({ id: uid('p'), type:'Payment', customer: cc.name, amount, date: new Date().toISOString(), lines: [], returned:false });
-      save(KEY_SALES, salesLocal);
-      showCreditInfoById(cc.id);
-      renderReports();
-      updateStats();
-      Swal.fire('La bixiyey','Lacagta waa la xaqiijiyey','success');
-    }
-  });
-});
+})
+function hideCreditSuggest(){creditSuggest.style.display='none';creditSuggest.innerHTML=''}
+function showCreditInfoById(cid){refreshCustomers();const c=customers.find(x=>x.id===cid);if(!c)return hideCreditInfo();creditInfo.style.display='block';creditInfoName.innerText=c.name + (c.phone?(' — '+c.phone):'');creditInfoBalance.innerText=parseFloat(c.balance).toFixed(2);const history=(load(KEY_SALES)||[]).filter(s=>s.customer&&((s.customer.toLowerCase()===c.name.toLowerCase()) || (s.customerPhone && s.customerPhone===c.phone)));creditHistory.innerHTML='';if(!history.length)creditHistory.innerHTML='<li class="text-muted">Ma jiraan iibyo hore</li>';else{const itemsBought=[];history.slice().reverse().forEach(s=>s.lines.forEach(l=>itemsBought.push(`${l.name} x${l.qty}`)));const uniqueItems=Array.from(new Set(itemsBought)).slice(0,20);uniqueItems.forEach(it=>creditHistory.innerHTML+=`<li>${escapeHtml(it)}</li>`)}}
+function showCreditInfoByName(name){refreshCustomers();const c=customers.find(x=>x.name.toLowerCase()===name.toLowerCase());if(!c)return hideCreditInfo();showCreditInfoById(c.id)}
+function hideCreditInfo(){creditInfo.style.display='none';creditInfoName.innerText='';creditInfoBalance.innerText='0.00';creditHistory.innerHTML=''}
+payBalanceBtn.addEventListener('click',()=>{const name=creditInput.value.trim();if(!name)return Swal.fire('Error','Fadlan dooro ama geli magaca macaamiisha','error');refreshCustomers();const c=customers.find(x=>x.name.toLowerCase()===name.toLowerCase()|| (x.phone && x.phone===name));if(!c)return Swal.fire('Error','Macaamiilkan lama helin','error');Swal.fire({title:`Bixin balance: ${c.name}`,html:`<input id="sw-amount" type="number" class="swal2-input" placeholder="Lacag (USD)" min="0.01" step="0.01"><input id="sw-pass" type="password" class="swal2-input" placeholder="Geli admin password">`,showCancelButton:true,confirmButtonText:'Bixi',preConfirm:()=>{const amount=parseFloat(document.getElementById('sw-amount').value),pass=document.getElementById('sw-pass').value;if(!amount||amount<=0){Swal.showValidationMessage('Fadlan geli lacag sax ah');return false}if(amount>parseFloat(c.balance)){Swal.showValidationMessage('Lacagta way ka badan tahay balance-ka');return false}if(!pass){Swal.showValidationMessage('Fadlan geli password');return false}users=load(KEY_USERS);const admin=users.find(u=>u.role==='admin'&&u.password===pass);if(!admin){Swal.showValidationMessage('Password khalad ah');return false}return{amount,pass}}}).then(result=>{if(result.isConfirmed&&result.value){const{amount}=result.value;customers=load(KEY_CUST);const cc=customers.find(x=>x.id===c.id);cc.balance=parseFloat((parseFloat(cc.balance)-amount).toFixed(2));if(cc.balance<0.005)cc.balance=0;save(KEY_CUST,customers);const salesLocal=load(KEY_SALES);salesLocal.push({id:uid('p'),type:'Payment',customer:cc.name,amount,date:new Date().toISOString(),lines:[],returned:false});save(KEY_SALES,salesLocal);showCreditInfoById(cc.id);renderReports();updateStats();Swal.fire('La bixiyey','Lacagta waa la xaqiijiyey','success')}})})
 
 /* =================  SAVE SALE  ================= */
-function genInvoice(){ const n=Math.floor(Math.random()*9000)+1000; return 'INV-'+n; }
-
-document.getElementById('saveSaleBtn').addEventListener('click', ()=>{
-  if(!cart.length) return Swal.fire('Error','Cart waa madhan','error');
-  const payment = document.getElementById('paymentType').value;
-  const custNameRaw = document.getElementById('creditName').value.trim();
-  if(payment==='Credit' && !custNameRaw) return Swal.fire('Error','Fadlan geli magaca ama number-ka macaamiisha (credit)','error');
-
-  items = load(KEY_ITEMS);
+function genInvoice(){const n=Math.floor(Math.random()*9000)+1000;return'INV-'+n}
+document.getElementById('saveSaleBtn').addEventListener('click',()=>{
+  if(!cart.length)return Swal.fire('Error','Cart waa madhan','error');const payment=document.getElementById('paymentType').value,custNameRaw=document.getElementById('creditName').value.trim();if(payment==='Credit'&&!custNameRaw)return Swal.fire('Error','Fadlan geli magaca ama number-ka macaamiisha (credit)','error');items=load(KEY_ITEMS);
   try{
-    cart.forEach(c=>{ const it = items.find(x=>x.id===c.id); if(!it) throw new Error(`Item ${c.name} lama helin`); if(c.qty > it.quantity) throw new Error(`Item '${it.name}' kaliya ${it.quantity} ayaa la heli karaa, codsatay ${c.qty}`) });
-  }catch(err){ return Swal.fire('Error', err.message, 'error') }
-
-  const total = parseFloat(cart.reduce((t,c)=>t + c.qty*parseFloat(c.price), 0).toFixed(2));
-  const orderId = genInvoice();
-  const sale = { id: orderId, total, payment, customer: null, customerPhone: null, date: new Date().toISOString(), lines: cart.map(c=>({...c})), returned:false, user: currentUser.username };
-
+    cart.forEach(c=>{const it=items.find(x=>x.id===c.id);if(!it)throw new Error(`Item ${c.name} lama helin`);if(c.qty>it.quantity)throw new Error(`Item '${it.name}' kaliya ${it.quantity} ayaa la heli karaa, codsatay ${c.qty}`)})
+  }catch(err){return Swal.fire('Error',err.message,'error')}
+  const total=parseFloat(cart.reduce((t,c)=>t+c.qty*parseFloat(c.price),0).toFixed(2)),orderId=genInvoice(),sale={id:orderId,total,payment,customer:payment==='Credit'?null:null,date:new Date().toISOString(),lines:cart.map(c=>({...c})),returned:false,user:currentUser.username};
+  // handle credit customer: allow name or phone
+  let custPhone = null;
   if(payment==='Credit'){
-    const raw = custNameRaw;
-    if(/^\d+$/.test(raw)) { sale.customerPhone = raw; }
+    // if input looks numeric treat as phone else name
+    const raw=custNameRaw;
+    if(/^\d+$/.test(raw)){ custPhone = raw; sale.customer = null; sale.customerPhone = custPhone; }
     else { sale.customer = raw; }
   }
-
-  sales = load(KEY_SALES); sales.push(sale); save(KEY_SALES, sales);
-
+  sales=load(KEY_SALES);sales.push(sale);save(KEY_SALES,sales);
   // deduct stock
-  items = items.map(it=>{ const line = cart.find(l=>l.id===it.id); if(line) return {...it, quantity: it.quantity - line.qty}; return it });
-  save(KEY_ITEMS, items);
-
-  // create/update customer for credit
+  items=items.map(it=>{const line=cart.find(l=>l.id===it.id);if(line)return{...it,quantity:it.quantity-line.qty};return it});save(KEY_ITEMS,items);
+  // create/update customer record for credit
   if(payment==='Credit'){
-    customers = load(KEY_CUST);
+    customers=load(KEY_CUST);
     let found = null;
-    if(sale.customer) found = customers.find(x=>x.name.toLowerCase() === sale.customer.toLowerCase());
-    else if(sale.customerPhone) found = customers.find(x=>x.phone === sale.customerPhone);
+    if(sale.customer){
+      found = customers.find(x=>x.name.toLowerCase()===sale.customer.toLowerCase());
+    } else if(sale.customerPhone){
+      found = customers.find(x=>x.phone===sale.customerPhone);
+    }
     if(found){
       found.balance = parseFloat((parseFloat(found.balance||0) + total).toFixed(2));
     } else {
-      const cname = sale.customer || ('Customer ' + (Math.floor(Math.random()*900)+100));
-      customers.push({ id: uid('c'), name: cname, phone: sale.customerPhone || '', balance: total });
+      const cname = sale.customer || ('Customer '+(Math.floor(Math.random()*900)+100));
+      const newCust = {id:uid('c'), name:cname, phone: sale.customerPhone || '', balance: total};
+      customers.push(newCust);
     }
-    save(KEY_CUST, customers);
+    save(KEY_CUST,customers);
   }
 
-  // receipt & print
-  const dt = new Date(sale.date||new Date().toISOString()), dtStr = dt.toLocaleString();
-  let receiptHtml = `<div style="font-weight:700;font-size:16px;">Foorno Ubax Supermarket System</div><div style="margin-top:6px;">Order ID: <b>${orderId}</b></div><div>Date: ${dtStr}</div>${sale.customer?`<div>Customer: ${escapeHtml(sale.customer)}</div>`:(sale.customerPhone?`<div>Customer Phone: ${escapeHtml(sale.customerPhone)}</div>`:'')}<hr style="margin:8px 0;"><table style="width:100%;font-size:14px;" cellpadding="4"><tbody>`;
-  sale.lines.forEach(l => { receiptHtml += `<tr><td style="text-align:left">${escapeHtml(l.name)} x${l.qty}</td><td style="text-align:right">${(l.qty*parseFloat(l.price)).toFixed(2)} USD</td></tr>` });
-  receiptHtml += `</tbody></table><hr style="margin:8px 0;"><div style="font-weight:700;font-size:15px;">Total: ${sale.total.toFixed(2)} USD</div><div style="margin-top:6px;">Type: ${sale.payment}</div><div style="margin-top:6px;">Cashier: ${escapeHtml(sale.user)}</div><div style="margin-top:10px;font-size:12px;">Thanks for shopping at Foorno Ubax</div>`;
+  // build receipt and print
+  const dt=new Date(sale.date||new Date().toISOString()),dtStr=dt.toLocaleString();
+  let receiptHtml=`<div style="font-weight:700;font-size:16px;">Foorno Ubax Supermarket System</div><div style="margin-top:6px;">Order ID: <b>${orderId}</b></div><div>Date: ${dtStr}</div>${sale.customer?`<div>Customer: ${escapeHtml(sale.customer)}</div>`:(sale.customerPhone?`<div>Customer Phone: ${escapeHtml(sale.customerPhone)}</div>`:'')}<hr style="margin:8px 0;"><table style="width:100%;font-size:14px;" cellpadding="4"><tbody>`;
+  sale.lines.forEach(l=>{receiptHtml+=`<tr><td style="text-align:left">${escapeHtml(l.name)} x${l.qty}</td><td style="text-align:right">${(l.qty*parseFloat(l.price)).toFixed(2)} USD</td></tr>`});
+  receiptHtml+=`</tbody></table><hr style="margin:8px 0;"><div style="font-weight:700;font-size:15px;">Total: ${sale.total.toFixed(2)} USD</div><div style="margin-top:6px;">Type: ${sale.payment}</div><div style="margin-top:6px;">Cashier: ${escapeHtml(sale.user)}</div><div style="margin-top:10px;font-size:12px;">Thanks for shopping at Foorno Ubax</div>`;
+  cart=[];renderCart();renderSaleItemsList();renderItemsTable();updateStats();showAlertIfLow();renderBarcodesOnReceipt(sale.lines);document.getElementById('printContent').innerHTML=`<div class="centered">${receiptHtml}</div>`;document.getElementById('printFooter').innerText=`Order ID: ${orderId} • ${dtStr}`;const printArea=document.getElementById('printArea');printArea.style.display='block';setTimeout(()=>{window.print();printArea.style.display='none'},400);if(sale.payment==='Credit'){ if(sale.customer) showCreditInfoByName(sale.customer); else if(sale.customerPhone){ customers=load(KEY_CUST); const c=customers.find(x=>x.phone===sale.customerPhone); if(c) showCreditInfoById(c.id) } } Swal.fire('Saved','Iibka waa la keydiyey. Receipt waa la daabacay.','success')
+})
 
-  cart = []; renderCart(); renderSaleItemsList(); renderItemsTable(); updateStats(); showAlertIfLow();
-  renderBarcodesOnReceipt(sale.lines);
-  document.getElementById('printContent').innerHTML = `<div class="centered">${receiptHtml}</div>`;
-  document.getElementById('printFooter').innerText = `Order ID: ${orderId} • ${dtStr}`;
-  const printArea = document.getElementById('printArea'); printArea.style.display='block';
-  setTimeout(()=>{ window.print(); printArea.style.display='none' }, 400);
-
-  if(sale.payment==='Credit'){
-    if(sale.customer) showCreditInfoByName(sale.customer);
-    else if(sale.customerPhone){ customers = load(KEY_CUST); const c = customers.find(x=>x.phone===sale.customerPhone); if(c) showCreditInfoById(c.id) }
-  }
-
-  Swal.fire('Saved','Iibka waa la keydiyey. Receipt waa la daabacay.','success');
-});
-
-/* =================  BARCODE FOR RECEIPT & LABELS  ================= */
+/* =================  BARCODE PRINT  ================= */
+function makeBarcode(text){return text.toString().padStart(12,'0')}
 function renderBarcodesOnReceipt(lines){
-  const box = document.getElementById('printBarcodes'); box.innerHTML = '';
+  const box=document.getElementById('printBarcodes');box.innerHTML='';
   lines.forEach(l=>{
-    const div = document.createElement('div'); div.style.marginBottom='10px';
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.classList.add('barcode');
-    div.appendChild(svg);
-    const caption = document.createElement('div'); caption.style.fontSize='10px'; caption.style.textAlign='center'; caption.innerText = l.name;
-    div.appendChild(caption);
+    const div=document.createElement('div');div.style.marginBottom='10px';
+    div.innerHTML=`<svg class="barcode" data-value="${makeBarcode(l.id)}"></svg><div style="font-size:10px;text-align:center">${escapeHtml(l.name)}</div>`;
     box.appendChild(div);
-    try{ JsBarcode(svg, String(l.id), {format: "CODE128", displayValue: false, width:1, height:40}) }catch(e){}
-  });
+  });JsBarcode('.barcode').init()
 }
 
-/* label printer (new labels use item.id as value) */
-document.getElementById('printLabelsBtn').addEventListener('click', ()=>{
-  if(!cart.length) return Swal.fire('Cart empty','Add items first','info');
-  openLabelWindow();
+/* =================  BARCODE LABEL PRINTER  ================= */
+document.getElementById('printLabelsBtn').addEventListener('click',()=>{
+  if(!cart.length){Swal.fire('Cart empty','Add items first','info');return}openLabelWindow()
 });
 function openLabelWindow(){
-  let html = `<!doctype html><html><head><meta charset="utf-8"><title>Barcode Labels</title><script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script><style>body{margin:0;padding:10px;font-family:Arial,sans-serif}.label{display:inline-block;text-align:center;border:1px dashed #aaa;padding:6px;margin:6px;width:62mm;height:29mm}.barcode{width:100%;height:50px}@media print{body{margin:0}.label{page-break-after:always}}</style></head><body>`;
+  let html=`<!doctype html><html><head><meta charset="utf-8"><title>Barcode Labels</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
+  <style>body{margin:0;padding:10px;font-family:Arial,sans-serif}
+  .label{display:inline-block;text-align:center;border:1px dashed #aaa;padding:6px;margin:6px;width:62mm;height:29mm;page-break-after:always}
+  .barcode{width:100%;height:50px}@media print{body{margin:0}.label{page-break-after:always}}</style>
+  </head><body>`;
   cart.forEach(c=>{
+    const code=makeBarcode(c.id);
     for(let i=0;i<c.qty;i++){
-      html += `<div class="label"><svg class="barcode" data-value="${escapeHtml(c.id)}"></svg><div style="font-size:11px;margin-top:4px;">${escapeHtml(c.name)}</div></div>`;
+      html+=`<div class="label"><svg class="barcode" data-value="${code}"></svg><div style="font-size:11px;margin-top:4px;">${escapeHtml(c.name)}</div></div>`;
     }
   });
-  html += `<script>document.querySelectorAll('.barcode').forEach(svg=>{ const v = svg.getAttribute('data-value')||''; try{ JsBarcode(svg, v, {format:'CODE128', displayValue:true, width:1, height:40}) }catch(e){} }); window.print();</script></body></html>`;
-  const win = window.open('','_blank','width=900,height=600'); win.document.write(html); win.document.close();
+  html+=`<script>JsBarcode('.barcode').init();window.print();<\/script></body></html>`;
+  const win=window.open('','_blank','width=700,height=600');win.document.write(html);win.document.close();
 }
 
 /* =================  REPORTS  ================= */
 function updateStats(){
-  items = load(KEY_ITEMS); sales = load(KEY_SALES); customers = load(KEY_CUST); returns = load(KEY_RETURNS);
-  document.getElementById('statItems').innerText = items.length;
-  const lowCount = items.filter(i=>i.quantity <= i.low).length;
-  document.getElementById('statLow').innerText = lowCount;
-  const today = new Date().toISOString().slice(0,10);
-  let todayTotal = 0;
-  if(currentUser.role === 'admin'){
-    todayTotal = (sales.filter(s=>{ const sday=(s.date||'').slice(0,10); if(sday!==today) return false; if(s.returned) return false; if(s.payment==='Paid') return true; return false }).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
-  } else {
-    todayTotal = (sales.filter(s=>{ const sday=(s.date||'').slice(0,10); if(sday!==today) return false; if(s.returned) return false; if(s.payment==='Paid' && s.user===currentUser.username) return true; return false }).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
+  items=load(KEY_ITEMS);sales=load(KEY_SALES);customers=load(KEY_CUST);returns=load(KEY_RETURNS);
+  document.getElementById('statItems').innerText=items.length;
+  const lowCount=items.filter(i=>i.quantity<=i.low).length;
+  document.getElementById('statLow').innerText=lowCount;
+  const today=new Date().toISOString().slice(0,10);
+  let todayTotal=0;
+  // For admin show all paid today; for cashier only their paid today
+  if(currentUser.role==='admin'){
+    todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid')return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
+  }else{
+    todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid'&&s.user===currentUser.username)return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
   }
-  document.getElementById('statToday').innerText = todayTotal;
+  document.getElementById('statToday').innerText=todayTotal;
 }
-
 function renderLowList(){
-  items = load(KEY_ITEMS); const low = items.filter(i=>i.quantity <= i.low);
-  const container = document.getElementById('lowItemsList');
-  if(!low.length) container.innerHTML = '<p class="text-muted">Items wanaagsan — ma jiraan wax ku dhow inay dhamaadaan.</p>';
-  else{ let html = '<ul class="list-group">'; low.forEach(i=> html += `<li class="list-group-item d-flex justify-content-between">${escapeHtml(i.name)} <span class="text-danger">${i.quantity}</span></li>`); html += '</ul>'; container.innerHTML = html; }
+  items=load(KEY_ITEMS);const low=items.filter(i=>i.quantity<=i.low);
+  const container=document.getElementById('lowItemsList');
+  if(!low.length)container.innerHTML='<p class="text-muted">Items wanaagsan — ma jiraan wax ku dhow inay dhamaadaan.</p>';
+  else{let html='<ul class="list-group">';low.forEach(i=>html+=`<li class="list-group-item d-flex justify-content-between">${escapeHtml(i.name)} <span class="text-danger">${i.quantity}</span></li>`);html+='</ul>';container.innerHTML=html}
 }
-
 function showAlertIfLow(){
-  items = load(KEY_ITEMS); const low = items.filter(i=>i.quantity <= i.low);
-  if(low.length){ const names = low.map(i=>`${i.name} (${i.quantity})`).join(', '); Swal.fire({icon:'warning',title:'Stock Alert',html:`Items ku dhow inay dhammaan: <br><b>${names}</b>`,timer:8000}) }
+  items=load(KEY_ITEMS);const low=items.filter(i=>i.quantity<=i.low);
+  if(low.length){const names=low.map(i=>`${i.name} (${i.quantity})`).join(', ');Swal.fire({icon:'warning',title:'Stock Alert',html:`Items ku dhow inay dhammaan: <br><b>${names}</b>`,timer:8000})}
 }
-
 function renderReports(){
-  sales = load(KEY_SALES); customers = load(KEY_CUST); returns = load(KEY_RETURNS); items = load(KEY_ITEMS);
-  const today = new Date().toISOString().slice(0,10);
-
+  sales=load(KEY_SALES);customers=load(KEY_CUST);returns=load(KEY_RETURNS);items=load(KEY_ITEMS);
+  const today=new Date().toISOString().slice(0,10);
+  // filter sales for display: apply cashier restriction + today's filter
   let filterSales = sales || [];
-  if(currentUser.role === 'cashier') filterSales = filterSales.filter(s => s.user === currentUser.username);
+  // apply cashier access: cashier sees only their sales
+  if(currentUser.role==='cashier') filterSales = filterSales.filter(s => s.user === currentUser.username);
+  // always show latest first
   filterSales = filterSales.slice().reverse();
 
+  // apply "only today's sales" view for cashiers (as requested)
+  // For admin we still allow seeing all, but the "today total" is computed per role.
+  // Additionally add search capability for sales (OrderID / customer / phone)
   const searchQ = document.getElementById('searchSales')?.value?.trim().toLowerCase();
   if(searchQ){
-    filterSales = filterSales.filter(s=>{
+    filterSales = filterSales.filter(s => {
       if(String(s.id).toLowerCase().includes(searchQ)) return true;
       if(s.customer && s.customer.toLowerCase().includes(searchQ)) return true;
       if(s.customerPhone && String(s.customerPhone).toLowerCase().includes(searchQ)) return true;
@@ -769,126 +554,103 @@ function renderReports(){
     });
   }
 
-  let todayTotal = 0;
-  if(currentUser.role === 'admin'){
-    todayTotal = (sales.filter(s=>{ const sday=(s.date||'').slice(0,10); if(sday!==today) return false; if(s.returned) return false; if(s.payment==='Paid') return true; return false }).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
-  } else {
-    todayTotal = (sales.filter(s=>{ const sday=(s.date||'').slice(0,10); if(sday!==today) return false; if(s.returned) return false; if(s.payment==='Paid'&&s.user===currentUser.username) return true; return false }).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
+  // compute today's paid total for header
+  let todayTotal=0;
+  if(currentUser.role==='admin'){
+    todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid')return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
+  }else{
+    todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid'&&s.user===currentUser.username)return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
   }
-  document.getElementById('reportTodayTotal').innerText = todayTotal;
+  document.getElementById('reportTodayTotal').innerText=todayTotal;
 
-  const rc=document.getElementById('reportCredits'); rc.innerHTML='';
-  if(!customers||!customers.length) rc.innerHTML='<li class="list-group-item text-muted">Ma jiraan credit customers</li>';
-  else customers.forEach(c=> rc.innerHTML += `<li class="list-group-item d-flex justify-content-between">${escapeHtml(c.name)} ${c.phone?`<small>(${escapeHtml(c.phone)})</small>`:''} <span>${parseFloat(c.balance).toFixed(2)}</span></li>`);
+  // Credit customers list
+  const rc=document.getElementById('reportCredits');rc.innerHTML='';
+  if(!customers||!customers.length)rc.innerHTML='<li class="list-group-item text-muted">Ma jiraan credit customers</li>';
+  else customers.forEach(c=>rc.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${escapeHtml(c.name)} ${c.phone?`<small>(${escapeHtml(c.phone)})</small>`:''} <span>${parseFloat(c.balance).toFixed(2)}</span></li>`);
 
-  const rl=document.getElementById('reportLow'); rl.innerHTML = '';
-  const lowList = items.filter(i=>i.quantity <= i.low);
-  if(!lowList.length) rl.innerHTML = '<li class="list-group-item text-muted">Ma jiraan items ku dhow inay dhamaadaan</li>';
-  else lowList.forEach(i=> rl.innerHTML += `<li class="list-group-item d-flex justify-content-between">${escapeHtml(i.name)} <span>${i.quantity}</span></li>`);
+  // Low items list
+  const rl=document.getElementById('reportLow');rl.innerHTML='';
+  const lowList=items.filter(i=>i.quantity<=i.low);
+  if(!lowList.length)rl.innerHTML='<li class="list-group-item text-muted">Ma jiraan items ku dhow inay dhamaadaan</li>';
+  else lowList.forEach(i=>rl.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${escapeHtml(i.name)} <span>${i.quantity}</span></li>`);
 
-  const st=document.getElementById('salesTable'); st.innerHTML = '';
-  if(currentUser.role === 'admin'){
-    const cashiers = [...new Set((sales||[]).map(s=>s.user).filter(Boolean))];
-    let dropdown = `<select id="cashierFilter" class="form-select form-select-sm w-auto mb-2" onchange="renderReports()"><option value="">All Cashiers</option>`;
-    cashiers.forEach(c=> dropdown += `<option value="${c}">${c}</option>`);
-    dropdown += `</select>`;
-    document.getElementById('cashierFilterDiv').innerHTML = dropdown;
-    const sel = document.getElementById('cashierFilter')?.value;
-    if(sel) filterSales = filterSales.filter(s=>s.user === sel);
+  // Sales history table
+  const st=document.getElementById('salesTable');st.innerHTML='';
+  // If admin, show filter dropdown of cashiers (but don't reveal other admins)
+  if(currentUser.role==='admin'){
+    const cashiers=[...new Set((sales||[]).map(s=>s.user).filter(Boolean))];
+    let dropdown=`<select id="cashierFilter" class="form-select form-select-sm w-auto mb-2" onchange="renderReports()"><option value="">All Cashiers</option>`;
+    cashiers.forEach(c=>dropdown+=`<option value="${c}">${c}</option>`);
+    dropdown+=`</select>`;
+    document.getElementById('cashierFilterDiv').innerHTML=dropdown;
+    const sel=document.getElementById('cashierFilter')?.value;
+    if(sel) filterSales = filterSales.filter(s=>s.user===sel);
   } else {
-    document.getElementById('cashierFilterDiv').innerHTML = '';
+    document.getElementById('cashierFilterDiv').innerHTML='';
   }
 
-  filterSales.forEach(s=>{ const dt = s.date? new Date(s.date).toLocaleString() : ''; st.innerHTML += `<tr class="${s.returned?'table-warning':''}"><td>${escapeHtml(s.id)}</td><td>${dt}</td><td>${parseFloat(s.total||0).toFixed(2)}</td><td>${escapeHtml(s.payment||s.type||'')}</td><td>${escapeHtml(s.user)}</td></tr>` });
+  filterSales.forEach(s=>{const dt=s.date?new Date(s.date).toLocaleString():'';st.innerHTML+=`<tr class="${s.returned?'table-warning':''}"><td>${escapeHtml(s.id)}</td><td>${dt}</td><td>${parseFloat(s.total||0).toFixed(2)}</td><td>${escapeHtml(s.payment||s.type||'')}</td><td>${escapeHtml(s.user)}</td></tr>`});
 
-  const rlContainer=document.getElementById('returnList'); rlContainer.innerHTML='';
-  if(!returns||!returns.length) rlContainer.innerHTML = '<p class="text-muted">Ma jiraan returns la diiwaangeliyey.</p>';
-  else{ let html='<ul class="list-group">'; returns.slice().reverse().forEach(r=>{ const dt=r.date?new Date(r.date).toLocaleString() : ''; html += `<li class="list-group-item d-flex justify-content-between"><div><b>${escapeHtml(r.orderId)}</b> — ${dt}<br><small>${escapeHtml(r.note||'')}</small></div><div><span class="text-success">Returned</span></div></li>` }); html+='</ul>'; rlContainer.innerHTML = html }
+  const rlContainer=document.getElementById('returnList');rlContainer.innerHTML='';
+  if(!returns||!returns.length)rlContainer.innerHTML='<p class="text-muted">Ma jiraan returns la diiwaangeliyey.</p>';
+  else{let html='<ul class="list-group">';returns.slice().reverse().forEach(r=>{const dt=r.date?new Date(r.date).toLocaleString():'';html+=`<li class="list-group-item d-flex justify-content-between"><div><b>${escapeHtml(r.orderId)}</b> — ${dt}<br><small>${escapeHtml(r.note||'')}</small></div><div><span class="text-success">Returned</span></div></li>`});html+='</ul>';rlContainer.innerHTML=html}
 }
 
 /* =================  RETURN PROCESS ================= */
-document.getElementById('doReturnBtn').addEventListener('click', ()=>{
-  if(currentUser.role!=='admin'){ Swal.fire('Restricted','Admin only','warning'); return }
-  const id = document.getElementById('returnId').value.trim();
-  if(!id) return Swal.fire('Error','Fadlan geli Order ID','error');
-  sales = load(KEY_SALES);
-  const saleIndex = sales.findIndex(s=>s.id===id);
-  if(saleIndex===-1) return Swal.fire('Error','Order ID lama helin','error');
-  const sale = sales[saleIndex];
-  if(sale.returned) return Swal.fire('Info','Iibkan hore ayaa loo celiyey','info');
-  const saleDate = new Date(sale.date); const now = new Date(); const diffMs = now - saleDate; const diffHours = diffMs/(1000*60*60);
-  if(diffHours>24) return Swal.fire('Diid','⚠️ Waqtiga celinta wuu dhammaaday (24 saac)','error');
-  items = load(KEY_ITEMS);
-  sale.lines.forEach(line => { const it = items.find(x=>x.id===line.id); if(it) it.quantity = parseInt(it.quantity) + parseInt(line.qty) });
-  save(KEY_ITEMS, items);
-  sales[saleIndex].returned = true; save(KEY_SALES, sales);
-  returns = load(KEY_RETURNS) || []; returns.push({ id: uid('r'), orderId: sale.id, date: new Date().toISOString(), note: 'Returned within 24 hours' }); save(KEY_RETURNS, returns);
-  if(sale.payment==='Credit' && sale.customer){
-    customers = load(KEY_CUST);
-    const c = customers.find(x=>x.name.toLowerCase()===sale.customer.toLowerCase());
-    if(c){ c.balance = parseFloat((parseFloat(c.balance)-parseFloat(sale.total)).toFixed(2)); if(c.balance<0.005) c.balance=0; save(KEY_CUST,customers) }
-  }
-  renderItemsTable(); renderSaleItemsList(); updateStats(); renderReports();
-  Swal.fire('La xaqiijiyey','Return waa la sameeyey. Stock & records waa la cusbooneysiiyey','success');
-});
+document.getElementById('doReturnBtn').addEventListener('click',()=>{if(currentUser.role!=='admin'){Swal.fire('Restricted','Admin only','warning');return}const id=document.getElementById('returnId').value.trim();if(!id)return Swal.fire('Error','Fadlan geli Order ID','error');sales=load(KEY_SALES);const saleIndex=sales.findIndex(s=>s.id===id);if(saleIndex===-1)return Swal.fire('Error','Order ID lama helin','error');const sale=sales[saleIndex];if(sale.returned)return Swal.fire('Info','Iibkan hore ayaa loo celiyey','info');const saleDate=new Date(sale.date);const now=new Date();const diffMs=now-saleDate;const diffHours=diffMs/(1000*60*60);if(diffHours>24)return Swal.fire('Diid','⚠️ Waqtiga celinta wuu dhammaaday (24 saac)','error');items=load(KEY_ITEMS);sale.lines.forEach(line=>{const it=items.find(x=>x.id===line.id);if(it)it.quantity=parseInt(it.quantity)+parseInt(line.qty)});save(KEY_ITEMS,items);sales[saleIndex].returned=true;save(KEY_SALES,sales);returns=load(KEY_RETURNS)||[];returns.push({id:uid('r'),orderId:sale.id,date:new Date().toISOString(),note:'Returned within 24 hours'});save(KEY_RETURNS,returns);if(sale.payment==='Credit'&&sale.customer){customers=load(KEY_CUST);const c=customers.find(x=>x.name.toLowerCase()===sale.customer.toLowerCase());if(c){c.balance=parseFloat((parseFloat(c.balance)-parseFloat(sale.total)).toFixed(2));if(c.balance<0.005)c.balance=0;save(KEY_CUST,customers)}}renderItemsTable();renderSaleItemsList();updateStats();renderReports();Swal.fire('La xaqiijiyey','Return waa la sameeyey. Stock & records waa la cusbooneysiiyey','success')})
 
 /* =================  USERS (admin only)  ================= */
-const usersTable=document.getElementById('usersTable'), addUserForm=document.getElementById('addUserForm');
-
+const usersTable=document.getElementById('usersTable'),addUserForm=document.getElementById('addUserForm');
 function renderUsersTable(){
-  users = load(KEY_USERS);
-  usersTable.innerHTML = '';
-  const usersToShow = users.filter(u=>{
-    if(u.role==='admin' && currentUser.role==='admin'){
-      return u.id === currentUser.id; // only show current admin
+  users=load(KEY_USERS);usersTable.innerHTML='';
+  // Show only cashiers and the current admin (don't show other admins)
+  const usersToShow = users.filter(u => {
+    if(u.role === 'admin' && currentUser.role === 'admin') {
+      // only show the current admin user row (don't expose other admins)
+      return u.id === currentUser.id;
     }
     return true; // show cashiers
   });
   usersToShow.forEach(u=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${escapeHtml(u.username)}</td><td>${u.role}</td><td><button class="btn btn-sm btn-secondary me-1" data-act="edit" data-id="${u.id}">Edit</button>${u.role!=='admin'?'<button class="btn btn-sm btn-danger" data-act="del" data-id="'+u.id+'">Delete</button>':''}</td>`;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${escapeHtml(u.username)}</td><td>${u.role}</td><td>
+      <button class="btn btn-sm btn-secondary me-1" data-act="edit" data-id="${u.id}">Edit</button>
+      ${u.role!=='admin'?'<button class="btn btn-sm btn-danger" data-act="del" data-id="'+u.id+'">Delete</button>':''}
+    </td>`;
     usersTable.appendChild(tr);
   });
 }
-
-usersTable.addEventListener('click', e=>{
-  const btn = e.target.closest('button'); if(!btn) return; const act = btn.dataset.act, id = btn.dataset.id;
-  if(act==='edit'){ users = load(KEY_USERS); const u = users.find(x=>x.id===id); if(!u) return; document.getElementById('editUserId').value = u.id; document.getElementById('userName').value = u.username; document.getElementById('userRole').value = u.role; window.scrollTo({top:0,behavior:'smooth'}) }
-  else if(act==='del'){ Swal.fire({title:'Ma hubtaa?',text:'Miyaad rabtaa inaad tirtirto userkan?',icon:'warning',showCancelButton:true}).then(res=>{ if(res.isConfirmed){ users = users.filter(x=>x.id!==id); save(KEY_USERS, users); renderUsersTable(); Swal.fire('La tirtiray','User waa la tirtiray','success') } }) }
-});
-
-addUserForm.addEventListener('submit', e=>{
+usersTable.addEventListener('click',e=>{
+  const btn=e.target.closest('button');if(!btn)return;const act=btn.dataset.act,id=btn.dataset.id;
+  if(act==='edit'){users=load(KEY_USERS);const u=users.find(x=>x.id===id);if(!u)return;document.getElementById('editUserId').value=u.id;document.getElementById('userName').value=u.username;document.getElementById('userRole').value=u.role;window.scrollTo({top:0,behavior:'smooth'})}
+  else if(act==='del'){Swal.fire({title:'Ma hubtaa?',text:'Miyaad rabtaa inaad tirtirto userkan?',icon:'warning',showCancelButton:true}).then(res=>{if(res.isConfirmed){users=users.filter(x=>x.id!==id);save(KEY_USERS,users);renderUsersTable();Swal.fire('La tirtiray','User waa la tirtiray','success')}})}
+})
+addUserForm.addEventListener('submit',e=>{
   e.preventDefault();
-  if(currentUser.role!=='admin'){ Swal.fire('Restricted','Admin only','warning'); return }
-  const id=document.getElementById('editUserId').value, username=document.getElementById('userName').value.trim(), password=document.getElementById('userPass').value, role=document.getElementById('userRole').value;
-  if(!username||!password) return Swal.fire('Khalad','Fadlan buuxi meelaha oo dhan','error');
-  users = load(KEY_USERS);
-  if(role === 'admin') return Swal.fire('Restricted','Ma samayn kartid admin kale. Role waa in uu noqdaa cashier','error');
+  if(currentUser.role!=='admin'){Swal.fire('Restricted','Admin only','warning');return}
+  const id=document.getElementById('editUserId').value,username=document.getElementById('userName').value.trim(),password=document.getElementById('userPass').value,role=document.getElementById('userRole').value;
+  if(!username||!password)return Swal.fire('Khalad','Fadlan buuxi meelaha oo dhan','error');
+  users=load(KEY_USERS);
+  // enforce single admin: prevent creating or changing role to admin
+  if(role==='admin'){return Swal.fire('Restricted','Ma samayn kartid admin kale. Role waa in uu noqdaa cashier','error')}
   if(id){
-    users = users.map(u=>u.id===id?{...u,username,password,role}:u);
-    Swal.fire('La cusbooneysiiyey','User waa la cusbooneysiiyey','success');
-  } else {
-    if(users.find(x=>x.username===username)) return Swal.fire('Error','Username already exists','error');
-    users.push({ id: uid('u'), username, password, role });
-    Swal.fire('La daray','User cusub waa la daray','success');
+    users=users.map(u=>u.id===id?{...u,username,password,role}:u);
+    Swal.fire('La cusbooneysiiyey','User waa la cusbooneysiiyey','success')
+  }else{
+    if(users.find(x=>x.username===username))return Swal.fire('Error','Username already exists','error');
+    users.push({id:uid('u'),username,password,role});
+    Swal.fire('La daray','User cusub waa la daray','success')
   }
-  save(KEY_USERS, users);
-  document.getElementById('editUserId').value=''; addUserForm.reset(); renderUsersTable();
-});
-
-document.getElementById('showAddUserBtn').addEventListener('click', ()=>{ document.getElementById('editUserId').value=''; addUserForm.reset(); window.scrollTo({top:0,behavior:'smooth'}) });
+  save(KEY_USERS,users);document.getElementById('editUserId').value='';addUserForm.reset();renderUsersTable()
+})
+document.getElementById('showAddUserBtn').addEventListener('click',()=>{document.getElementById('editUserId').value='';addUserForm.reset();window.scrollTo({top:0,behavior:'smooth'})})
 
 /* =================  INITIAL  ================= */
-renderItemsTable(); renderSaleItemsList(); updateStats(); renderReports(); renderUsersTable();
-if(sessionStorage.getItem('foorno_ubax_user')) go('dashboard'); else hideAllViews();
+renderItemsTable();renderSaleItemsList();updateStats();renderReports();renderUsersTable();if(sessionStorage.getItem('foorno_ubax_user'))go('dashboard');else hideAllViews()
+/* close suggestions on outside click */document.addEventListener('click',e=>{if(!e.target.closest('.suggestions')&&!e.target.closest('#saleSearch'))hideSuggest();if(!e.target.closest('.suggestions')&&!e.target.closest('#creditName'))hideCreditSuggest()})
 
-document.addEventListener('click', e=>{
-  if(!e.target.closest('.suggestions') && !e.target.closest('#saleSearch')) hideSuggest();
-  if(!e.target.closest('.suggestions') && !e.target.closest('#creditName')) hideCreditSuggest();
-});
-
-document.getElementById('searchSales')?.addEventListener('keyup', function(e){ if(e.key==='Enter') renderReports(); });
-
+// Also rerender reports when search input is used (enter)
+document.getElementById('searchSales')?.addEventListener('keyup',function(e){ if(e.key==='Enter') renderReports(); })
 </script>
 </body>
 </html>
