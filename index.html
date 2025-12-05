@@ -8,7 +8,6 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
   <style>
     :root{--bg-main:#f4fbff;--bg-card:#ffffff;--primary:#0d6efd;--primary-light:#75b0fd;--danger:#dc3545;--success:#28a745;--warning:#ffc107;--text:#212529;--text-muted:#6c757d;--radius:16px;--shadow:0 8px 32px rgba(13,110,253,.08);--transition:all .3s ease}
     body.dark{--bg-main:#0f172a;--bg-card:#1e293b;--text:#e2e8f0;--text-muted:#94a3b8;--shadow:0 8px 32px rgba(0,0,0,.25)}
@@ -17,7 +16,6 @@
     .card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 12px 40px rgba(13,110,253,.15)}
     .btn{border-radius:12px;font-weight:600;border:none;transition:var(--transition);padding:.55rem 1.1rem}
     .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-light));box-shadow:0 4px 15px rgba(13,110,253,.3)}
-    .btn-primary:hover{box-shadow:0 6px 20px rgba(13,110,253,.45);transform:translateY(-2px)}
     .btn-success{background:linear-gradient(135deg,var(--success),#34ce57);box-shadow:0 4px 15px rgba(40,167,69,.3)}
     .btn-danger{background:linear-gradient(135deg,var(--danger),#e35d6a);box-shadow:0 4px 15px rgba(220,53,69,.3)}
     .btn-outline-secondary{border:1.5px solid #ced4da;color:var(--text-muted)}
@@ -295,14 +293,20 @@ if(!users.length){
   users=[{id:uid('u'),username:'admin',password:'12345',role:'admin'}];
   save(KEY_USERS,users);
 } else {
-  // ensure at least one admin exists; if none, create default admin
   if(!users.find(u=>u.role==='admin')){
     users.unshift({id:uid('u'),username:'admin',password:'12345',role:'admin'});
     save(KEY_USERS,users);
   }
 }
 /* seed items if empty */
-if(!items.length){items=[{id:uid('it'),name:'Rice 5kg',price:10,quantity:10,low:5},{id:uid('it'),name:'Sugar 2kg',price:3.5,quantity:8,low:5},{id:uid('it'),name:'Bread',price:.5,quantity:20,low:5}];save(KEY_ITEMS,items)}
+if(!items.length){
+  items=[
+    {id:uid('it'),name:'Rice 5kg',price:10,quantity:10,low:5},
+    {id:uid('it'),name:'Sugar 2kg',price:3.5,quantity:8,low:5},
+    {id:uid('it'),name:'Bread',price:.5,quantity:20,low:5}
+  ];
+  save(KEY_ITEMS,items);
+}
 
 /* =================  AUTH  ================= */
 let currentUser = null;
@@ -370,34 +374,33 @@ document.getElementById('showAddItemBtn').addEventListener('click',()=>{document
 let cart=[];
 const saleSearch=document.getElementById('saleSearch'),saleSuggest=document.getElementById('saleSuggest');
 function renderSaleItemsList(){items=load(KEY_ITEMS);const container=document.getElementById('saleItemsList');container.innerHTML='';items.forEach(it=>{const div=document.createElement('div');div.className='d-flex align-items-center justify-content-between p-2 border-bottom';div.innerHTML=`<div><strong>${escapeHtml(it.name)}</strong><br><small>${parseFloat(it.price).toFixed(2)} USD — Qty: ${it.quantity}</small> ${it.quantity<=it.low?' <span class="low-badge ms-2">Low</span>':''}</div><div style="min-width:140px"><input type="number" value="1" min="1" max="${it.quantity}" class="form-control form-control-sm mb-1 addQty" data-id="${it.id}"><button class="btn btn-sm btn-primary w-100 addToCart" data-id="${it.id}">Add</button></div>`;container.appendChild(div)});saleSearch.value='';hideSuggest()}
-document.getElementById('saleItemsList').addEventListener('click',e=>{const btn=e.target.closest('button.addToCart');if(!btn)return;const id=btn.dataset.id,qtyInput=btn.parentElement.querySelector('.addQty');let q=parseInt(qtyInput.value)||1;items=load(KEY_ITEMS);const it=items.find(x=>x.id===id);if(!it)return Swal.fire('Error','Item lama helin','error');if(q>it.quantity)return Swal.fire('Error',`Kaliya ${it.quantity} ayaa la heli karaa`,`error`);addToCart(id,q)})
-saleSearch.addEventListener('input',function(){const q=this.value.trim().toLowerCase();if(!q){renderSaleItemsList();hideSuggest();return}items=load(KEY_ITEMS);const matches=items.filter(it=>it.name.toLowerCase().includes(q));if(!matches.length){hideSuggest();renderSaleItemsList();return}saleSuggest.innerHTML='';matches.forEach(m=>{const d=document.createElement('div');d.className='suggest-item';d.innerHTML=`<strong>${escapeHtml(m.name)}</strong> — ${parseFloat(m.price).toFixed(2)} USD — Qty: ${m.quantity}`;d.dataset.id=m.id;d.addEventListener('click',()=>{addToCart(d.dataset.id,1);hideSuggest();saleSearch.value=''});saleSuggest.appendChild(d)});saleSuggest.style.display='block'})
+document.getElementById('saleItemsList').addEventListener('click',e=>{const btn=e.target.closest('button.addToCart');if(!btn)return;const id=btn.dataset.id;addToCart(id,1,false)})   // 1 qty manual
+saleSearch.addEventListener('input',function(){const q=this.value.trim().toLowerCase();if(!q){renderSaleItemsList();hideSuggest();return}items=load(KEY_ITEMS);const matches=items.filter(it=>it.name.toLowerCase().includes(q));if(!matches.length){hideSuggest();renderSaleItemsList();return}saleSuggest.innerHTML='';matches.forEach(m=>{const d=document.createElement('div');d.className='suggest-item';d.innerHTML=`<strong>${escapeHtml(m.name)}</strong> — ${parseFloat(m.price).toFixed(2)} USD — Qty: ${m.quantity}`;d.dataset.id=m.id;d.addEventListener('click',()=>{addToCart(d.dataset.id,1,false);hideSuggest();saleSearch.value=''});saleSuggest.appendChild(d)});saleSuggest.style.display='block'})
 function hideSuggest(){saleSuggest.style.display='none';saleSuggest.innerHTML=''}
-function addToCart(id,q=1){items=load(KEY_ITEMS);const it=items.find(x=>x.id===id);if(!it)return;const found=cart.find(x=>x.id===id);if(found){const newQty=found.qty+q; if(newQty>it.quantity){Swal.fire('Stock','Tirada ku filan ma ahan','info');return}found.qty=newQty}else cart.push({id:it.id,name:it.name,price:it.price,qty:q});renderCart();beepScan()}
+function addToCart(id,q=1,fromScan=false){items=load(KEY_ITEMS);const it=items.find(x=>x.id===id);if(!it){Swal.fire('Error','Item lama helin','error');return}const found=cart.find(c=>c.id===id);if(found){const newQty=found.qty+(fromScan?1:q);if(newQty>it.quantity){Swal.fire('Stock','Tirada ku filan ma ahan','info');return}found.qty=newQty}else cart.push({id:it.id,name:it.name,price:it.price,qty:fromScan?1:q});renderCart();if(fromScan)beepScan()}
 function renderCart(){const area=document.getElementById('cartArea');if(!cart.length){area.innerHTML='<p class="text-muted">Cart waa madhan yahay.</p>';return}let html='<table class="table table-sm"><thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Subtotal</th><th></th></tr></thead><tbody>';let total=0;cart.forEach((c,idx)=>{const sub=c.qty*parseFloat(c.price);total+=sub;html+=`<tr><td>${escapeHtml(c.name)}</td><td><input type="number" min="1" value="${c.qty}" class="form-control form-control-sm cartQty" data-i="${idx}" style="width:90px"></td><td>${parseFloat(c.price).toFixed(2)}</td><td>${sub.toFixed(2)}</td><td><button class="btn btn-sm btn-danger removeLine" data-i="${idx}">x</button></td></tr>`});html+=`</tbody></table><div class="text-end"><h5>Total: <span id="cartTotal">${total.toFixed(2)}</span> USD</h5></div>`;area.innerHTML=html}
 document.getElementById('cartArea').addEventListener('click',e=>{const btn=e.target.closest('button.removeLine');if(btn){const i=parseInt(btn.dataset.i);cart.splice(i,1);renderCart();return} const inp=e.target.closest('input.cartQty');if(!inp)return;const i=parseInt(inp.dataset.i);let v=parseInt(inp.value)||1;items=load(KEY_ITEMS);const it=items.find(x=>x.id===cart[i].id);if(v>it.quantity){Swal.fire('Error','Qty exceeds available stock','error');inp.value=cart[i].qty;return}cart[i].qty=v;renderCart()})
 
 /* =================  CAMERA SCAN  ================= */
-let html5Qr;
+let html5QrCode;
 function openScan(){
   document.getElementById('scanCamModal').style.display='block';
-  html5Qr=new Html5Qrcode("qr-reader");
-  html5Qr.start({facingMode:"environment"},{fps:10,qrbox:250},onScanSuccess,()=>{}).catch(err=>Swal.fire('Camera','Unable to access camera','error'))
+  Html5Qrcode.getCameras().then(devices=>{
+    if(devices && devices.length){
+      html5QrCode=new Html5Qrcode("qr-reader");
+      html5QrCode.start(devices[0].id,{fps:10,qrbox:250},onScanSuccess,()=>{}).catch(err=>Swal.fire('Camera','Unable to access camera','error'))
+    }else Swal.fire('Camera','No cameras found','error')
+  }).catch(err=>Swal.fire('Camera','Camera permission denied','error'))
 }
-function closeScan(){if(html5Qr)html5Qr.stop().then(()=>html5Qr.clear());document.getElementById('scanCamModal').style.display='none'}
+function closeScan(){if(html5QrCode)html5QrCode.stop().then(()=>html5QrCode.clear());document.getElementById('scanCamModal').style.display='none'}
 function onScanSuccess(decodedText){
   const id=decodedText.replace(/^0+/,'');
   items=load(KEY_ITEMS);
   const it=items.find(x=>x.id===id);
   if(!it){Swal.fire('Not found','Item with this barcode does not exist','warning');return}
-  beepScan();
-  const exist=cart.find(c=>c.id===id);
-  if(exist){
-    const newQty=exist.qty+1;
-    if(newQty>it.quantity){Swal.fire('Stock','Tirada ku filan ma ahan','info');return}
-    exist.qty=newQty;
-  }else addToCart(id,1);
-  renderCart();closeScan();
+  addToCart(it.id,1,true);   // scan → 1
+  renderCart();
+  closeScan();
 }
 function beepScan(){
   const audio=new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE');
@@ -414,7 +417,6 @@ creditInput.addEventListener('input',function(){
   const q=this.value.trim().toLowerCase();
   if(!q){hideCreditSuggest();hideCreditInfo();return}
   refreshCustomers();
-  // match by name or phone (allow numeric phone search)
   const matches=customers.filter(c=> (c.name&&c.name.toLowerCase().includes(q)) || (c.phone&&String(c.phone).includes(q)) );
   if(!matches.length){hideCreditSuggest();hideCreditInfo();return}
   creditSuggest.innerHTML='';
@@ -435,18 +437,14 @@ document.getElementById('saveSaleBtn').addEventListener('click',()=>{
     cart.forEach(c=>{const it=items.find(x=>x.id===c.id);if(!it)throw new Error(`Item ${c.name} lama helin`);if(c.qty>it.quantity)throw new Error(`Item '${it.name}' kaliya ${it.quantity} ayaa la heli karaa, codsatay ${c.qty}`)})
   }catch(err){return Swal.fire('Error',err.message,'error')}
   const total=parseFloat(cart.reduce((t,c)=>t+c.qty*parseFloat(c.price),0).toFixed(2)),orderId=genInvoice(),sale={id:orderId,total,payment,customer:payment==='Credit'?null:null,date:new Date().toISOString(),lines:cart.map(c=>({...c})),returned:false,user:currentUser.username};
-  // handle credit customer: allow name or phone
   let custPhone = null;
   if(payment==='Credit'){
-    // if input looks numeric treat as phone else name
     const raw=custNameRaw;
     if(/^\d+$/.test(raw)){ custPhone = raw; sale.customer = null; sale.customerPhone = custPhone; }
     else { sale.customer = raw; }
   }
   sales=load(KEY_SALES);sales.push(sale);save(KEY_SALES,sales);
-  // deduct stock
   items=items.map(it=>{const line=cart.find(l=>l.id===it.id);if(line)return{...it,quantity:it.quantity-line.qty};return it});save(KEY_ITEMS,items);
-  // create/update customer record for credit
   if(payment==='Credit'){
     customers=load(KEY_CUST);
     let found = null;
@@ -465,7 +463,6 @@ document.getElementById('saveSaleBtn').addEventListener('click',()=>{
     save(KEY_CUST,customers);
   }
 
-  // build receipt and print
   const dt=new Date(sale.date||new Date().toISOString()),dtStr=dt.toLocaleString();
   let receiptHtml=`<div style="font-weight:700;font-size:16px;">Foorno Ubax Supermarket System</div><div style="margin-top:6px;">Order ID: <b>${orderId}</b></div><div>Date: ${dtStr}</div>${sale.customer?`<div>Customer: ${escapeHtml(sale.customer)}</div>`:(sale.customerPhone?`<div>Customer Phone: ${escapeHtml(sale.customerPhone)}</div>`:'')}<hr style="margin:8px 0;"><table style="width:100%;font-size:14px;" cellpadding="4"><tbody>`;
   sale.lines.forEach(l=>{receiptHtml+=`<tr><td style="text-align:left">${escapeHtml(l.name)} x${l.qty}</td><td style="text-align:right">${(l.qty*parseFloat(l.price)).toFixed(2)} USD</td></tr>`});
@@ -513,7 +510,6 @@ function updateStats(){
   document.getElementById('statLow').innerText=lowCount;
   const today=new Date().toISOString().slice(0,10);
   let todayTotal=0;
-  // For admin show all paid today; for cashier only their paid today
   if(currentUser.role==='admin'){
     todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid')return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
   }else{
@@ -534,16 +530,9 @@ function showAlertIfLow(){
 function renderReports(){
   sales=load(KEY_SALES);customers=load(KEY_CUST);returns=load(KEY_RETURNS);items=load(KEY_ITEMS);
   const today=new Date().toISOString().slice(0,10);
-  // filter sales for display: apply cashier restriction + today's filter
   let filterSales = sales || [];
-  // apply cashier access: cashier sees only their sales
   if(currentUser.role==='cashier') filterSales = filterSales.filter(s => s.user === currentUser.username);
-  // always show latest first
   filterSales = filterSales.slice().reverse();
-
-  // apply "only today's sales" view for cashiers (as requested)
-  // For admin we still allow seeing all, but the "today total" is computed per role.
-  // Additionally add search capability for sales (OrderID / customer / phone)
   const searchQ = document.getElementById('searchSales')?.value?.trim().toLowerCase();
   if(searchQ){
     filterSales = filterSales.filter(s => {
@@ -553,8 +542,6 @@ function renderReports(){
       return false;
     });
   }
-
-  // compute today's paid total for header
   let todayTotal=0;
   if(currentUser.role==='admin'){
     todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid')return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
@@ -562,21 +549,14 @@ function renderReports(){
     todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid'&&s.user===currentUser.username)return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
   }
   document.getElementById('reportTodayTotal').innerText=todayTotal;
-
-  // Credit customers list
   const rc=document.getElementById('reportCredits');rc.innerHTML='';
   if(!customers||!customers.length)rc.innerHTML='<li class="list-group-item text-muted">Ma jiraan credit customers</li>';
   else customers.forEach(c=>rc.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${escapeHtml(c.name)} ${c.phone?`<small>(${escapeHtml(c.phone)})</small>`:''} <span>${parseFloat(c.balance).toFixed(2)}</span></li>`);
-
-  // Low items list
   const rl=document.getElementById('reportLow');rl.innerHTML='';
   const lowList=items.filter(i=>i.quantity<=i.low);
   if(!lowList.length)rl.innerHTML='<li class="list-group-item text-muted">Ma jiraan items ku dhow inay dhamaadaan</li>';
   else lowList.forEach(i=>rl.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${escapeHtml(i.name)} <span>${i.quantity}</span></li>`);
-
-  // Sales history table
   const st=document.getElementById('salesTable');st.innerHTML='';
-  // If admin, show filter dropdown of cashiers (but don't reveal other admins)
   if(currentUser.role==='admin'){
     const cashiers=[...new Set((sales||[]).map(s=>s.user).filter(Boolean))];
     let dropdown=`<select id="cashierFilter" class="form-select form-select-sm w-auto mb-2" onchange="renderReports()"><option value="">All Cashiers</option>`;
@@ -588,9 +568,7 @@ function renderReports(){
   } else {
     document.getElementById('cashierFilterDiv').innerHTML='';
   }
-
   filterSales.forEach(s=>{const dt=s.date?new Date(s.date).toLocaleString():'';st.innerHTML+=`<tr class="${s.returned?'table-warning':''}"><td>${escapeHtml(s.id)}</td><td>${dt}</td><td>${parseFloat(s.total||0).toFixed(2)}</td><td>${escapeHtml(s.payment||s.type||'')}</td><td>${escapeHtml(s.user)}</td></tr>`});
-
   const rlContainer=document.getElementById('returnList');rlContainer.innerHTML='';
   if(!returns||!returns.length)rlContainer.innerHTML='<p class="text-muted">Ma jiraan returns la diiwaangeliyey.</p>';
   else{let html='<ul class="list-group">';returns.slice().reverse().forEach(r=>{const dt=r.date?new Date(r.date).toLocaleString():'';html+=`<li class="list-group-item d-flex justify-content-between"><div><b>${escapeHtml(r.orderId)}</b> — ${dt}<br><small>${escapeHtml(r.note||'')}</small></div><div><span class="text-success">Returned</span></div></li>`});html+='</ul>';rlContainer.innerHTML=html}
@@ -603,13 +581,11 @@ document.getElementById('doReturnBtn').addEventListener('click',()=>{if(currentU
 const usersTable=document.getElementById('usersTable'),addUserForm=document.getElementById('addUserForm');
 function renderUsersTable(){
   users=load(KEY_USERS);usersTable.innerHTML='';
-  // Show only cashiers and the current admin (don't show other admins)
   const usersToShow = users.filter(u => {
     if(u.role === 'admin' && currentUser.role === 'admin') {
-      // only show the current admin user row (don't expose other admins)
       return u.id === currentUser.id;
     }
-    return true; // show cashiers
+    return true;
   });
   usersToShow.forEach(u=>{
     const tr=document.createElement('tr');
@@ -631,7 +607,6 @@ addUserForm.addEventListener('submit',e=>{
   const id=document.getElementById('editUserId').value,username=document.getElementById('userName').value.trim(),password=document.getElementById('userPass').value,role=document.getElementById('userRole').value;
   if(!username||!password)return Swal.fire('Khalad','Fadlan buuxi meelaha oo dhan','error');
   users=load(KEY_USERS);
-  // enforce single admin: prevent creating or changing role to admin
   if(role==='admin'){return Swal.fire('Restricted','Ma samayn kartid admin kale. Role waa in uu noqdaa cashier','error')}
   if(id){
     users=users.map(u=>u.id===id?{...u,username,password,role}:u);
@@ -647,9 +622,7 @@ document.getElementById('showAddUserBtn').addEventListener('click',()=>{document
 
 /* =================  INITIAL  ================= */
 renderItemsTable();renderSaleItemsList();updateStats();renderReports();renderUsersTable();if(sessionStorage.getItem('foorno_ubax_user'))go('dashboard');else hideAllViews()
-/* close suggestions on outside click */document.addEventListener('click',e=>{if(!e.target.closest('.suggestions')&&!e.target.closest('#saleSearch'))hideSuggest();if(!e.target.closest('.suggestions')&&!e.target.closest('#creditName'))hideCreditSuggest()})
-
-// Also rerender reports when search input is used (enter)
+document.addEventListener('click',e=>{if(!e.target.closest('.suggestions')&&!e.target.closest('#saleSearch'))hideSuggest();if(!e.target.closest('.suggestions')&&!e.target.closest('#creditName'))hideCreditSuggest()})
 document.getElementById('searchSales')?.addEventListener('keyup',function(e){ if(e.key==='Enter') renderReports(); })
 </script>
 </body>
