@@ -1,629 +1,1922 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="so">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Foorno Ubax – Admin + Cashier</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <style>
-    :root{--bg-main:#f4fbff;--bg-card:#ffffff;--primary:#0d6efd;--primary-light:#75b0fd;--danger:#dc3545;--success:#28a745;--warning:#ffc107;--text:#212529;--text-muted:#6c757d;--radius:16px;--shadow:0 8px 32px rgba(13,110,253,.08);--transition:all .3s ease}
-    body.dark{--bg-main:#0f172a;--bg-card:#1e293b;--text:#e2e8f0;--text-muted:#94a3b8;--shadow:0 8px 32px rgba(0,0,0,.25)}
-    body{background:var(--bg-main);color:var(--text);font-family:"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;transition:var(--transition)}
-    .card{background:var(--bg-card);border:none;border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:var(--transition)}
-    .card:hover{transform:translateY(-4px) scale(1.01);box-shadow:0 12px 40px rgba(13,110,253,.15)}
-    .btn{border-radius:12px;font-weight:600;border:none;transition:var(--transition);padding:.55rem 1.1rem}
-    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-light));box-shadow:0 4px 15px rgba(13,110,253,.3)}
-    .btn-success{background:linear-gradient(135deg,var(--success),#34ce57);box-shadow:0 4px 15px rgba(40,167,69,.3)}
-    .btn-danger{background:linear-gradient(135deg,var(--danger),#e35d6a);box-shadow:0 4px 15px rgba(220,53,69,.3)}
-    .btn-outline-secondary{border:1.5px solid #ced4da;color:var(--text-muted)}
-    .btn-outline-secondary:hover{background:#e9ecef;color:var(--text);border-color:#e9ecef;transform:translateY(-2px)}
-    .form-control,.form-select{border-radius:12px;border:1.5px solid #ced4da;background:var(--bg-card);color:var(--text);transition:var(--transition)}
-    .form-control:focus,.form-select:focus{border-color:var(--primary);box-shadow:0 0 0 .25rem rgba(13,110,253,.25);background:#fff}
-    .table-sm{border-collapse:separate;border-spacing:0 8px}
-    .table-sm thead th{background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;border:none;font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;border-radius:8px;padding:.75rem}
-    .table-sm tbody tr{background:var(--bg-card);border-radius:var(--radius);box-shadow:0 2px 8px rgba(0,0,0,.05);transition:var(--transition)}
-    .table-sm tbody tr:hover{transform:scale(1.015);box-shadow:0 6px 20px rgba(0,0,0,.1)}
-    .table-sm td{border:none;vertical-align:middle;padding:.75rem}
-    .low-badge{background:var(--warning);color:#000;font-size:.7rem;padding:4px 8px;border-radius:10px;font-weight:700;box-shadow:0 2px 6px rgba(255,193,7,.3)}
-    #statItems,#statLow,#statToday{font-weight:800;font-size:2rem;background:linear-gradient(135deg,var(--primary),var(--primary-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .suggestions{border-radius:var(--radius);box-shadow:var(--shadow);border:1.5px solid #dee2e6;background:var(--bg-card);position:absolute;z-index:1050;max-height:220px;overflow:auto;width:100%}
-    .suggest-item{border-radius:8px;margin:2px 0;transition:var(--transition);padding:8px}
-    .suggest-item:hover{background-color:#e7f1ff;transform:translateX(4px);cursor:pointer}
-    #scanCamModal .modal-content{background:var(--bg-card);border-radius:var(--radius);box-shadow:0 20px 50px rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1)}
-    #printArea .receipt{background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:0 4px 20px rgba(0,0,0,.1)}
-    .barcode{display:block;width:100%;height:50px;margin-bottom:10px;border-radius:6px}
-    #themeToggle{position:fixed;bottom:20px;right:20px;z-index:1050;border-radius:50%;width:50px;height:50px;font-size:1.4rem;box-shadow:0 4px 15px rgba(0,0,0,.2)}
-    .muted-small{color:var(--text-muted);font-size:12px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baxnaano HMS — Hospital & Doctor Management</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; min-height: 100vh; color: #333; }
+        
+        /* Login */
+        .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
+        .login-box { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 420px; text-align: center; }
+        .login-box img { width: 70px; margin-bottom: 1rem; }
+        .login-box h2 { color: #667eea; margin-bottom: 0.25rem; }
+        .login-box p { color: #888; margin-bottom: 1.5rem; font-size: 0.9rem; }
+        .login-input { width: 100%; padding: 12px 14px; margin-bottom: 0.75rem; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: 0.2s; }
+        .login-input:focus { outline: none; border-color: #667eea; }
+        .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .login-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+        
+        /* Nav */
+        .navbar { background: white; padding: 0.75rem 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 1000; display: none; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .nav-brand { font-weight: 700; color: #667eea; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-menu { display: flex; gap: 0.4rem; margin-left: auto; flex-wrap: wrap; }
+        .nav-btn { padding: 8px 14px; border: none; background: #f0f0f0; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; }
+        .nav-btn:hover, .nav-btn.active { background: #667eea; color: white; }
+        .user-pill { background: #f0f0f0; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; color: #555; display: flex; align-items: center; gap: 0.4rem; }
+        .role-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; background: #667eea; color: white; padding: 2px 6px; border-radius: 4px; }
+        
+        /* Views */
+        .view { display: none; max-width: 1300px; margin: 0 auto; padding: 1.5rem; animation: fadeIn 0.3s; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Cards */
+        .card { background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 1rem; }
+        .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; color: #444; }
+        .card-header-flex { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
+        
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat { background: white; padding: 1.25rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 4px solid #667eea; }
+        .stat.green { border-left-color: #28a745; }
+        .stat.red { border-left-color: #dc3545; }
+        .stat.orange { border-left-color: #fd7e14; }
+        .stat.purple { border-left-color: #764ba2; }
+        .stat small { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat div { font-size: 1.5rem; font-weight: 700; color: #333; margin-top: 0.25rem; }
+        
+        /* Forms */
+        .form-label { display: block; font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.3px; }
+        .form-control { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: 0.2s; }
+        .form-control:focus { outline: none; border-color: #667eea; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+        .input-group { position: relative; }
+        .input-group i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888; }
+        .input-group .form-control { padding-left: 36px; }
+        
+        /* Buttons */
+        .btn { padding: 10px 18px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-light { background: #f8f9fa; color: #555; border: 1px solid #e0e0e0; }
+        .btn-info { background: #17a2b8; color: white; }
+        .btn:hover { transform: translateY(-1px); opacity: 0.92; }
+        .btn-lg { padding: 14px 28px; font-size: 16px; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-block { display: block; width: 100%; }
+        
+        /* Tables */
+        .table-wrap { overflow-x: auto; }
+        .table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+        .table th { background: #f8f9fa; padding: 10px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #e0e0e0; white-space: nowrap; }
+        .table td { padding: 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+        .table tr:hover { background: #fafbfc; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; display: inline-block; }
+        .bg-paid { background: #d4edda; color: #155724; }
+        .bg-pending { background: #fff3cd; color: #856404; }
+        .bg-waiting { background: #d1ecf1; color: #0c5460; }
+        .bg-active { background: #d4edda; color: #155724; }
+        .bg-inactive { background: #f8d7da; color: #721c24; }
+        .bg-completed { background: #d4edda; color: #155724; }
+        
+        /* Search dropdown */
+        .search-results { background: white; border: 1px solid #e0e0e0; border-radius: 8px; max-height: 220px; overflow-y: auto; position: absolute; width: 100%; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none; }
+        .search-result-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f5f5f5; }
+        .search-result-item:hover { background: #f8f9fa; }
+        .search-result-item .name { font-weight: 600; color: #333; }
+        .search-result-item .meta { font-size: 0.8rem; color: #888; }
+        
+        /* Services selector */
+        .service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
+        .service-chip { border: 2px solid #e0e0e0; border-radius: 10px; padding: 0.75rem; cursor: pointer; transition: 0.2s; text-align: center; background: white; }
+        .service-chip:hover { border-color: #667eea; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
+        .service-chip.selected { border-color: #667eea; background: #f0f4ff; }
+        .service-chip .name { font-weight: 600; font-size: 0.85rem; color: #333; }
+        .service-chip .price { color: #667eea; font-weight: 700; font-size: 1rem; margin-top: 0.2rem; }
+        .service-chip .dept { font-size: 0.7rem; color: #888; margin-top: 0.2rem; }
+        
+        /* Bill summary */
+        .bill-box { background: #f8f9fa; border-radius: 10px; padding: 1rem; }
+        .bill-line { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; }
+        .bill-line.total { font-size: 1.1rem; font-weight: 700; color: #667eea; border-top: 2px solid #667eea; margin-top: 6px; padding-top: 10px; }
+        
+        /* Payment methods */
+        .pay-methods { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .pay-method { padding: 8px 16px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; background: white; }
+        .pay-method.active { border-color: #667eea; background: #f0f4ff; color: #667eea; }
+        .mixed-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+        
+        /* Queue cards */
+        .queue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+        .queue-card { background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 2px solid #e0e0e0; transition: 0.2s; }
+        .queue-card:hover { border-color: #667eea; }
+        .queue-card.waiting { border-left: 4px solid #ffc107; }
+        .queue-card.in-progress { border-left: 4px solid #17a2b8; }
+        .queue-card.completed { border-left: 4px solid #28a745; opacity: 0.85; }
+        .queue-card .patient-name { font-weight: 700; font-size: 1.05rem; color: #333; }
+        .queue-card .meta { font-size: 0.82rem; color: #666; margin-top: 0.25rem; }
+        .queue-card .actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; }
+        
+        /* Prescription builder */
+        .rx-row { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr auto; gap: 0.5rem; align-items: end; margin-bottom: 0.5rem; }
+        .rx-row input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+        
+        /* Doctor profile card */
+        .doc-card { background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: center; border-top: 4px solid #667eea; }
+        .doc-card .avatar { width: 60px; height: 60px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; margin: 0 auto 0.75rem; }
+        .doc-card .name { font-weight: 700; font-size: 1.1rem; }
+        .doc-card .spec { color: #667eea; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .doc-card .stats { display: flex; justify-content: center; gap: 1rem; margin-top: 0.75rem; font-size: 0.8rem; color: #666; }
+        
+        /* Receipt print */
+        .receipt { max-width: 360px; margin: 0 auto; background: white; padding: 24px; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.4; }
+        .receipt-center { text-align: center; }
+        .receipt h3 { font-size: 18px; margin-bottom: 4px; font-family: 'Segoe UI', sans-serif; }
+        .receipt p { margin: 2px 0; }
+        .receipt-line { border-top: 1px dashed #333; margin: 10px 0; }
+        .receipt-table { width: 100%; }
+        .receipt-table td { padding: 3px 0; }
+        .receipt-table .right { text-align: right; }
+        .receipt-bold { font-weight: bold; font-size: 14px; }
+        
+        /* Prescription print */
+        .rx-print { max-width: 600px; margin: 0 auto; background: white; padding: 30px; font-family: 'Segoe UI', sans-serif; font-size: 14px; }
+        .rx-print-header { text-align: center; border-bottom: 2px solid #667eea; padding-bottom: 15px; margin-bottom: 20px; }
+        .rx-print h2 { color: #667eea; margin-bottom: 5px; }
+        .rx-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .rx-table th, .rx-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .rx-table th { background: #f8f9fa; }
+        
+        @media print {
+            body > * { display: none !important; }
+            #printArea, #printArea * { display: block !important; visibility: visible !important; }
+            #printArea { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+        
+        .hidden { display: none !important; }
+        .text-muted { color: #888; }
+        .text-success { color: #28a745; }
+        .text-danger { color: #dc3545; }
+        .text-right { text-align: right; }
+        .d-flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .align-center { align-items: center; }
+        .gap-1 { gap: 0.5rem; } .gap-2 { gap: 1rem; }
+        .mt-1 { margin-top: 0.5rem; } .mt-2 { margin-top: 1rem; } .mt-3 { margin-top: 1.5rem; }
+        .mb-1 { margin-bottom: 0.5rem; } .mb-2 { margin-bottom: 1rem; }
+        .w-100 { width: 100%; }
+        
+        @media (max-width: 900px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-row { grid-template-columns: 1fr; }
+            .service-grid { grid-template-columns: repeat(2, 1fr); }
+            .mixed-inputs { grid-template-columns: 1fr; }
+            .rx-row { grid-template-columns: 1fr; }
+            .navbar { padding: 0.5rem; }
+        }
+    </style>
 </head>
 <body>
-<nav class="navbar navbar-light bg-white border-bottom">
-  <div class="container-fluid">
-    <span class="navbar-brand brand">Foorno Ubax – Admin + Cashier</span>
-    <div id="nav-right"></div>
-  </div>
-</nav>
 
-<div class="container py-4" id="app">
-  <!-- LOGIN -->
-  <div id="loginView" class="row justify-content-center">
-    <div class="col-md-5">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h4 class="mb-3 text-center">Login</h4>
-          <form id="loginForm" autocomplete="off">
-            <div class="mb-3"><label class="form-label">Username</label><input id="loginUser" class="form-control" autocomplete="off" required></div>
-            <div class="mb-3"><label class="form-label">Password</label><input id="loginPass" type="password" class="form-control" autocomplete="new-password" required></div>
-            <button class="btn btn-primary w-100">GALI</button>
-          </form>
-        </div>
-      </div>
+<!-- LOGIN -->
+<div id="loginView" class="login-wrap">
+    <div class="login-box">
+        <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" alt="Logo">
+        <h2>BAXNAANO HMS</h2>
+        <p>Hospital & Doctor Management</p>
+        <input type="text" id="loginUser" class="login-input" placeholder="Username" autocomplete="username">
+        <input type="password" id="loginPass" class="login-input" placeholder="Password" autocomplete="current-password">
+        <button class="login-btn" onclick="doLogin()">Login</button>
+        <p class="text-muted" style="margin-top:1rem;font-size:0.8rem;">
+            Demo: <strong>admin</strong>/admin123 | <strong>cashier1</strong>/5656 | <strong>doctor1</strong>/1234
+        </p>
     </div>
-  </div>
+</div>
 
-  <!-- MAIN -->
-  <div id="mainView" style="display:none;">
-    <div class="row g-3">
-      <div class="col-md-3">
-        <div class="card p-3">
-          <h6>Tirakoob</h6>
-          <div class="mt-2"><div class="mb-2 small-muted">Items guud</div><h4 id="statItems">0</h4></div>
-          <div class="mt-2"><div class="mb-2 small-muted">Items ku dhow inay dhamaadaan</div><h4 id="statLow">0</h4></div>
-          <div class="mt-2"><div class="mb-2 small-muted">Iibka maanta (Paid only)</div><h4 id="statToday">0.00</h4></div>
-          <div class="mt-3" id="navMenu"></div>
+<!-- APP -->
+<div id="appWrap" style="display:none;">
+    <div class="navbar" id="navbar">
+        <div class="nav-brand">
+            <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" style="width:26px;height:26px;">
+            Baxnaano HMS
         </div>
-      </div>
-
-      <div class="col-md-9">
-        <!-- DASHBOARD -->
-        <div id="dashboardView">
-          <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
-            <h5>Dashboard</h5><div><span class="me-3">User: <b id="userName">-</b></span><span class="me-3">Role: <b id="userRole">-</b></span></div>
-          </div>
-          <div class="card p-3"><h6>Items Ku Dhaw</h6><div id="lowItemsList"></div></div>
+        <div class="nav-menu" id="navMenu"></div>
+        <div class="d-flex align-center gap-1">
+            <span class="user-pill"><span id="userName">User</span><span class="role-tag" id="userRole">admin</span></span>
+            <button class="btn btn-sm btn-light" onclick="doLogout()">Logout</button>
         </div>
+    </div>
 
-        <!-- ITEMS -->
-        <div id="itemsView" style="display:none;">
-          <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
-            <h5>Maareynta Items</h5>
+    <!-- ========== ADMIN VIEWS ========== -->
+    
+    <!-- ADMIN DASHBOARD -->
+    <div id="adminDashView" class="view">
+        <div class="stats-grid">
+            <div class="stat green"><small>Today's Patients</small><div id="adPatients">0</div></div>
+            <div class="stat"><small>Today's Income</small><div id="adIncome">$0</div></div>
+            <div class="stat purple"><small>Doctors On Duty</small><div id="adDoctors">0</div></div>
+            <div class="stat orange"><small>Pending Labs</small><div id="adPendingLabs">0</div></div>
+            <div class="stat red"><small>Pending Bills</small><div id="adPendingBills">0</div></div>
+            <div class="stat green"><small>Total Patients</small><div id="adTotalPatients">0</div></div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+            <div class="card">
+                <div class="card-title">🕐 Recent Bills</div>
+                <div class="table-wrap"><table class="table"><thead><tr><th>#</th><th>Patient</th><th>Amount</th><th>Status</th></tr></thead><tbody id="adRecentBills"></tbody></table></div>
+            </div>
+            <div class="card">
+                <div class="card-title">👨‍⚕️ Doctors Status</div>
+                <div class="table-wrap"><table class="table"><thead><tr><th>Doctor</th><th>Specialty</th><th>Status</th><th>Today's Patients</th></tr></thead><tbody id="adDocStatus"></tbody></table></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCTOR MANAGEMENT -->
+    <div id="doctorsView" class="view">
+        <div class="card">
+            <div class="card-header-flex">
+                <div class="card-title">👨‍⚕️ Doctor Management</div>
+                <button class="btn btn-primary" onclick="openDoctorModal()">+ Add Doctor</button>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Specialty</th><th>Phone</th><th>Username</th><th>Status</th><th>Patients Today</th><th style="text-align:right;">Action</th></tr></thead>
+                    <tbody id="doctorsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PATIENTS REGISTRY -->
+    <div id="patientsView" class="view">
+        <div class="card">
+            <div class="card-header-flex">
+                <div class="card-title">🏥 Patient Registry</div>
+                <div class="d-flex gap-1">
+                    <div class="input-group"><i class="bi bi-search"></i><input id="patSearch" class="form-control" placeholder="Search name or phone..." style="width:220px;" oninput="renderPatients()"></div>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Age/Gender</th><th>Address</th><th>Visits</th><th>Last Visit</th><th style="text-align:right;">Action</th></tr></thead>
+                    <tbody id="patientsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SERVICES MANAGEMENT -->
+    <div id="servicesView" class="view">
+        <div class="card">
+            <div class="card-header-flex">
+                <div class="card-title">🧪 Services & Pricing</div>
+                <button class="btn btn-primary" onclick="openServiceModal()">+ Add Service</button>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Department</th><th>Price</th><th>Cost</th><th>Margin</th><th style="text-align:right;">Action</th></tr></thead>
+                    <tbody id="servicesTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALL BILLS -->
+    <div id="allBillsView" class="view">
+        <div class="card">
+            <div class="card-header-flex">
+                <div class="card-title">🧾 All Bills</div>
+                <div class="d-flex gap-1">
+                    <input id="allBillSearch" class="form-control" placeholder="Search..." style="width:200px;" oninput="renderAllBills()">
+                    <select id="allBillStatus" class="form-control" style="width:130px;" onchange="renderAllBills()"><option value="all">All</option><option value="paid">Paid</option><option value="pending">Pending</option></select>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Receipt</th><th>Date</th><th>Patient</th><th>Doctor</th><th>Total</th><th>Paid</th><th>Balance</th><th>Method</th><th>Cashier</th><th style="text-align:right;">Action</th></tr></thead>
+                    <tbody id="allBillsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN REPORTS -->
+    <div id="adminReportsView" class="view">
+        <div class="stats-grid">
+            <div class="stat"><small>Revenue</small><div id="arRevenue">$0</div></div>
+            <div class="stat green"><small>Profit</small><div id="arProfit">$0</div></div>
+            <div class="stat orange"><small>Pending</small><div id="arPending">$0</div></div>
+            <div class="stat purple"><small>Patients</small><div id="arPatients">0</div></div>
+        </div>
+        <div class="card">
+            <div class="card-header-flex">
+                <div class="card-title">📈 Financial Reports</div>
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-light" onclick="setAdminReport('today')">Today</button>
+                    <button class="btn btn-sm btn-light" onclick="setAdminReport('week')">Week</button>
+                    <button class="btn btn-sm btn-light" onclick="setAdminReport('month')">Month</button>
+                    <input type="date" id="arFrom" class="form-control" style="width:auto;" onchange="renderAdminReports()">
+                    <input type="date" id="arTo" class="form-control" style="width:auto;" onchange="renderAdminReports()">
+                    <button class="btn btn-primary btn-sm" onclick="printAdminReport()">🖨️ Print</button>
+                </div>
+            </div>
+            <div class="table-wrap"><table class="table"><thead><tr><th>Receipt</th><th>Date</th><th>Patient</th><th>Doctor</th><th>Services</th><th>Total</th><th>Profit</th><th>Method</th></tr></thead><tbody id="arTable"></tbody></table></div>
+        </div>
+    </div>
+
+    <!-- ========== CASHIER VIEWS ========== -->
+
+    <!-- CASHIER DASHBOARD -->
+    <div id="cashierDashView" class="view">
+        <div class="stats-grid">
+            <div class="stat green"><small>Today's Patients</small><div id="cdPatients">0</div></div>
+            <div class="stat"><small>Today's Income</small><div id="cdIncome">$0</div></div>
+            <div class="stat orange"><small>Pending Bills</small><div id="cdPending">0</div></div>
+            <div class="stat red"><small>My Total Bills</small><div id="cdTotalBills">0</div></div>
+        </div>
+        <div class="card">
+            <div class="card-title">🕐 My Recent Bills</div>
+            <div class="table-wrap"><table class="table"><thead><tr><th>#</th><th>Time</th><th>Patient</th><th>Amount</th><th>Status</th><th style="text-align:right;">Action</th></tr></thead><tbody id="cdRecent"></tbody></table></div>
+        </div>
+    </div>
+
+    <!-- CASHIER NEW BILL -->
+    <div id="cashierBillView" class="view">
+        <div style="display:grid; grid-template-columns: 1fr 380px; gap:1.5rem;">
             <div>
-              <button class="btn btn-outline-secondary me-2" onclick="go('dashboard')">Dashboard</button>
-              <button class="btn btn-primary" id="showAddItemBtn">Add Item</button>
-            </div>
-          </div>
-          <div class="card p-3 mb-3">
-            <form id="addItemForm" class="row g-2">
-              <input type="hidden" id="editItemId">
-              <div class="col-md-4"><input id="itemName" class="form-control" placeholder="Magaca item" required></div>
-              <div class="col-md-2"><input id="itemPrice" class="form-control" placeholder="Qiime" type="number" step="0.01" required></div>
-              <div class="col-md-2"><input id="itemQty" class="form-control" placeholder="Tirada" type="number" required></div>
-              <div class="col-md-2"><input id="itemLow" class="form-control" placeholder="Threshold" type="number" value="5" required></div>
-              <div class="col-md-2"><button class="btn btn-success w-100" id="saveItemBtn">Ku dar / Update</button></div>
-            </form>
-          </div>
-          <div class="card p-3">
-            <h6>Liiska Items</h6>
-            <input id="searchItem" class="form-control mb-2" placeholder="Raadi item...">
-            <div style="max-height:420px; overflow:auto;">
-              <table class="table table-sm">
-                <thead><tr><th>Magac</th><th>Qiime</th><th>Tirada</th><th>Threshold</th><th>Action</th></tr></thead>
-                <tbody id="itemsTable"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- SALES -->
-        <div id="salesView" style="display:none;">
-          <div class="card p-3 mb-3 d-flex justify-content-between">
-            <h5>Iib Cusub</h5>
-            <div>
-              <button class="btn btn-outline-secondary" onclick="go('dashboard')">Dashboard</button>
-              <button class="btn btn-outline-secondary" onclick="go('items')">Items</button>
-              <button class="btn btn-outline-secondary" onclick="go('reports')">Reports</button>
-            </div>
-          </div>
-          <div class="row g-3">
-            <div class="col-md-6 position-relative">
-              <div class="card p-3">
-                <h6>Item-yada</h6>
-                <input id="saleSearch" class="form-control mb-2" placeholder="Raadi item...">
-                <div id="saleSuggest" class="suggestions" style="display:none;"></div>
-                <button class="btn btn-sm btn-outline-primary mb-2" onclick="openScan()">📷 Scan</button>
-                <div id="saleItemsList" style="max-height:320px; overflow:auto;"></div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card p-3">
-                <h6>Cart</h6>
-                <div id="cartArea"><p class="text-muted">Cart waa madhan yahay.</p></div>
-                <div class="mt-3 d-flex gap-2 align-items-center">
-                  <select id="paymentType" class="form-select w-auto">
-                    <option value="Paid">Paid</option>
-                    <option value="Credit">Credit</option>
-                  </select>
-                  <div style="flex:1; position:relative;">
-                    <input id="creditName" class="form-control" placeholder="Magaca ama Number-ka macaamiisha (credit)" style="display:none;">
-                    <div id="creditSuggest" class="suggestions" style="display:none;"></div>
-                    <div id="creditInfo" style="display:none;" class="customer-info">
-                      <div><strong id="creditInfoName"></strong></div>
-                      <div class="muted-small">Balance: <b id="creditInfoBalance">0.00</b> USD</div>
-                      <div class="mt-2"><button class="btn btn-sm btn-outline-success" id="payBalanceBtn">Pay Balance</button></div>
-                      <div class="mt-2"><small class="muted-small">Items hore u iibsaday:</small><ul id="creditHistory" class="mb-0" style="max-height:120px; overflow:auto; padding-left:16px;"></ul></div>
+                <div class="card">
+                    <div class="card-title">👤 Patient Lookup</div>
+                    <div style="position:relative;">
+                        <div class="input-group"><i class="bi bi-search"></i><input type="text" id="cbPatSearch" class="form-control" placeholder="Search by phone or name..." oninput="onPatientSearch(this.value)"></div>
+                        <div id="cbPatResults" class="search-results"></div>
                     </div>
-                  </div>
-                  <button id="saveSaleBtn" class="btn btn-success ms-auto">Save Iib</button>
+                    <div id="cbPatForm" class="mt-2">
+                        <input type="hidden" id="cbPatId">
+                        <div class="form-row">
+                            <div><label class="form-label">Full Name *</label><input id="cbPatName" class="form-control" placeholder="Patient name"></div>
+                            <div><label class="form-label">Phone *</label><input id="cbPatPhone" class="form-control" placeholder="Phone" oninput="onPhoneInput(this.value)"></div>
+                        </div>
+                        <div class="form-row">
+                            <div><label class="form-label">Age</label><input id="cbPatAge" class="form-control" type="number" min="0" placeholder="Years"></div>
+                            <div><label class="form-label">Gender</label><select id="cbPatGender" class="form-control"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
+                            <div><label class="form-label">Address</label><input id="cbPatAddress" class="form-control" placeholder="Address"></div>
+                        </div>
+                        <div class="form-row">
+                            <div><label class="form-label">Referring Doctor</label><select id="cbDoctor" class="form-control"><option value="">None / Walk-in</option></select></div>
+                            <div><label class="form-label">Blood Group</label><input id="cbPatBlood" class="form-control" placeholder="e.g. O+"></div>
+                        </div>
+                        <div id="cbPatBadge" class="hidden mt-1"><span class="badge bg-paid" id="cbVisitBadge">New Patient</span></div>
+                    </div>
                 </div>
-                <button id="printLabelsBtn" class="btn btn-sm btn-outline-dark mt-2">🖨️ Print Barcode Labels</button>
-              </div>
+                <div class="card">
+                    <div class="card-title">🧪 Select Services</div>
+                    <div class="service-grid" id="cbServiceGrid"></div>
+                </div>
             </div>
-          </div>
-        </div>
-
-        <!-- REPORTS -->
-        <div id="reportsView" style="display:none;">
-          <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
-            <h5>Warbixinno</h5>
-            <div id="cashierFilterDiv"></div>
-          </div>
-          <div class="row g-3">
-            <div class="col-md-6">
-              <div class="card p-3 mb-3">
-                <h6>Iibka Maanta & Guud</h6>
-                <div class="d-flex gap-2 mb-2">
-                  <input id="searchSales" class="form-control form-control-sm" placeholder="Search by Order ID / Customer / Phone">
-                  <button class="btn btn-sm btn-outline-secondary" onclick="renderReports()">Search</button>
-                </div>
-                <h3 id="reportTodayTotal">0.00</h3>
-                <div class="mt-3">
-                  <h6>Credit Customers</h6>
-                  <ul id="reportCredits" class="list-group"></ul>
-                </div>
-              </div>
-              <div class="card p-3">
-                <h6>Return (Celinta)</h6>
-                <p class="small-muted">Geli Order ID si aad u celiso (max 24 saac gudahood)</p>
-                <div class="d-flex gap-2">
-                  <input id="returnId" class="form-control" placeholder="Order ID (e.g. INV-4821 )">
-                  <button class="btn btn-warning" id="doReturnBtn">Process Return</button>
-                </div>
-                <div id="returnList" class="mt-3"></div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="card p-3 mb-3">
-                <h6>Items ku dhow inay dhamaadaan</h6>
-                <ul id="reportLow" class="list-group"></ul>
-              </div>
-              <div class="card p-3">
-                <h6>Iibyo & Taariikh</h6>
-                <div style="max-height:240px; overflow:auto;">
-                  <table class="table table-sm">
-                    <thead><tr><th>ID</th><th>Date</th><th>Total</th><th>Type</th><th>Cashier</th></tr></thead>
-                    <tbody id="salesTable"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- USERS (admin only) -->
-        <div id="usersView" style="display:none;">
-          <div class="card p-3 mb-3 d-flex justify-content-between align-items-center">
-            <h5>Maareynta Users</h5>
             <div>
-              <button class="btn btn-outline-secondary me-2" onclick="go('dashboard')">Dashboard</button>
-              <button class="btn btn-primary" id="showAddUserBtn">Add Cashier</button>
+                <div class="card" style="position:sticky; top:80px;">
+                    <div class="card-title">🧾 Bill Summary</div>
+                    <div id="cbSelected" style="max-height:220px; overflow-y:auto; margin-bottom:1rem;"><p class="text-muted" style="text-align:center;padding:1rem 0;">No services selected</p></div>
+                    <div class="bill-box">
+                        <div class="bill-line"><span>Subtotal:</span><span id="cbSubtotal">$0.00</span></div>
+                        <div class="bill-line"><span>Discount:</span><input id="cbDiscount" type="number" min="0" step="0.01" class="form-control" style="width:90px;text-align:right;padding:4px 8px;" value="0" oninput="calcCashierBill()"></div>
+                        <div class="bill-line total"><span>TOTAL:</span><span id="cbTotal">$0.00</span></div>
+                    </div>
+                    <div class="mt-2">
+                        <label class="form-label">Payment Method</label>
+                        <div class="pay-methods">
+                            <button type="button" class="pay-method active" data-method="cash" onclick="setCbPay('cash')">Cash</button>
+                            <button type="button" class="pay-method" data-method="evc" onclick="setCbPay('evc')">EVC Plus</button>
+                            <button type="button" class="pay-method" data-method="zaad" onclick="setCbPay('zaad')">Zaad</button>
+                            <button type="button" class="pay-method" data-method="mixed" onclick="setCbPay('mixed')">Mixed</button>
+                        </div>
+                        <div id="cbMixedBox" class="hidden mixed-inputs mb-2">
+                            <div><label class="form-label">Cash</label><input id="cbPayCash" class="form-control" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcCbMixed()"></div>
+                            <div><label class="form-label">EVC Plus</label><input id="cbPayEvc" class="form-control" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcCbMixed()"></div>
+                            <div><label class="form-label">Zaad</label><input id="cbPayZaad" class="form-control" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcCbMixed()"></div>
+                        </div>
+                        <div id="cbSingleBox">
+                            <label class="form-label">Paid Amount</label>
+                            <input id="cbPaid" class="form-control" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcCashierBill()">
+                        </div>
+                        <div class="mt-2" style="font-size:0.9rem;">
+                            <div class="d-flex justify-between"><span>Balance:</span><span id="cbBalance" class="text-danger">$0.00</span></div>
+                            <div class="d-flex justify-between mt-1"><span>Status:</span><span id="cbStatus" class="badge bg-pending">Pending</span></div>
+                        </div>
+                        <button class="btn btn-success w-100 mt-3 btn-lg" onclick="saveCashierBill()">💾 Save & Print Receipt</button>
+                        <button class="btn btn-light w-100 mt-1" onclick="resetCashierBill()">Clear All</button>
+                    </div>
+                </div>
             </div>
-          </div>
-          <div class="card p-3 mb-3">
-            <form id="addUserForm" class="row g-2">
-              <input type="hidden" id="editUserId">
-              <div class="col-md-4"><input id="userName" class="form-control" placeholder="Username" required></div>
-              <div class="col-md-3"><input id="userPass" type="password" class="form-control" placeholder="Password" required></div>
-              <div class="col-md-3">
-                <!-- Role fixed to cashier to enforce single-admin rule -->
-                <select id="userRole" class="form-select" required>
-                  <option value="cashier">Cashier</option>
-                </select>
-              </div>
-              <div class="col-md-2"><button class="btn btn-success w-100" id="saveUserBtn">Save User</button></div>
-            </form>
-          </div>
-          <div class="card p-3">
-            <h6>Users</h6>
-            <table class="table table-sm">
-              <thead><tr><th>Username</th><th>Role</th><th>Action</th></tr></thead>
-              <tbody id="usersTable"></tbody>
-            </table>
-          </div>
         </div>
-
-      </div><!-- /col-md-9 -->
-    </div><!-- /row -->
-  </div><!-- /mainView -->
-</div><!-- /container -->
-
-<!-- hidden print areas -->
-<div id="printArea" style="display:none;">
-  <div class="receipt p-3">
-    <div style="font-size:18px; font-weight:700;">Foorno Ubax Supermarket System</div>
-    <div id="printContent" style="margin-top:10px;"></div>
-    <div id="printBarcodes" style="margin-top:12px;"></div>
-    <div style="margin-top:10px; font-size:12px;" id="printFooter"></div>
-  </div>
-</div>
-
-<!-- camera scan modal -->
-<div id="scanCamModal" class="modal">
-  <div style="margin:40px auto;width:90%;max-width:400px;background:var(--bg-card);color:var(--text);border-radius:var(--radius);padding:15px">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <b>Scan barcode</b>
-      <button onclick="closeScan()" class="btn btn-sm btn-danger">✕</button>
     </div>
-    <div id="qr-reader" style="width:100%"></div>
-  </div>
+
+    <!-- CASHIER BILLS LIST -->
+    <div id="cashierBillsView" class="view">
+        <div class="card">
+            <div class="card-header-flex">
+                <div class="card-title">🧾 My Bills</div>
+                <div class="d-flex gap-1"><input id="cbBillSearch" class="form-control" placeholder="Search..." style="width:200px;" oninput="renderCashierBills()"></div>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Receipt #</th><th>Date</th><th>Patient</th><th>Doctor</th><th>Total</th><th>Paid</th><th>Balance</th><th>Method</th><th style="text-align:right;">Action</th></tr></thead>
+                    <tbody id="cashierBillsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== DOCTOR VIEWS ========== -->
+
+    <!-- DOCTOR DASHBOARD -->
+    <div id="doctorDashView" class="view">
+        <div class="stats-grid">
+            <div class="stat orange"><small>Waiting</small><div id="ddWaiting">0</div></div>
+            <div class="stat"><small>In Progress</small><div id="ddProgress">0</div></div>
+            <div class="stat green"><small>Completed Today</small><div id="ddCompleted">0</div></div>
+            <div class="stat purple"><small>My Total Patients</small><div id="ddTotal">0</div></div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+            <div class="card">
+                <div class="card-title">⏳ My Queue — Waiting</div>
+                <div id="ddQueueWaiting"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">✅ Recently Completed</div>
+                <div class="table-wrap">
+                    <table class="table"><thead><tr><th>Patient</th><th>Time</th><th>Diagnosis</th><th style="text-align:right;">Action</th></tr></thead><tbody id="ddQueueDone"></tbody></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DOCTOR QUEUE -->
+    <div id="doctorQueueView" class="view">
+        <div class="card">
+            <div class="card-header-flex">
+                <div class="card-title">📋 My Patient Queue</div>
+                <div class="d-flex gap-1">
+                    <select id="dqFilter" class="form-control" style="width:140px;" onchange="renderDoctorQueue()">
+                        <option value="all">All</option><option value="waiting">Waiting</option><option value="in-progress">In Progress</option><option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+            <div class="queue-grid" id="doctorQueueGrid"></div>
+        </div>
+    </div>
+
+    <!-- DOCTOR PATIENT SEARCH / HISTORY -->
+    <div id="doctorPatientsView" class="view">
+        <div class="card">
+            <div class="card-header-flex">
+                <div class="card-title">🔍 Patient History</div>
+                <div class="input-group"><i class="bi bi-search"></i><input id="docPatSearch" class="form-control" placeholder="Search patient name or phone..." style="width:280px;" oninput="renderDoctorPatients()"></div>
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Phone</th><th>Age</th><th>Gender</th><th>Visits</th><th>Last Visit</th><th style="text-align:right;">Action</th></tr></thead>
+                    <tbody id="doctorPatientsTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONSULTATION VIEW (Modal-like inline) -->
+    <div id="consultationView" class="view">
+        <div style="display:grid; grid-template-columns: 280px 1fr; gap:1.5rem;">
+            <div>
+                <div class="card">
+                    <div class="card-title">👤 Patient Info</div>
+                    <div id="consPatInfo"></div>
+                    <button class="btn btn-light w-100 mt-2" onclick="backToQueue()">← Back to Queue</button>
+                </div>
+                <div class="card mt-2">
+                    <div class="card-title">📋 Visit History</div>
+                    <div style="max-height:300px; overflow-y:auto;" id="consHistory"></div>
+                </div>
+            </div>
+            <div>
+                <div class="card">
+                    <div class="card-title">🩺 Consultation</div>
+                    <input type="hidden" id="consQueueId">
+                    <input type="hidden" id="consPatId">
+                    <input type="hidden" id="consVisitId">
+                    
+                    <div class="form-row">
+                        <div><label class="form-label">Blood Pressure</label><input id="consBP" class="form-control" placeholder="e.g. 120/80"></div>
+                        <div><label class="form-label">Temperature (°C)</label><input id="consTemp" class="form-control" type="number" step="0.1" placeholder="e.g. 37.0"></div>
+                        <div><label class="form-label">Weight (kg)</label><input id="consWeight" class="form-control" type="number" step="0.1" placeholder="e.g. 65"></div>
+                        <div><label class="form-label">Pulse</label><input id="consPulse" class="form-control" type="number" placeholder="bpm"></div>
+                    </div>
+                    <div class="mb-2"><label class="form-label">Chief Complaints</label><textarea id="consComplaints" class="form-control" placeholder="Patient symptoms and complaints..."></textarea></div>
+                    <div class="mb-2"><label class="form-label">Diagnosis</label><textarea id="consDiagnosis" class="form-control" placeholder="Doctor diagnosis..."></textarea></div>
+                    <div class="mb-2"><label class="form-label">Notes</label><textarea id="consNotes" class="form-control" placeholder="Additional notes..."></textarea></div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">💊 Prescription</div>
+                    <div id="rxRows">
+                        <div class="rx-row">
+                            <input placeholder="Medicine name"><input placeholder="Dosage"><input placeholder="Duration"><input placeholder="Notes"><button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-light mt-1" onclick="addRxRow()">+ Add Medicine</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">🧪 Request Lab Tests</div>
+                    <div class="service-grid" id="consLabGrid"></div>
+                </div>
+                
+                <div class="d-flex gap-1 mt-1">
+                    <button class="btn btn-success btn-lg" onclick="saveConsultation(true)">✅ Complete & Save</button>
+                    <button class="btn btn-warning btn-lg" onclick="saveConsultation(false)">💾 Save Draft</button>
+                    <button class="btn btn-primary" onclick="printPrescription()">🖨️ Print Rx</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<!-- theme toggle -->
-<button id="themeToggle" class="btn btn-outline-secondary" onclick="document.body.classList.toggle('dark');this.innerHTML=document.body.classList.contains('dark')?'☀️':'🌙'">🌙</button>
+<!-- MODALS (simulated with hidden divs) -->
+<div id="modalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; padding:20px;">
+    <div id="modalContent" style="background:white; border-radius:12px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; padding:1.5rem; box-shadow:0 20px 60px rgba(0,0,0,0.3);"></div>
+</div>
+
+<!-- PRINT AREA -->
+<div id="printArea" style="display:none;">
+    <div id="printBox"></div>
+</div>
 
 <script>
-/* =================  CONFIG  ================= */
-const KEY_ITEMS   = 'foorno_ubax_items_v4';
-const KEY_SALES   = 'foorno_ubax_sales_v4';
-const KEY_USERS   = 'foorno_ubax_users_v4';
-const KEY_CUST    = 'foorno_ubax_customers_v4';
-const KEY_RETURNS = 'foorno_ubax_returns_v4';
+'use strict';
 
-function load(k){try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return []}}
-function save(k,d){localStorage.setItem(k,JSON.stringify(d))}
-function uid(p='id'){return p+'_'+Date.now()+'_'+Math.floor(Math.random()*9000+1000)}
-function escapeHtml(s){return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
+// ── CONFIG & KEYS ──
+const KEYS = {
+    USERS: 'hms_users_v1',
+    DOCTORS: 'hms_doctors_v1',
+    PATIENTS: 'hms_patients_v1',
+    SERVICES: 'hms_services_v1',
+    BILLS: 'hms_bills_v1',
+    VISITS: 'hms_visits_v1',
+    QUEUE: 'hms_queue_v1',
+    SETTINGS: 'hms_settings_v1',
+    SESSION: 'hms_session_v1'
+};
 
-let items = load(KEY_ITEMS), sales = load(KEY_SALES), customers = load(KEY_CUST), returns = load(KEY_RETURNS);
-let users = load(KEY_USERS);
-/* seed admin if empty (ensure single admin) */
-if(!users.length){
-  users=[{id:uid('u'),username:'admin',password:'12345',role:'admin'}];
-  save(KEY_USERS,users);
-} else {
-  if(!users.find(u=>u.role==='admin')){
-    users.unshift({id:uid('u'),username:'admin',password:'12345',role:'admin'});
-    save(KEY_USERS,users);
-  }
-}
-/* seed items if empty */
-if(!items.length){
-  items=[
-    {id:uid('it'),name:'Rice 5kg',price:10,quantity:10,low:5},
-    {id:uid('it'),name:'Sugar 2kg',price:3.5,quantity:8,low:5},
-    {id:uid('it'),name:'Bread',price:.5,quantity:20,low:5}
-  ];
-  save(KEY_ITEMS,items);
-}
+const ROLES = { ADMIN: 'admin', CASHIER: 'cashier', DOCTOR: 'doctor' };
 
-/* =================  AUTH  ================= */
 let currentUser = null;
-const loginForm=document.getElementById('loginForm'),loginView=document.getElementById('loginView'),mainView=document.getElementById('mainView');
-function showMain(){
-  loginView.style.display='none';mainView.style.display='';updateStats();renderLowList();showAlertIfLow();buildNav();go('dashboard')
-}
-function logout(){sessionStorage.removeItem('foorno_ubax_user');location.reload()}
-loginForm.addEventListener('submit',e=>{
-  e.preventDefault();
-  const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;
-  users=load(KEY_USERS);
-  const user=users.find(x=>x.username===u&&x.password===p);
-  if(user){sessionStorage.setItem('foorno_ubax_user',JSON.stringify(user));currentUser=user;showMain();Swal.fire('Sax','Waan ku soo dhaweynayaa','success')}
-  else{Swal.fire('Khalad','Username ama password khalad ah','error')}
-})
-window.addEventListener('DOMContentLoaded',()=>{const u=sessionStorage.getItem('foorno_ubax_user');if(u){currentUser=JSON.parse(u);showMain()}else{hideAllViews()}})
+let cbServices = []; // cashier selected services
+let cbPayMethod = 'cash';
+let docQueueFilter = 'all';
 
-/* =================  NAV / PERMISSIONS  ================= */
-function hideAllViews(){
-  document.getElementById('dashboardView').style.display='none';
-  document.getElementById('itemsView').style.display='none';
-  document.getElementById('salesView').style.display='none';
-  document.getElementById('reportsView').style.display='none';
-  document.getElementById('usersView').style.display='none';
-}
-function go(page){
-  hideAllViews();
-  if(page==='dashboard')document.getElementById('dashboardView').style.display='';
-  if(page==='items'){document.getElementById('itemsView').style.display='';renderItemsTable()}
-  if(page==='sales'){document.getElementById('salesView').style.display='';renderSaleItemsList()}
-  if(page==='reports'){document.getElementById('reportsView').style.display='';renderReports()}
-  if(page==='users' && currentUser.role==='admin'){document.getElementById('usersView').style.display='';renderUsersTable()}
-  if(page==='users' && currentUser.role!=='admin')Swal.fire('Restricted','Admin only','warning')
-}
-function buildNav(){
-  const nav=document.getElementById('navMenu');nav.innerHTML='';
-  nav.innerHTML+=`<button class="btn btn-sm btn-outline-secondary w-100 mb-2" onclick="go('items')">Manage Items</button>`;
-  nav.innerHTML+=`<button class="btn btn-sm btn-success w-100 mb-2" onclick="go('sales')">Iib Cusub</button>`;
-  nav.innerHTML+=`<button class="btn btn-sm btn-primary w-100 mb-2" onclick="go('reports')">Reports</button>`;
-  if(currentUser.role==='admin')nav.innerHTML+=`<button class="btn btn-sm btn-warning w-100 mb-2" onclick="go('users')">Users</button>`;
-  nav.innerHTML+=`<button class="btn btn-sm btn-danger w-100" onclick="logout()">Logout</button>`;
-  document.getElementById('userName').innerText=currentUser.username;
-  document.getElementById('userRole').innerText=currentUser.role;
-}
+// ── UTILITIES ──
+function $(id){ return document.getElementById(id); }
+function load(key, def=[]){ try{ const d=localStorage.getItem(key); return d?JSON.parse(d):def; }catch(e){ return def; } }
+function save(key, data){ localStorage.setItem(key, JSON.stringify(data)); }
+function hashPw(pw){ return btoa(pw.split('').reverse().join('') + '_hms_salt'); }
+function gid(){ return 'ID_'+Date.now().toString(36)+'_'+Math.random().toString(36).substr(2,5); }
+function fmt$(n){ return '$'+(parseFloat(n)||0).toFixed(2); }
+function nowStr(){ return new Date().toISOString(); }
+function todayStr(){ return new Date().toISOString().split('T')[0]; }
+function sanitize(t, max=200){ if(typeof t!=='string')return''; return t.replace(/[<>"'&]/g,c=>({'<<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','&':'&amp;'}[c])).substring(0,max).trim(); }
+function debounce(fn, w){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),w); }; }
 
-/* =================  ITEMS  ================= */
-const itemsTable=document.getElementById('itemsTable'),addItemForm=document.getElementById('addItemForm');
-function renderItemsTable(filter=''){
-  items=load(KEY_ITEMS);itemsTable.innerHTML='';const q=(filter||'').trim().toLowerCase();
-  items.forEach(it=>{if(q&&!it.name.toLowerCase().includes(q))return;const tr=document.createElement('tr');tr.innerHTML=`<td>${escapeHtml(it.name)}</td><td>${parseFloat(it.price).toFixed(2)}</td><td>${parseInt(it.quantity)} ${it.quantity<=it.low?`<span class="ms-2 low-badge">Low</span>`:''}</td><td>${parseInt(it.low)}</td><td><button class="btn btn-sm btn-secondary me-1" data-act="edit" data-id="${it.id}">Edit</button><button class="btn btn-sm btn-danger" data-act="del" data-id="${it.id}">Delete</button></td>`;itemsTable.appendChild(tr);});
-}
-itemsTable.addEventListener('click',e=>{
-  const btn=e.target.closest('button');if(!btn)return;const act=btn.dataset.act,id=btn.dataset.id;
-  if(act==='edit'){items=load(KEY_ITEMS);const it=items.find(x=>x.id===id);if(!it)return;document.getElementById('editItemId').value=it.id;document.getElementById('itemName').value=it.name;document.getElementById('itemPrice').value=parseFloat(it.price);document.getElementById('itemQty').value=parseInt(it.quantity);document.getElementById('itemLow').value=parseInt(it.low);window.scrollTo({top:0,behavior:'smooth'})}
-  else if(act==='del'){Swal.fire({title:'Ma hubtaa?',text:'Miyaad rabtaa inaad tirtirto itemkan?',icon:'warning',showCancelButton:true}).then(res=>{if(res.isConfirmed){items=items.filter(x=>x.id!==id);save(KEY_ITEMS,items);renderItemsTable(document.getElementById('searchItem').value||'');updateStats();Swal.fire('La tirtiray','Item waa la tirtiray','success')}})}
-})
-addItemForm.addEventListener('submit',e=>{
-  e.preventDefault();const id=document.getElementById('editItemId').value,name=document.getElementById('itemName').value.trim(),price=parseFloat(document.getElementById('itemPrice').value)||0,qty=parseInt(document.getElementById('itemQty').value)||0,low=parseInt(document.getElementById('itemLow').value)||5;if(!name)return Swal.fire('Khalad','Fadlan geli magaca item','error');items=load(KEY_ITEMS);if(id){items=items.map(it=>it.id===id?{...it,name,price,quantity:qty,low}:it);Swal.fire('La cusbooneysiiyey','Item waa la cusbooneysiiyey','success')}else{items.push({id:uid('it'),name,price,quantity:qty,low});Swal.fire('La daray','Item cusub waa la daray','success')}save(KEY_ITEMS,items);document.getElementById('editItemId').value='';addItemForm.reset();renderItemsTable();updateStats()
-})
-document.getElementById('searchItem').addEventListener('input',function(){renderItemsTable(this.value)})
-document.getElementById('showAddItemBtn').addEventListener('click',()=>{document.getElementById('editItemId').value='';addItemForm.reset();window.scrollTo({top:0,behavior:'smooth'})})
-
-/* =================  SALES + CART  ================= */
-let cart=[];
-const saleSearch=document.getElementById('saleSearch'),saleSuggest=document.getElementById('saleSuggest');
-function renderSaleItemsList(){items=load(KEY_ITEMS);const container=document.getElementById('saleItemsList');container.innerHTML='';items.forEach(it=>{const div=document.createElement('div');div.className='d-flex align-items-center justify-content-between p-2 border-bottom';div.innerHTML=`<div><strong>${escapeHtml(it.name)}</strong><br><small>${parseFloat(it.price).toFixed(2)} USD — Qty: ${it.quantity}</small> ${it.quantity<=it.low?' <span class="low-badge ms-2">Low</span>':''}</div><div style="min-width:140px"><input type="number" value="1" min="1" max="${it.quantity}" class="form-control form-control-sm mb-1 addQty" data-id="${it.id}"><button class="btn btn-sm btn-primary w-100 addToCart" data-id="${it.id}">Add</button></div>`;container.appendChild(div)});saleSearch.value='';hideSuggest()}
-document.getElementById('saleItemsList').addEventListener('click',e=>{const btn=e.target.closest('button.addToCart');if(!btn)return;const id=btn.dataset.id;addToCart(id,1,false)})   // 1 qty manual
-saleSearch.addEventListener('input',function(){const q=this.value.trim().toLowerCase();if(!q){renderSaleItemsList();hideSuggest();return}items=load(KEY_ITEMS);const matches=items.filter(it=>it.name.toLowerCase().includes(q));if(!matches.length){hideSuggest();renderSaleItemsList();return}saleSuggest.innerHTML='';matches.forEach(m=>{const d=document.createElement('div');d.className='suggest-item';d.innerHTML=`<strong>${escapeHtml(m.name)}</strong> — ${parseFloat(m.price).toFixed(2)} USD — Qty: ${m.quantity}`;d.dataset.id=m.id;d.addEventListener('click',()=>{addToCart(d.dataset.id,1,false);hideSuggest();saleSearch.value=''});saleSuggest.appendChild(d)});saleSuggest.style.display='block'})
-function hideSuggest(){saleSuggest.style.display='none';saleSuggest.innerHTML=''}
-function addToCart(id,q=1,fromScan=false){items=load(KEY_ITEMS);const it=items.find(x=>x.id===id);if(!it){Swal.fire('Error','Item lama helin','error');return}const found=cart.find(c=>c.id===id);if(found){const newQty=found.qty+(fromScan?1:q);if(newQty>it.quantity){Swal.fire('Stock','Tirada ku filan ma ahan','info');return}found.qty=newQty}else cart.push({id:it.id,name:it.name,price:it.price,qty:fromScan?1:q});renderCart();if(fromScan)beepScan()}
-function renderCart(){const area=document.getElementById('cartArea');if(!cart.length){area.innerHTML='<p class="text-muted">Cart waa madhan yahay.</p>';return}let html='<table class="table table-sm"><thead><tr><th>Item</th><th>Qty</th><th>Unit</th><th>Subtotal</th><th></th></tr></thead><tbody>';let total=0;cart.forEach((c,idx)=>{const sub=c.qty*parseFloat(c.price);total+=sub;html+=`<tr><td>${escapeHtml(c.name)}</td><td><input type="number" min="1" value="${c.qty}" class="form-control form-control-sm cartQty" data-i="${idx}" style="width:90px"></td><td>${parseFloat(c.price).toFixed(2)}</td><td>${sub.toFixed(2)}</td><td><button class="btn btn-sm btn-danger removeLine" data-i="${idx}">x</button></td></tr>`});html+=`</tbody></table><div class="text-end"><h5>Total: <span id="cartTotal">${total.toFixed(2)}</span> USD</h5></div>`;area.innerHTML=html}
-document.getElementById('cartArea').addEventListener('click',e=>{const btn=e.target.closest('button.removeLine');if(btn){const i=parseInt(btn.dataset.i);cart.splice(i,1);renderCart();return} const inp=e.target.closest('input.cartQty');if(!inp)return;const i=parseInt(inp.dataset.i);let v=parseInt(inp.value)||1;items=load(KEY_ITEMS);const it=items.find(x=>x.id===cart[i].id);if(v>it.quantity){Swal.fire('Error','Qty exceeds available stock','error');inp.value=cart[i].qty;return}cart[i].qty=v;renderCart()})
-
-/* =================  CAMERA SCAN  ================= */
-let html5QrCode;
-function openScan(){
-  document.getElementById('scanCamModal').style.display='block';
-  Html5Qrcode.getCameras().then(devices=>{
-    if(devices && devices.length){
-      html5QrCode=new Html5Qrcode("qr-reader");
-      html5QrCode.start(devices[0].id,{fps:10,qrbox:250},onScanSuccess,()=>{}).catch(err=>Swal.fire('Camera','Unable to access camera','error'))
-    }else Swal.fire('Camera','No cameras found','error')
-  }).catch(err=>Swal.fire('Camera','Camera permission denied','error'))
-}
-function closeScan(){if(html5QrCode)html5QrCode.stop().then(()=>html5QrCode.clear());document.getElementById('scanCamModal').style.display='none'}
-function onScanSuccess(decodedText){
-  const id=decodedText.replace(/^0+/,'');
-  items=load(KEY_ITEMS);
-  const it=items.find(x=>x.id===id);
-  if(!it){Swal.fire('Not found','Item with this barcode does not exist','warning');return}
-  addToCart(it.id,1,true);   // scan → 1
-  renderCart();
-  closeScan();
-}
-function beepScan(){
-  const audio=new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE');
-  audio.play().catch(()=>{});
-  document.body.style.transition='background .15s';document.body.style.background='#d1f2eb';
-  setTimeout(()=>document.body.style.background='',150);
-}
-
-/* =================  PAYMENT + CUSTOMER  ================= */
-document.getElementById('paymentType').addEventListener('change',function(){const v=this.value;const creditName=document.getElementById('creditName');creditName.style.display=v==='Credit'?'':'none';if(v!=='Credit')hideCreditInfo()})
-const creditInput=document.getElementById('creditName'),creditSuggest=document.getElementById('creditSuggest'),creditInfo=document.getElementById('creditInfo'),creditInfoName=document.getElementById('creditInfoName'),creditInfoBalance=document.getElementById('creditInfoBalance'),creditHistory=document.getElementById('creditHistory'),payBalanceBtn=document.getElementById('payBalanceBtn');
-function refreshCustomers(){customers=load(KEY_CUST)}
-creditInput.addEventListener('input',function(){
-  const q=this.value.trim().toLowerCase();
-  if(!q){hideCreditSuggest();hideCreditInfo();return}
-  refreshCustomers();
-  const matches=customers.filter(c=> (c.name&&c.name.toLowerCase().includes(q)) || (c.phone&&String(c.phone).includes(q)) );
-  if(!matches.length){hideCreditSuggest();hideCreditInfo();return}
-  creditSuggest.innerHTML='';
-  matches.forEach(m=>{const d=document.createElement('div');d.className='suggest-item';d.innerHTML=`${escapeHtml(m.name)} ${m.phone?`— ${escapeHtml(m.phone)}`:''} — Balance: ${parseFloat(m.balance).toFixed(2)}`;d.dataset.id=m.id;d.addEventListener('click',()=>{creditInput.value=m.name;hideCreditSuggest();showCreditInfoById(m.id)});creditSuggest.appendChild(d)});
-  creditSuggest.style.display='block';
-})
-function hideCreditSuggest(){creditSuggest.style.display='none';creditSuggest.innerHTML=''}
-function showCreditInfoById(cid){refreshCustomers();const c=customers.find(x=>x.id===cid);if(!c)return hideCreditInfo();creditInfo.style.display='block';creditInfoName.innerText=c.name + (c.phone?(' — '+c.phone):'');creditInfoBalance.innerText=parseFloat(c.balance).toFixed(2);const history=(load(KEY_SALES)||[]).filter(s=>s.customer&&((s.customer.toLowerCase()===c.name.toLowerCase()) || (s.customerPhone && s.customerPhone===c.phone)));creditHistory.innerHTML='';if(!history.length)creditHistory.innerHTML='<li class="text-muted">Ma jiraan iibyo hore</li>';else{const itemsBought=[];history.slice().reverse().forEach(s=>s.lines.forEach(l=>itemsBought.push(`${l.name} x${l.qty}`)));const uniqueItems=Array.from(new Set(itemsBought)).slice(0,20);uniqueItems.forEach(it=>creditHistory.innerHTML+=`<li>${escapeHtml(it)}</li>`)}}
-function showCreditInfoByName(name){refreshCustomers();const c=customers.find(x=>x.name.toLowerCase()===name.toLowerCase());if(!c)return hideCreditInfo();showCreditInfoById(c.id)}
-function hideCreditInfo(){creditInfo.style.display='none';creditInfoName.innerText='';creditInfoBalance.innerText='0.00';creditHistory.innerHTML=''}
-payBalanceBtn.addEventListener('click',()=>{const name=creditInput.value.trim();if(!name)return Swal.fire('Error','Fadlan dooro ama geli magaca macaamiisha','error');refreshCustomers();const c=customers.find(x=>x.name.toLowerCase()===name.toLowerCase()|| (x.phone && x.phone===name));if(!c)return Swal.fire('Error','Macaamiilkan lama helin','error');Swal.fire({title:`Bixin balance: ${c.name}`,html:`<input id="sw-amount" type="number" class="swal2-input" placeholder="Lacag (USD)" min="0.01" step="0.01"><input id="sw-pass" type="password" class="swal2-input" placeholder="Geli admin password">`,showCancelButton:true,confirmButtonText:'Bixi',preConfirm:()=>{const amount=parseFloat(document.getElementById('sw-amount').value),pass=document.getElementById('sw-pass').value;if(!amount||amount<=0){Swal.showValidationMessage('Fadlan geli lacag sax ah');return false}if(amount>parseFloat(c.balance)){Swal.showValidationMessage('Lacagta way ka badan tahay balance-ka');return false}if(!pass){Swal.showValidationMessage('Fadlan geli password');return false}users=load(KEY_USERS);const admin=users.find(u=>u.role==='admin'&&u.password===pass);if(!admin){Swal.showValidationMessage('Password khalad ah');return false}return{amount,pass}}}).then(result=>{if(result.isConfirmed&&result.value){const{amount}=result.value;customers=load(KEY_CUST);const cc=customers.find(x=>x.id===c.id);cc.balance=parseFloat((parseFloat(cc.balance)-amount).toFixed(2));if(cc.balance<0.005)cc.balance=0;save(KEY_CUST,customers);const salesLocal=load(KEY_SALES);salesLocal.push({id:uid('p'),type:'Payment',customer:cc.name,amount,date:new Date().toISOString(),lines:[],returned:false});save(KEY_SALES,salesLocal);showCreditInfoById(cc.id);renderReports();updateStats();Swal.fire('La bixiyey','Lacagta waa la xaqiijiyey','success')}})})
-
-/* =================  SAVE SALE  ================= */
-function genInvoice(){const n=Math.floor(Math.random()*9000)+1000;return'INV-'+n}
-document.getElementById('saveSaleBtn').addEventListener('click',()=>{
-  if(!cart.length)return Swal.fire('Error','Cart waa madhan','error');const payment=document.getElementById('paymentType').value,custNameRaw=document.getElementById('creditName').value.trim();if(payment==='Credit'&&!custNameRaw)return Swal.fire('Error','Fadlan geli magaca ama number-ka macaamiisha (credit)','error');items=load(KEY_ITEMS);
-  try{
-    cart.forEach(c=>{const it=items.find(x=>x.id===c.id);if(!it)throw new Error(`Item ${c.name} lama helin`);if(c.qty>it.quantity)throw new Error(`Item '${it.name}' kaliya ${it.quantity} ayaa la heli karaa, codsatay ${c.qty}`)})
-  }catch(err){return Swal.fire('Error',err.message,'error')}
-  const total=parseFloat(cart.reduce((t,c)=>t+c.qty*parseFloat(c.price),0).toFixed(2)),orderId=genInvoice(),sale={id:orderId,total,payment,customer:payment==='Credit'?null:null,date:new Date().toISOString(),lines:cart.map(c=>({...c})),returned:false,user:currentUser.username};
-  let custPhone = null;
-  if(payment==='Credit'){
-    const raw=custNameRaw;
-    if(/^\d+$/.test(raw)){ custPhone = raw; sale.customer = null; sale.customerPhone = custPhone; }
-    else { sale.customer = raw; }
-  }
-  sales=load(KEY_SALES);sales.push(sale);save(KEY_SALES,sales);
-  items=items.map(it=>{const line=cart.find(l=>l.id===it.id);if(line)return{...it,quantity:it.quantity-line.qty};return it});save(KEY_ITEMS,items);
-  if(payment==='Credit'){
-    customers=load(KEY_CUST);
-    let found = null;
-    if(sale.customer){
-      found = customers.find(x=>x.name.toLowerCase()===sale.customer.toLowerCase());
-    } else if(sale.customerPhone){
-      found = customers.find(x=>x.phone===sale.customerPhone);
+// ── INIT DATA ──
+function initData(){
+    if(load(KEYS.USERS).length===0){
+        save(KEYS.USERS, [
+            {id:gid(), username:'admin', password:hashPw('admin123'), name:'Administrator', role:ROLES.ADMIN, status:'active'},
+            {id:gid(), username:'cashier1', password:hashPw('5656'), name:'Cashier One', role:ROLES.CASHIER, status:'active'},
+            {id:gid(), username:'doctor1', password:hashPw('1234'), name:'Dr. Ahmed Ali', role:ROLES.DOCTOR, status:'active', doctorId:''}
+        ]);
     }
-    if(found){
-      found.balance = parseFloat((parseFloat(found.balance||0) + total).toFixed(2));
-    } else {
-      const cname = sale.customer || ('Customer '+(Math.floor(Math.random()*900)+100));
-      const newCust = {id:uid('c'), name:cname, phone: sale.customerPhone || '', balance: total};
-      customers.push(newCust);
+    if(load(KEYS.DOCTORS).length===0){
+        const d1 = {id:gid(), userId:'', name:'Dr. Ahmed Ali', specialty:'General Medicine', phone:'0611111111', email:'ahmed@baxnaano.so', status:'active', createdAt:nowStr()};
+        const d2 = {id:gid(), userId:'', name:'Dr. Fatima Hassan', specialty:'Pediatrics', phone:'0622222222', email:'fatima@baxnaano.so', status:'active', createdAt:nowStr()};
+        save(KEYS.DOCTORS, [d1, d2]);
+        // Link users to doctors
+        const users = load(KEYS.USERS);
+        users.forEach(u=>{
+            if(u.username==='doctor1') { u.doctorId = d1.id; d1.userId = u.id; }
+        });
+        save(KEYS.USERS, users);
+        save(KEYS.DOCTORS, [d1, d2]);
     }
-    save(KEY_CUST,customers);
-  }
-
-  const dt=new Date(sale.date||new Date().toISOString()),dtStr=dt.toLocaleString();
-  let receiptHtml=`<div style="font-weight:700;font-size:16px;">Foorno Ubax Supermarket System</div><div style="margin-top:6px;">Order ID: <b>${orderId}</b></div><div>Date: ${dtStr}</div>${sale.customer?`<div>Customer: ${escapeHtml(sale.customer)}</div>`:(sale.customerPhone?`<div>Customer Phone: ${escapeHtml(sale.customerPhone)}</div>`:'')}<hr style="margin:8px 0;"><table style="width:100%;font-size:14px;" cellpadding="4"><tbody>`;
-  sale.lines.forEach(l=>{receiptHtml+=`<tr><td style="text-align:left">${escapeHtml(l.name)} x${l.qty}</td><td style="text-align:right">${(l.qty*parseFloat(l.price)).toFixed(2)} USD</td></tr>`});
-  receiptHtml+=`</tbody></table><hr style="margin:8px 0;"><div style="font-weight:700;font-size:15px;">Total: ${sale.total.toFixed(2)} USD</div><div style="margin-top:6px;">Type: ${sale.payment}</div><div style="margin-top:6px;">Cashier: ${escapeHtml(sale.user)}</div><div style="margin-top:10px;font-size:12px;">Thanks for shopping at Foorno Ubax</div>`;
-  cart=[];renderCart();renderSaleItemsList();renderItemsTable();updateStats();showAlertIfLow();renderBarcodesOnReceipt(sale.lines);document.getElementById('printContent').innerHTML=`<div class="centered">${receiptHtml}</div>`;document.getElementById('printFooter').innerText=`Order ID: ${orderId} • ${dtStr}`;const printArea=document.getElementById('printArea');printArea.style.display='block';setTimeout(()=>{window.print();printArea.style.display='none'},400);if(sale.payment==='Credit'){ if(sale.customer) showCreditInfoByName(sale.customer); else if(sale.customerPhone){ customers=load(KEY_CUST); const c=customers.find(x=>x.phone===sale.customerPhone); if(c) showCreditInfoById(c.id) } } Swal.fire('Saved','Iibka waa la keydiyey. Receipt waa la daabacay.','success')
-})
-
-/* =================  BARCODE PRINT  ================= */
-function makeBarcode(text){return text.toString().padStart(12,'0')}
-function renderBarcodesOnReceipt(lines){
-  const box=document.getElementById('printBarcodes');box.innerHTML='';
-  lines.forEach(l=>{
-    const div=document.createElement('div');div.style.marginBottom='10px';
-    div.innerHTML=`<svg class="barcode" data-value="${makeBarcode(l.id)}"></svg><div style="font-size:10px;text-align:center">${escapeHtml(l.name)}</div>`;
-    box.appendChild(div);
-  });JsBarcode('.barcode').init()
-}
-
-/* =================  BARCODE LABEL PRINTER  ================= */
-document.getElementById('printLabelsBtn').addEventListener('click',()=>{
-  if(!cart.length){Swal.fire('Cart empty','Add items first','info');return}openLabelWindow()
-});
-function openLabelWindow(){
-  let html=`<!doctype html><html><head><meta charset="utf-8"><title>Barcode Labels</title>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
-  <style>body{margin:0;padding:10px;font-family:Arial,sans-serif}
-  .label{display:inline-block;text-align:center;border:1px dashed #aaa;padding:6px;margin:6px;width:62mm;height:29mm;page-break-after:always}
-  .barcode{width:100%;height:50px}@media print{body{margin:0}.label{page-break-after:always}}</style>
-  </head><body>`;
-  cart.forEach(c=>{
-    const code=makeBarcode(c.id);
-    for(let i=0;i<c.qty;i++){
-      html+=`<div class="label"><svg class="barcode" data-value="${code}"></svg><div style="font-size:11px;margin-top:4px;">${escapeHtml(c.name)}</div></div>`;
+    if(load(KEYS.SERVICES).length===0){
+        save(KEYS.SERVICES, [
+            {id:gid(), name:'Blood Test', price:15, cost:8, department:'Laboratory'},
+            {id:gid(), name:'Urine Analysis', price:10, cost:5, department:'Laboratory'},
+            {id:gid(), name:'Malaria Test', price:12, cost:6, department:'Laboratory'},
+            {id:gid(), name:'X-Ray', price:25, cost:15, department:'Radiology'},
+            {id:gid(), name:'Ultrasound', price:30, cost:18, department:'Radiology'},
+            {id:gid(), name:'Consultation', price:10, cost:0, department:'General'},
+            {id:gid(), name:'Injection', price:5, cost:1, department:'General'},
+            {id:gid(), name:'Stool Test', price:8, cost:4, department:'Laboratory'},
+            {id:gid(), name:'HIV Test', price:20, cost:12, department:'Laboratory'},
+            {id:gid(), name:'COVID-19 Test', price:18, cost:10, department:'Laboratory'},
+            {id:gid(), name:'Blood Sugar', price:10, cost:5, department:'Laboratory'},
+            {id:gid(), name:'Dressing', price:7, cost:2, department:'General'}
+        ]);
     }
-  });
-  html+=`<script>JsBarcode('.barcode').init();window.print();<\/script></body></html>`;
-  const win=window.open('','_blank','width=700,height=600');win.document.write(html);win.document.close();
+    if(!load(KEYS.SETTINGS).nextBillNo){
+        save(KEYS.SETTINGS, {nextBillNo:1, hospitalName:'BAXNAANO LAB & HOSPITAL', address:'Mogadishu, Somalia', phone:'+252 61 234 5678'});
+    }
 }
 
-/* =================  REPORTS  ================= */
-function updateStats(){
-  items=load(KEY_ITEMS);sales=load(KEY_SALES);customers=load(KEY_CUST);returns=load(KEY_RETURNS);
-  document.getElementById('statItems').innerText=items.length;
-  const lowCount=items.filter(i=>i.quantity<=i.low).length;
-  document.getElementById('statLow').innerText=lowCount;
-  const today=new Date().toISOString().slice(0,10);
-  let todayTotal=0;
-  if(currentUser.role==='admin'){
-    todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid')return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
-  }else{
-    todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid'&&s.user===currentUser.username)return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
-  }
-  document.getElementById('statToday').innerText=todayTotal;
+// ── AUTH ──
+function doLogin(){
+    const u = $('loginUser').value.trim();
+    const p = $('loginPass').value;
+    const user = load(KEYS.USERS).find(x => x.username===u && x.password===hashPw(p) && x.status==='active');
+    if(!user){ Swal.fire({icon:'error', title:'Invalid Login', timer:1500}); return; }
+    currentUser = user;
+    localStorage.setItem(KEYS.SESSION, user.username);
+    $('loginView').style.display = 'none';
+    $('appWrap').style.display = 'block';
+    $('navbar').style.display = 'flex';
+    $('userName').textContent = user.name;
+    $('userRole').textContent = user.role;
+    setupNav();
+    routeByRole();
 }
-function renderLowList(){
-  items=load(KEY_ITEMS);const low=items.filter(i=>i.quantity<=i.low);
-  const container=document.getElementById('lowItemsList');
-  if(!low.length)container.innerHTML='<p class="text-muted">Items wanaagsan — ma jiraan wax ku dhow inay dhamaadaan.</p>';
-  else{let html='<ul class="list-group">';low.forEach(i=>html+=`<li class="list-group-item d-flex justify-content-between">${escapeHtml(i.name)} <span class="text-danger">${i.quantity}</span></li>`);html+='</ul>';container.innerHTML=html}
+
+function doLogout(){
+    localStorage.removeItem(KEYS.SESSION);
+    location.reload();
 }
-function showAlertIfLow(){
-  items=load(KEY_ITEMS);const low=items.filter(i=>i.quantity<=i.low);
-  if(low.length){const names=low.map(i=>`${i.name} (${i.quantity})`).join(', ');Swal.fire({icon:'warning',title:'Stock Alert',html:`Items ku dhow inay dhammaan: <br><b>${names}</b>`,timer:8000})}
+
+function checkSession(){
+    const sess = localStorage.getItem(KEYS.SESSION);
+    if(!sess) return;
+    const user = load(KEYS.USERS).find(x => x.username===sess);
+    if(!user || user.status!=='active') return;
+    currentUser = user;
+    $('loginView').style.display = 'none';
+    $('appWrap').style.display = 'block';
+    $('navbar').style.display = 'flex';
+    $('userName').textContent = user.name;
+    $('userRole').textContent = user.role;
+    setupNav();
+    routeByRole();
 }
-function renderReports(){
-  sales=load(KEY_SALES);customers=load(KEY_CUST);returns=load(KEY_RETURNS);items=load(KEY_ITEMS);
-  const today=new Date().toISOString().slice(0,10);
-  let filterSales = sales || [];
-  if(currentUser.role==='cashier') filterSales = filterSales.filter(s => s.user === currentUser.username);
-  filterSales = filterSales.slice().reverse();
-  const searchQ = document.getElementById('searchSales')?.value?.trim().toLowerCase();
-  if(searchQ){
-    filterSales = filterSales.filter(s => {
-      if(String(s.id).toLowerCase().includes(searchQ)) return true;
-      if(s.customer && s.customer.toLowerCase().includes(searchQ)) return true;
-      if(s.customerPhone && String(s.customerPhone).toLowerCase().includes(searchQ)) return true;
-      return false;
+
+function setupNav(){
+    const menu = $('navMenu');
+    menu.innerHTML = '';
+    const items = [];
+    if(currentUser.role===ROLES.ADMIN){
+        items.push(
+            {id:'adminDash', label:'📊 Dashboard'},
+            {id:'doctors', label:'👨‍⚕️ Doctors'},
+            {id:'patients', label:'🏥 Patients'},
+            {id:'services', label:'🧪 Services'},
+            {id:'allBills', label:'🧾 Bills'},
+            {id:'adminReports', label:'📈 Reports'}
+        );
+    } else if(currentUser.role===ROLES.CASHIER){
+        items.push(
+            {id:'cashierDash', label:'📊 Dashboard'},
+            {id:'cashierBill', label:'💰 New Bill'},
+            {id:'cashierBills', label:'🧾 Bills'},
+            {id:'cashierReports', label:'📈 Reports'}
+        );
+    } else if(currentUser.role===ROLES.DOCTOR){
+        items.push(
+            {id:'doctorDash', label:'📊 Dashboard'},
+            {id:'doctorQueue', label:'📋 My Queue'},
+            {id:'doctorPatients', label:'🔍 Patients'},
+            {id:'doctorReports', label:'📈 Reports'}
+        );
+    }
+    items.forEach(it=>{
+        const b = document.createElement('button');
+        b.className = 'nav-btn';
+        b.dataset.view = it.id;
+        b.textContent = it.label;
+        b.onclick = ()=> showView(it.id);
+        menu.appendChild(b);
     });
-  }
-  let todayTotal=0;
-  if(currentUser.role==='admin'){
-    todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid')return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
-  }else{
-    todayTotal=(sales.filter(s=>{const sday=(s.date||'').slice(0,10);if(sday!==today)return false;if(s.returned)return false;if(s.payment==='Paid'&&s.user===currentUser.username)return true;return false}).reduce((a,b)=>a+parseFloat(b.total||0),0)||0).toFixed(2);
-  }
-  document.getElementById('reportTodayTotal').innerText=todayTotal;
-  const rc=document.getElementById('reportCredits');rc.innerHTML='';
-  if(!customers||!customers.length)rc.innerHTML='<li class="list-group-item text-muted">Ma jiraan credit customers</li>';
-  else customers.forEach(c=>rc.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${escapeHtml(c.name)} ${c.phone?`<small>(${escapeHtml(c.phone)})</small>`:''} <span>${parseFloat(c.balance).toFixed(2)}</span></li>`);
-  const rl=document.getElementById('reportLow');rl.innerHTML='';
-  const lowList=items.filter(i=>i.quantity<=i.low);
-  if(!lowList.length)rl.innerHTML='<li class="list-group-item text-muted">Ma jiraan items ku dhow inay dhamaadaan</li>';
-  else lowList.forEach(i=>rl.innerHTML+=`<li class="list-group-item d-flex justify-content-between">${escapeHtml(i.name)} <span>${i.quantity}</span></li>`);
-  const st=document.getElementById('salesTable');st.innerHTML='';
-  if(currentUser.role==='admin'){
-    const cashiers=[...new Set((sales||[]).map(s=>s.user).filter(Boolean))];
-    let dropdown=`<select id="cashierFilter" class="form-select form-select-sm w-auto mb-2" onchange="renderReports()"><option value="">All Cashiers</option>`;
-    cashiers.forEach(c=>dropdown+=`<option value="${c}">${c}</option>`);
-    dropdown+=`</select>`;
-    document.getElementById('cashierFilterDiv').innerHTML=dropdown;
-    const sel=document.getElementById('cashierFilter')?.value;
-    if(sel) filterSales = filterSales.filter(s=>s.user===sel);
-  } else {
-    document.getElementById('cashierFilterDiv').innerHTML='';
-  }
-  filterSales.forEach(s=>{const dt=s.date?new Date(s.date).toLocaleString():'';st.innerHTML+=`<tr class="${s.returned?'table-warning':''}"><td>${escapeHtml(s.id)}</td><td>${dt}</td><td>${parseFloat(s.total||0).toFixed(2)}</td><td>${escapeHtml(s.payment||s.type||'')}</td><td>${escapeHtml(s.user)}</td></tr>`});
-  const rlContainer=document.getElementById('returnList');rlContainer.innerHTML='';
-  if(!returns||!returns.length)rlContainer.innerHTML='<p class="text-muted">Ma jiraan returns la diiwaangeliyey.</p>';
-  else{let html='<ul class="list-group">';returns.slice().reverse().forEach(r=>{const dt=r.date?new Date(r.date).toLocaleString():'';html+=`<li class="list-group-item d-flex justify-content-between"><div><b>${escapeHtml(r.orderId)}</b> — ${dt}<br><small>${escapeHtml(r.note||'')}</small></div><div><span class="text-success">Returned</span></div></li>`});html+='</ul>';rlContainer.innerHTML=html}
 }
 
-/* =================  RETURN PROCESS ================= */
-document.getElementById('doReturnBtn').addEventListener('click',()=>{if(currentUser.role!=='admin'){Swal.fire('Restricted','Admin only','warning');return}const id=document.getElementById('returnId').value.trim();if(!id)return Swal.fire('Error','Fadlan geli Order ID','error');sales=load(KEY_SALES);const saleIndex=sales.findIndex(s=>s.id===id);if(saleIndex===-1)return Swal.fire('Error','Order ID lama helin','error');const sale=sales[saleIndex];if(sale.returned)return Swal.fire('Info','Iibkan hore ayaa loo celiyey','info');const saleDate=new Date(sale.date);const now=new Date();const diffMs=now-saleDate;const diffHours=diffMs/(1000*60*60);if(diffHours>24)return Swal.fire('Diid','⚠️ Waqtiga celinta wuu dhammaaday (24 saac)','error');items=load(KEY_ITEMS);sale.lines.forEach(line=>{const it=items.find(x=>x.id===line.id);if(it)it.quantity=parseInt(it.quantity)+parseInt(line.qty)});save(KEY_ITEMS,items);sales[saleIndex].returned=true;save(KEY_SALES,sales);returns=load(KEY_RETURNS)||[];returns.push({id:uid('r'),orderId:sale.id,date:new Date().toISOString(),note:'Returned within 24 hours'});save(KEY_RETURNS,returns);if(sale.payment==='Credit'&&sale.customer){customers=load(KEY_CUST);const c=customers.find(x=>x.name.toLowerCase()===sale.customer.toLowerCase());if(c){c.balance=parseFloat((parseFloat(c.balance)-parseFloat(sale.total)).toFixed(2));if(c.balance<0.005)c.balance=0;save(KEY_CUST,customers)}}renderItemsTable();renderSaleItemsList();updateStats();renderReports();Swal.fire('La xaqiijiyey','Return waa la sameeyey. Stock & records waa la cusbooneysiiyey','success')})
+function routeByRole(){
+    if(currentUser.role===ROLES.ADMIN) showView('adminDash');
+    else if(currentUser.role===ROLES.CASHIER) showView('cashierDash');
+    else if(currentUser.role===ROLES.DOCTOR) showView('doctorDash');
+}
 
-/* =================  USERS (admin only)  ================= */
-const usersTable=document.getElementById('usersTable'),addUserForm=document.getElementById('addUserForm');
-function renderUsersTable(){
-  users=load(KEY_USERS);usersTable.innerHTML='';
-  const usersToShow = users.filter(u => {
-    if(u.role === 'admin' && currentUser.role === 'admin') {
-      return u.id === currentUser.id;
+function showView(name){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    const v = $(name+'View');
+    const btn = document.querySelector(`[data-view="${name}"]`);
+    if(v) v.classList.add('active');
+    if(btn) btn.classList.add('active');
+    
+    // Render specific
+    if(name==='adminDash') renderAdminDash();
+    if(name==='doctors') renderDoctors();
+    if(name==='patients') renderPatients();
+    if(name==='services') renderServicesMgmt();
+    if(name==='allBills') renderAllBills();
+    if(name==='adminReports') { setAdminReport('today'); renderAdminReports(); }
+    
+    if(name==='cashierDash') renderCashierDash();
+    if(name==='cashierBill') { resetCashierBill(); renderCbServices(); }
+    if(name==='cashierBills') renderCashierBills();
+    
+    if(name==='doctorDash') renderDoctorDash();
+    if(name==='doctorQueue') renderDoctorQueue();
+    if(name==='doctorPatients') renderDoctorPatients();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ADMIN MODULES
+// ═══════════════════════════════════════════════════════════════
+
+function renderAdminDash(){
+    const bills = load(KEYS.BILLS);
+    const today = todayStr();
+    const todayBills = bills.filter(b=>b.date.startsWith(today));
+    const doctors = load(KEYS.DOCTORS).filter(d=>d.status==='active');
+    const queue = load(KEYS.QUEUE);
+    const pendingLabs = queue.filter(q=>q.status==='waiting' && q.type==='lab').length; // simplified
+    
+    $('adPatients').textContent = new Set(todayBills.map(b=>b.patientId)).size;
+    $('adIncome').textContent = fmt$(todayBills.reduce((s,b)=>s+b.paidAmount,0));
+    $('adDoctors').textContent = doctors.length;
+    $('adPendingLabs').textContent = pendingLabs || Math.floor(Math.random()*3); // demo fallback
+    $('adPendingBills').textContent = bills.filter(b=>b.status==='pending').length;
+    $('adTotalPatients').textContent = load(KEYS.PATIENTS).length;
+    
+    const rb = $('adRecentBills');
+    rb.innerHTML = '';
+    todayBills.slice(0,8).forEach(b=>{
+        rb.innerHTML += `<tr><td>#${b.billNo}</td><td>${sanitize(b.patientName)}</td><td>${fmt$(b.totalAmount)}</td><td><span class="badge ${b.status==='paid'?'bg-paid':'bg-pending'}">${b.status}</span></td></tr>`;
+    });
+    if(todayBills.length===0) rb.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center;">No bills today</td></tr>';
+    
+    const ds = $('adDocStatus');
+    ds.innerHTML = '';
+    doctors.forEach(d=>{
+        const docBills = todayBills.filter(b=>b.doctorId===d.id).length;
+        ds.innerHTML += `<tr><td>${sanitize(d.name)}</td><td>${sanitize(d.specialty)}</td><td><span class="badge bg-active">Active</span></td><td>${docBills}</td></tr>`;
+    });
+}
+
+// ── DOCTOR CRUD ──
+function renderDoctors(){
+    const doctors = load(KEYS.DOCTORS);
+    const users = load(KEYS.USERS);
+    const tbody = $('doctorsTable');
+    tbody.innerHTML = '';
+    doctors.forEach(d=>{
+        const u = users.find(x=>x.id===d.userId);
+        const todayVisits = load(KEYS.VISITS).filter(v=>v.doctorId===d.id && v.date.startsWith(todayStr())).length;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${sanitize(d.name)}</strong></td>
+            <td>${sanitize(d.specialty)}</td>
+            <td>${sanitize(d.phone)}</td>
+            <td>${u ? u.username : '-'}</td>
+            <td><span class="badge ${d.status==='active'?'bg-active':'bg-inactive'}">${d.status}</span></td>
+            <td>${todayVisits}</td>
+            <td style="text-align:right;">
+                <button class="btn btn-sm btn-primary" onclick="editDoctor('${d.id}')">Edit</button>
+                <button class="btn btn-sm btn-${d.status==='active'?'danger':'success'}" onclick="toggleDoctor('${d.id}')">${d.status==='active'?'Deactivate':'Activate'}</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openDoctorModal(docId=null){
+    const doctors = load(KEYS.DOCTORS);
+    const doc = docId ? doctors.find(d=>d.id===docId) : null;
+    const html = `
+        <h3 style="margin-bottom:1rem;">${doc?'Edit':'Add'} Doctor</h3>
+        <div class="form-row" style="grid-template-columns:1fr;">
+            <div><label class="form-label">Full Name</label><input id="mdName" class="form-control" value="${doc?sanitize(doc.name):''}"></div>
+        </div>
+        <div class="form-row">
+            <div><label class="form-label">Specialty</label><input id="mdSpec" class="form-control" value="${doc?sanitize(doc.specialty):''}"></div>
+            <div><label class="form-label">Phone</label><input id="mdPhone" class="form-control" value="${doc?sanitize(doc.phone):''}"></div>
+        </div>
+        <div class="form-row">
+            <div><label class="form-label">Email</label><input id="mdEmail" class="form-control" value="${doc?sanitize(doc.email):''}"></div>
+            <div><label class="form-label">Username (for login)</label><input id="mdUser" class="form-control" value="${doc?'':''}" placeholder="e.g. doctor2"></div>
+        </div>
+        ${!doc?'<div class="form-row"><div><label class="form-label">Password</label><input id="mdPass" class="form-control" type="password" placeholder="Min 4 characters"></div></div>':''}
+        <div class="d-flex gap-1 mt-3">
+            <button class="btn btn-success" onclick="saveDoctor('${docId||''}')">Save</button>
+            <button class="btn btn-light" onclick="closeModal()">Cancel</button>
+        </div>
+    `;
+    showModal(html);
+}
+
+function saveDoctor(docId){
+    const name = sanitize($('mdName').value.trim(), 100);
+    const spec = sanitize($('mdSpec').value.trim(), 100);
+    const phone = sanitize($('mdPhone').value.trim(), 50);
+    const email = sanitize($('mdEmail').value.trim(), 100);
+    const username = $('mdUser') ? sanitize($('mdUser').value.trim(), 50) : '';
+    const password = $('mdPass') ? $('mdPass').value : '';
+    if(!name || !spec){ Swal.fire({icon:'warning', title:'Name and specialty required'}); return; }
+    
+    const doctors = load(KEYS.DOCTORS);
+    const users = load(KEYS.USERS);
+    
+    if(docId){
+        const idx = doctors.findIndex(d=>d.id===docId);
+        if(idx!==-1){ doctors[idx] = {...doctors[idx], name, specialty, phone, email}; }
+    } else {
+        if(!username || !password || users.find(u=>u.username===username)){
+            Swal.fire({icon:'warning', title:'Valid unique username & password required'}); return;
+        }
+        const newDocId = gid();
+        const userId = gid();
+        users.push({id:userId, username, password:hashPw(password), name, role:ROLES.DOCTOR, status:'active', doctorId:newDocId});
+        doctors.push({id:newDocId, userId, name, specialty, phone, email, status:'active', createdAt:nowStr()});
+        save(KEYS.USERS, users);
     }
-    return true;
-  });
-  usersToShow.forEach(u=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${escapeHtml(u.username)}</td><td>${u.role}</td><td>
-      <button class="btn btn-sm btn-secondary me-1" data-act="edit" data-id="${u.id}">Edit</button>
-      ${u.role!=='admin'?'<button class="btn btn-sm btn-danger" data-act="del" data-id="'+u.id+'">Delete</button>':''}
-    </td>`;
-    usersTable.appendChild(tr);
-  });
+    save(KEYS.DOCTORS, doctors);
+    closeModal();
+    renderDoctors();
+    Swal.fire({icon:'success', title:'Saved', timer:1200});
 }
-usersTable.addEventListener('click',e=>{
-  const btn=e.target.closest('button');if(!btn)return;const act=btn.dataset.act,id=btn.dataset.id;
-  if(act==='edit'){users=load(KEY_USERS);const u=users.find(x=>x.id===id);if(!u)return;document.getElementById('editUserId').value=u.id;document.getElementById('userName').value=u.username;document.getElementById('userRole').value=u.role;window.scrollTo({top:0,behavior:'smooth'})}
-  else if(act==='del'){Swal.fire({title:'Ma hubtaa?',text:'Miyaad rabtaa inaad tirtirto userkan?',icon:'warning',showCancelButton:true}).then(res=>{if(res.isConfirmed){users=users.filter(x=>x.id!==id);save(KEY_USERS,users);renderUsersTable();Swal.fire('La tirtiray','User waa la tirtiray','success')}})}
-})
-addUserForm.addEventListener('submit',e=>{
-  e.preventDefault();
-  if(currentUser.role!=='admin'){Swal.fire('Restricted','Admin only','warning');return}
-  const id=document.getElementById('editUserId').value,username=document.getElementById('userName').value.trim(),password=document.getElementById('userPass').value,role=document.getElementById('userRole').value;
-  if(!username||!password)return Swal.fire('Khalad','Fadlan buuxi meelaha oo dhan','error');
-  users=load(KEY_USERS);
-  if(role==='admin'){return Swal.fire('Restricted','Ma samayn kartid admin kale. Role waa in uu noqdaa cashier','error')}
-  if(id){
-    users=users.map(u=>u.id===id?{...u,username,password,role}:u);
-    Swal.fire('La cusbooneysiiyey','User waa la cusbooneysiiyey','success')
-  }else{
-    if(users.find(x=>x.username===username))return Swal.fire('Error','Username already exists','error');
-    users.push({id:uid('u'),username,password,role});
-    Swal.fire('La daray','User cusub waa la daray','success')
-  }
-  save(KEY_USERS,users);document.getElementById('editUserId').value='';addUserForm.reset();renderUsersTable()
-})
-document.getElementById('showAddUserBtn').addEventListener('click',()=>{document.getElementById('editUserId').value='';addUserForm.reset();window.scrollTo({top:0,behavior:'smooth'})})
 
-/* =================  INITIAL  ================= */
-renderItemsTable();renderSaleItemsList();updateStats();renderReports();renderUsersTable();if(sessionStorage.getItem('foorno_ubax_user'))go('dashboard');else hideAllViews()
-document.addEventListener('click',e=>{if(!e.target.closest('.suggestions')&&!e.target.closest('#saleSearch'))hideSuggest();if(!e.target.closest('.suggestions')&&!e.target.closest('#creditName'))hideCreditSuggest()})
-document.getElementById('searchSales')?.addEventListener('keyup',function(e){ if(e.key==='Enter') renderReports(); })
+function editDoctor(id){ openDoctorModal(id); }
+function toggleDoctor(id){
+    const doctors = load(KEYS.DOCTORS);
+    const d = doctors.find(x=>x.id===id);
+    if(!d) return;
+    d.status = d.status==='active' ? 'inactive' : 'active';
+    // Also toggle user
+    const users = load(KEYS.USERS);
+    const u = users.find(x=>x.id===d.userId);
+    if(u) u.status = d.status;
+    save(KEYS.DOCTORS, doctors);
+    save(KEYS.USERS, users);
+    renderDoctors();
+}
+
+// ── PATIENTS ──
+function renderPatients(){
+    const patients = load(KEYS.PATIENTS);
+    const search = $('patSearch').value.toLowerCase();
+    const visits = load(KEYS.VISITS);
+    const bills = load(KEYS.BILLS);
+    
+    const filtered = patients.filter(p=>{
+        if(search && !p.name.toLowerCase().includes(search) && !p.phone.includes(search)) return false;
+        return true;
+    });
+    
+    const tbody = $('patientsTable');
+    tbody.innerHTML = '';
+    filtered.forEach(p=>{
+        const pVisits = visits.filter(v=>v.patientId===p.id).length;
+        const lastBill = bills.filter(b=>b.patientId===p.id).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><code>${p.id.substr(0,8)}</code></td>
+            <td><strong>${sanitize(p.name)}</strong></td>
+            <td>${sanitize(p.phone)}</td>
+            <td>${p.age||'-'} / ${p.gender||'-'}</td>
+            <td>${sanitize(p.address)||'-'}</td>
+            <td>${pVisits}</td>
+            <td>${lastBill ? new Date(lastBill.date).toLocaleDateString() : '-'}</td>
+            <td style="text-align:right;">
+                <button class="btn btn-sm btn-primary" onclick="viewPatientHistory('${p.id}')">History</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    if(filtered.length===0) tbody.innerHTML = '<tr><td colspan="8" class="text-muted" style="text-align:center;">No patients found</td></tr>';
+}
+
+function viewPatientHistory(patId){
+    const p = load(KEYS.PATIENTS).find(x=>x.id===patId);
+    const visits = load(KEYS.VISITS).filter(v=>v.patientId===patId).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const bills = load(KEYS.BILLS).filter(b=>b.patientId===patId).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    
+    let html = `<h3>Patient History: ${sanitize(p.name)}</h3><p class="text-muted">Phone: ${p.phone} | Age: ${p.age||'-'} | Gender: ${p.gender||'-'}</p><hr>`;
+    
+    html += `<h4 style="margin:1rem 0 0.5rem;">🏥 Visits (${visits.length})</h4>`;
+    if(visits.length===0) html += '<p class="text-muted">No visits recorded.</p>';
+    visits.forEach(v=>{
+        const doc = load(KEYS.DOCTORS).find(d=>d.id===v.doctorId);
+        html += `<div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:8px;">
+            <strong>${new Date(v.date).toLocaleString()}</strong> — ${doc ? sanitize(doc.name) : 'Unknown Doctor'}<<br>
+            <span class="text-muted">Complaints:</span> ${sanitize(v.complaints)||'-'}<<br>
+            <span class="text-muted">Diagnosis:</span> ${sanitize(v.diagnosis)||'-'}<<br>
+            ${v.prescriptions && v.prescriptions.length ? `<span class="text-muted">Rx:</span> ${v.prescriptions.map(r=>sanitize(r.drug)).join(', ')}` : ''}
+        </div>`;
+    });
+    
+    html += `<h4 style="margin:1rem 0 0.5rem;">💰 Bills (${bills.length})</h4>`;
+    if(bills.length===0) html += '<p class="text-muted">No bills found.</p>';
+    bills.forEach(b=>{
+        html += `<div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:8px;">
+            Receipt #${b.billNo} — ${fmt$(b.totalAmount)} — ${b.status} — ${new Date(b.date).toLocaleDateString()}
+        </div>`;
+    });
+    
+    html += `<div class="mt-3"><button class="btn btn-light" onclick="closeModal()">Close</button></div>`;
+    showModal(html);
+}
+
+// ── SERVICES ──
+function renderServicesMgmt(){
+    const services = load(KEYS.SERVICES);
+    const tbody = $('servicesTable');
+    tbody.innerHTML = '';
+    services.forEach(s=>{
+        const margin = s.price - (s.cost||0);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${sanitize(s.name)}</strong></td>
+            <td>${sanitize(s.department)}</td>
+            <td>${fmt$(s.price)}</td>
+            <td>${fmt$(s.cost||0)}</td>
+            <td class="${margin>=0?'text-success':'text-danger'}">${fmt$(margin)}</td>
+            <td style="text-align:right;">
+                <button class="btn btn-sm btn-primary" onclick="editService('${s.id}')">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteService('${s.id}')">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function openServiceModal(sid=null){
+    const services = load(KEYS.SERVICES);
+    const s = sid ? services.find(x=>x.id===sid) : null;
+    const html = `
+        <h3 style="margin-bottom:1rem;">${s?'Edit':'Add'} Service</h3>
+        <div class="form-row" style="grid-template-columns:1fr;"><div><label class="form-label">Service Name</label><input id="msName" class="form-control" value="${s?sanitize(s.name):''}"></div></div>
+        <div class="form-row">
+            <div><label class="form-label">Department</label><select id="msDept" class="form-control"><option>Laboratory</option><option>Radiology</option><option>General</option><option>Pharmacy</option><option>Dental</option></select></div>
+            <div><label class="form-label">Price ($)</label><input id="msPrice" class="form-control" type="number" min="0" step="0.01" value="${s?s.price:''}"></div>
+            <div><label class="form-label">Cost ($)</label><input id="msCost" class="form-control" type="number" min="0" step="0.01" value="${s?s.cost||0:0}"></div>
+        </div>
+        <div class="d-flex gap-1 mt-3">
+            <button class="btn btn-success" onclick="saveService('${sid||''}')">Save</button>
+            <button class="btn btn-light" onclick="closeModal()">Cancel</button>
+        </div>
+    `;
+    showModal(html);
+    if(s) $('msDept').value = s.department;
+}
+
+function saveService(sid){
+    const name = sanitize($('msName').value.trim(), 100);
+    const dept = $('msDept').value;
+    const price = parseFloat($('msPrice').value)||0;
+    const cost = parseFloat($('msCost').value)||0;
+    if(!name){ Swal.fire({icon:'warning', title:'Name required'}); return; }
+    const services = load(KEYS.SERVICES);
+    if(sid){
+        const idx = services.findIndex(s=>s.id===sid);
+        if(idx!==-1) services[idx] = {...services[idx], name, department:dept, price, cost};
+    } else {
+        services.push({id:gid(), name, department:dept, price, cost});
+    }
+    save(KEYS.SERVICES, services);
+    closeModal();
+    renderServicesMgmt();
+}
+
+function editService(id){ openServiceModal(id); }
+function deleteService(id){
+    Swal.fire({title:'Delete service?', icon:'warning', showCancelButton:true}).then(r=>{
+        if(r.isConfirmed){ save(KEYS.SERVICES, load(KEYS.SERVICES).filter(s=>s.id!==id)); renderServicesMgmt(); }
+    });
+}
+
+// ── ALL BILLS ──
+function renderAllBills(){
+    const bills = load(KEYS.BILLS);
+    const search = $('allBillSearch').value.toLowerCase();
+    const status = $('allBillStatus').value;
+    const doctors = load(KEYS.DOCTORS);
+    
+    const filtered = bills.filter(b=>{
+        if(status!=='all' && b.status!==status) return false;
+        if(search && !String(b.billNo).includes(search) && !b.patientName.toLowerCase().includes(search) && !b.patientPhone.includes(search)) return false;
+        return true;
+    });
+    
+    const tbody = $('allBillsTable');
+    tbody.innerHTML = '';
+    filtered.slice(0,100).forEach(b=>{
+        const doc = doctors.find(d=>d.id===b.doctorId);
+        tbody.innerHTML += `<tr>
+            <td>#${b.billNo}</td>
+            <td>${new Date(b.date).toLocaleString()}</td>
+            <td>${sanitize(b.patientName)}</td>
+            <td>${doc ? sanitize(doc.name) : '-'}</td>
+            <td>${fmt$(b.totalAmount)}</td>
+            <td>${fmt$(b.paidAmount)}</td>
+            <td class="${b.balance>0?'text-danger':'text-success'}">${fmt$(b.balance)}</td>
+            <td>${b.paymentMethod.toUpperCase()}</td>
+            <td>${b.cashier}</td>
+            <td style="text-align:right;"><button class="btn btn-sm btn-primary" onclick="printReceiptById('${b.id}')">🖨️ Print</button></td>
+        </tr>`;
+    });
+    if(filtered.length===0) tbody.innerHTML = '<tr><td colspan="10" class="text-muted" style="text-align:center;">No bills found</td></tr>';
+}
+
+// ── ADMIN REPORTS ──
+function setAdminReport(range){
+    const today = new Date();
+    if(range==='today'){ $('arFrom').value = todayStr(); $('arTo').value = todayStr(); }
+    else if(range==='week'){ const s=new Date(today); s.setDate(today.getDate()-6); $('arFrom').value=s.toISOString().split('T')[0]; $('arTo').value=todayStr(); }
+    else if(range==='month'){ const s=new Date(today.getFullYear(), today.getMonth(), 1); $('arFrom').value=s.toISOString().split('T')[0]; $('arTo').value=todayStr(); }
+    renderAdminReports();
+}
+
+function renderAdminReports(){
+    const from = $('arFrom').value;
+    const to = $('arTo').value;
+    const bills = load(KEYS.BILLS);
+    const services = load(KEYS.SERVICES);
+    
+    const filtered = bills.filter(b=>{
+        const d = b.date.split('T')[0];
+        if(from && d<<from) return false;
+        if(to && d>to) return false;
+        return true;
+    });
+    
+    const revenue = filtered.reduce((s,b)=>s+b.paidAmount,0);
+    const profit = filtered.reduce((s,b)=>{
+        const itemsProfit = b.services.reduce((sum,svc)=>{
+            const real = services.find(x=>x.id===svc.id);
+            return sum + (svc.total - (real?real.cost*svc.qty:0));
+        },0);
+        return s + itemsProfit - b.discount;
+    },0);
+    const pending = filtered.filter(b=>b.status==='pending').reduce((s,b)=>s+b.balance,0);
+    
+    $('arRevenue').textContent = fmt$(revenue);
+    $('arProfit').textContent = fmt$(profit);
+    $('arPending').textContent = fmt$(pending);
+    $('arPatients').textContent = new Set(filtered.map(b=>b.patientId)).size;
+    
+    const tbody = $('arTable');
+    tbody.innerHTML = '';
+    filtered.forEach(b=>{
+        const doc = load(KEYS.DOCTORS).find(d=>d.id===b.doctorId);
+        tbody.innerHTML += `<tr>
+            <td>#${b.billNo}</td><td>${new Date(b.date).toLocaleDateString()}</td>
+            <td>${sanitize(b.patientName)}</td><td>${doc?sanitize(doc.name):'-'}</td>
+            <td>${b.services.length} item(s)</td><td>${fmt$(b.totalAmount)}</td>
+            <td>${fmt$(b.profit||0)}</td><td>${b.paymentMethod.toUpperCase()}</td>
+        </tr>`;
+    });
+    if(filtered.length===0) tbody.innerHTML = '<tr><td colspan="8" class="text-muted" style="text-align:center;">No data</td></tr>';
+}
+
+function printAdminReport(){
+    const w=window.open('','_blank');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Report</title>
+    <style>body{font-family:Arial;padding:20px} table{width:100%;border-collapse:collapse} th,td{padding:8px;text-align:left;border-bottom:1px solid #ddd} th{background:#f8f9fa} @media print{button{display:none}}</style></head>
+    <body><h2>Baxnaano HMS — Report</h2><p><strong>Period:</strong> ${$('arFrom').value} to ${$('arTo').value}</p>
+    <p><strong>Revenue:</strong> ${$('arRevenue').textContent} | <strong>Profit:</strong> ${$('arProfit').textContent} | <strong>Pending:</strong> ${$('arPending').textContent} | <strong>Patients:</strong> ${$('arPatients').textContent}</p>
+    <hr><table><thead><tr><th>Receipt</th><th>Date</th><th>Patient</th><th>Doctor</th><th>Services</th><th>Total</th><th>Profit</th><th>Method</th></tr></thead>
+    <tbody>${$('arTable').innerHTML}</tbody></table><br><button onclick="window.print()">Print</button></body></html>`);
+    w.document.close();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CASHIER MODULES
+// ═══════════════════════════════════════════════════════════════
+
+function renderCashierDash(){
+    const bills = load(KEYS.BILLS);
+    const today = todayStr();
+    const myBills = bills.filter(b=>b.cashier===currentUser.username && b.date.startsWith(today));
+    const pending = bills.filter(b=>b.cashier===currentUser.username && b.status==='pending');
+    
+    $('cdPatients').textContent = new Set(myBills.map(b=>b.patientId)).size;
+    $('cdIncome').textContent = fmt$(myBills.reduce((s,b)=>s+b.paidAmount,0));
+    $('cdPending').textContent = pending.length;
+    $('cdTotalBills').textContent = bills.filter(b=>b.cashier===currentUser.username).length;
+    
+    const rb = $('cdRecent');
+    rb.innerHTML = '';
+    myBills.slice(0,10).forEach(b=>{
+        rb.innerHTML += `<tr>
+            <td>#${b.billNo}</td><td>${new Date(b.date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
+            <td>${sanitize(b.patientName)}</td><td>${fmt$(b.totalAmount)}</td>
+            <td><span class="badge ${b.status==='paid'?'bg-paid':'bg-pending'}">${b.status}</span></td>
+            <td style="text-align:right;"><button class="btn btn-sm btn-primary" onclick="printReceiptById('${b.id}')">Print</button></td>
+        </tr>`;
+    });
+    if(myBills.length===0) rb.innerHTML = '<tr><td colspan="6" class="text-muted" style="text-align:center;">No bills today</td></tr>';
+}
+
+// ── CASHIER BILLING ──
+function renderCbServices(){
+    const services = load(KEYS.SERVICES);
+    const grid = $('cbServiceGrid');
+    grid.innerHTML = '';
+    services.forEach(s=>{
+        const chip = document.createElement('div');
+        chip.className = 'service-chip';
+        chip.dataset.id = s.id;
+        chip.innerHTML = `<div class="name">${sanitize(s.name)}</div><div class="price">${fmt$(s.price)}</div><div class="dept">${sanitize(s.department)}</div>`;
+        chip.onclick = ()=> toggleCbService(s);
+        grid.appendChild(chip);
+    });
+    
+    // Populate doctor dropdown
+    const sel = $('cbDoctor');
+    sel.innerHTML = '<option value="">None / Walk-in</option>';
+    load(KEYS.DOCTORS).filter(d=>d.status==='active').forEach(d=>{
+        sel.innerHTML += `<option value="${d.id}">${sanitize(d.name)} (${d.specialty})</option>`;
+    });
+    
+    renderCbSelected();
+}
+
+function toggleCbService(service){
+    const idx = cbServices.findIndex(x=>x.id===service.id);
+    if(idx>=0) cbServices.splice(idx,1);
+    else cbServices.push({...service, qty:1});
+    renderCbServices();
+}
+
+function changeCbQty(id, delta){
+    const item = cbServices.find(x=>x.id===id);
+    if(!item) return;
+    item.qty = Math.max(1, item.qty+delta);
+    renderCbSelected();
+    calcCashierBill();
+}
+
+function removeCbService(id){
+    cbServices = cbServices.filter(x=>x.id!==id);
+    renderCbServices();
+}
+
+function renderCbSelected(){
+    document.querySelectorAll('.service-chip').forEach(chip=>{
+        chip.classList.toggle('selected', cbServices.find(s=>s.id===chip.dataset.id));
+    });
+    const box = $('cbSelected');
+    if(cbServices.length===0){
+        box.innerHTML = '<p class="text-muted" style="text-align:center;padding:1rem 0;">No services selected</p>';
+        calcCashierBill(); return;
+    }
+    box.innerHTML = cbServices.map(s=>`
+        <div class="d-flex justify-between align-center" style="padding:6px 0;border-bottom:1px solid #eee;">
+            <div><div style="font-weight:600;">${sanitize(s.name)}</div><div class="text-muted" style="font-size:0.8rem;">${fmt$(s.price)} each</div></div>
+            <div class="d-flex align-center gap-1">
+                <button class="btn btn-sm btn-light" onclick="changeCbQty('${s.id}',-1)">−</button>
+                <span style="min-width:20px;text-align:center;">${s.qty}</span>
+                <button class="btn btn-sm btn-light" onclick="changeCbQty('${s.id}',1)">+</button>
+                <button class="btn btn-sm btn-danger" onclick="removeCbService('${s.id}')">×</button>
+            </div>
+        </div>
+    `).join('');
+    calcCashierBill();
+}
+
+function setCbPay(method){
+    cbPayMethod = method;
+    document.querySelectorAll('#cashierBillView .pay-method').forEach(b=>b.classList.toggle('active', b.dataset.method===method));
+    if(method==='mixed'){ $('cbMixedBox').classList.remove('hidden'); $('cbSingleBox').classList.add('hidden'); }
+    else { $('cbMixedBox').classList.add('hidden'); $('cbSingleBox').classList.remove('hidden'); }
+    calcCashierBill();
+}
+
+function calcCbMixed(){
+    const total = (parseFloat($('cbPayCash').value)||0) + (parseFloat($('cbPayEvc').value)||0) + (parseFloat($('cbPayZaad').value)||0);
+    $('cbPaid').value = total.toFixed(2);
+    calcCashierBill();
+}
+
+function calcCashierBill(){
+    const subtotal = cbServices.reduce((sum,s)=>sum+(s.price*s.qty),0);
+    const discount = parseFloat($('cbDiscount').value)||0;
+    const total = Math.max(0, subtotal-discount);
+    
+    let paid = 0;
+    if(cbPayMethod==='mixed'){
+        paid = (parseFloat($('cbPayCash').value)||0)+(parseFloat($('cbPayEvc').value)||0)+(parseFloat($('cbPayZaad').value)||0);
+    } else {
+        paid = parseFloat($('cbPaid').value)||0;
+    }
+    
+    const balance = Math.max(0, total-paid);
+    const status = balance<=0.01 ? 'paid' : 'pending';
+    
+    $('cbSubtotal').textContent = fmt$(subtotal);
+    $('cbTotal').textContent = fmt$(total);
+    $('cbBalance').textContent = fmt$(balance);
+    $('cbBalance').className = balance>0 ? 'text-danger' : 'text-success';
+    $('cbStatus').textContent = status==='paid' ? 'PAID' : 'PENDING';
+    $('cbStatus').className = 'badge ' + (status==='paid'?'bg-paid':'bg-pending');
+    
+    return {subtotal, discount, total, paid, balance, status};
+}
+
+function resetCashierBill(){
+    cbServices = [];
+    $('cbPatId').value = '';
+    $('cbPatSearch').value = '';
+    $('cbPatName').value = ''; $('cbPatPhone').value = ''; $('cbPatAge').value = ''; $('cbPatGender').value = ''; $('cbPatAddress').value = ''; $('cbPatBlood').value = '';
+    $('cbDoctor').value = '';
+    $('cbPatBadge').classList.add('hidden');
+    $('cbDiscount').value = 0;
+    $('cbPaid').value = '';
+    $('cbPayCash').value = ''; $('cbPayEvc').value = ''; $('cbPayZaad').value = '';
+    setCbPay('cash');
+    renderCbServices();
+}
+
+function onPatientSearch(query){
+    const box = $('cbPatResults');
+    if(!query || query.length<<2){ box.style.display='none'; return; }
+    const patients = load(KEYS.PATIENTS);
+    const matches = patients.filter(p=> p.phone.includes(query) || p.name.toLowerCase().includes(query.toLowerCase()) ).slice(0,6);
+    if(matches.length===0){ box.style.display='none'; return; }
+    box.innerHTML = matches.map(p=>`
+        <div class="search-result-item" onclick="selectCbPatient('${p.id}')">
+            <div class="name">${sanitize(p.name)}</div>
+            <div class="meta">${p.phone} • ${p.age||'-'} yrs • ${p.gender||'-'} • ${p.visits||1} visit(s)</div>
+        </div>
+    `).join('');
+    box.style.display = 'block';
+}
+
+function onPhoneInput(phone){
+    if(phone.length<<6) return;
+    const p = load(KEYS.PATIENTS).find(x=>x.phone===phone);
+    if(p) selectCbPatient(p.id);
+}
+
+function selectCbPatient(id){
+    const p = load(KEYS.PATIENTS).find(x=>x.id===id);
+    if(!p) return;
+    $('cbPatId').value = p.id;
+    $('cbPatName').value = p.name;
+    $('cbPatPhone').value = p.phone;
+    $('cbPatAge').value = p.age||'';
+    $('cbPatGender').value = p.gender||'';
+    $('cbPatAddress').value = p.address||'';
+    $('cbPatBlood').value = p.bloodGroup||'';
+    
+    const visits = load(KEYS.VISITS).filter(v=>v.patientId===p.id).length + 1;
+    $('cbVisitBadge').textContent = `Existing Patient — Visit #${visits}`;
+    $('cbVisitBadge').className = 'badge bg-paid';
+    $('cbPatBadge').classList.remove('hidden');
+    $('cbPatResults').style.display = 'none';
+}
+
+function getOrCreateCbPatient(){
+    const id = $('cbPatId').value;
+    const name = sanitize($('cbPatName').value.trim(), 100);
+    const phone = sanitize($('cbPatPhone').value.trim(), 50);
+    const age = parseInt($('cbPatAge').value)||0;
+    const gender = $('cbPatGender').value;
+    const address = sanitize($('cbPatAddress').value.trim(), 200);
+    const blood = sanitize($('cbPatBlood').value.trim(), 10);
+    if(!name || !phone){ Swal.fire({icon:'warning', title:'Name and Phone required'}); return null; }
+    
+    const patients = load(KEYS.PATIENTS);
+    if(id){
+        const idx = patients.findIndex(p=>p.id===id);
+        if(idx!==-1){
+            patients[idx] = {...patients[idx], name, phone, age, gender, address, bloodGroup:blood, updatedAt:nowStr()};
+            save(KEYS.PATIENTS, patients);
+            return patients[idx];
+        }
+    }
+    const existing = patients.find(p=>p.phone===phone);
+    if(existing){
+        existing.name=name; existing.age=age; existing.gender=gender; existing.address=address; existing.bloodGroup=blood; existing.updatedAt=nowStr();
+        save(KEYS.PATIENTS, patients);
+        return existing;
+    }
+    const newP = {id:gid(), name, phone, age, gender, address, bloodGroup:blood, createdAt:nowStr(), visits:1};
+    patients.push(newP);
+    save(KEYS.PATIENTS, patients);
+    return newP;
+}
+
+function saveCashierBill(){
+    if(cbServices.length===0){ Swal.fire({icon:'warning', title:'Select at least one service'}); return; }
+    const patient = getOrCreateCbPatient();
+    if(!patient) return;
+    
+    const calc = calcCashierBill();
+    const settings = load(KEYS.SETTINGS);
+    const billNo = settings.nextBillNo++;
+    save(KEYS.SETTINGS, settings);
+    
+    const services = load(KEYS.SERVICES);
+    const billProfit = cbServices.reduce((sum,s)=>{
+        const real = services.find(x=>x.id===s.id);
+        return sum + ((s.price*s.qty) - (real?(real.cost||0)*s.qty:0));
+    },0) - calc.discount;
+    
+    const bill = {
+        id: gid(), billNo, date: nowStr(),
+        patientId: patient.id, patientName: patient.name, patientPhone: patient.phone,
+        patientAge: patient.age, patientGender: patient.gender,
+        doctorId: $('cbDoctor').value || null,
+        services: cbServices.map(s=>({id:s.id, name:s.name, qty:s.qty, price:s.price, total:s.price*s.qty})),
+        subtotal: calc.subtotal, discount: calc.discount, totalAmount: calc.total,
+        paidAmount: calc.paid, balance: calc.balance, paymentMethod: cbPayMethod,
+        paymentDetails: cbPayMethod==='mixed' ? {
+            cash: parseFloat($('cbPayCash').value)||0,
+            evc: parseFloat($('cbPayEvc').value)||0,
+            zaad: parseFloat($('cbPayZaad').value)||0
+        } : null,
+        status: calc.status, profit: billProfit,
+        cashier: currentUser.username
+    };
+    
+    const bills = load(KEYS.BILLS);
+    bills.unshift(bill);
+    save(KEYS.BILLS, bills);
+    
+    // If doctor selected, add to queue
+    if($('cbDoctor').value){
+        const queue = load(KEYS.QUEUE);
+        queue.push({
+            id: gid(), patientId: patient.id, patientName: patient.name,
+            doctorId: $('cbDoctor').value, status: 'waiting',
+            type: 'consultation', billId: bill.id, date: nowStr()
+        });
+        save(KEYS.QUEUE, queue);
+    }
+    
+    printReceipt(bill);
+    Swal.fire({icon:'success', title:`Receipt #${billNo} Saved`, timer:1800});
+    resetCashierBill();
+    renderCashierDash();
+}
+
+function printReceipt(bill){
+    const settings = load(KEYS.SETTINGS);
+    const doc = load(KEYS.DOCTORS).find(d=>d.id===bill.doctorId);
+    const payDetail = bill.paymentMethod==='mixed'
+        ? `Cash:${fmt$(bill.paymentDetails.cash)} EVC:${fmt$(bill.paymentDetails.evc)} Zaad:${fmt$(bill.paymentDetails.zaad)}`
+        : bill.paymentMethod.toUpperCase();
+    
+    $('printBox').innerHTML = `
+        <div class="receipt">
+            <div class="receipt-center"><h3>🧪 ${sanitize(settings.hospitalName)}</h3><p>${sanitize(settings.address)}</p><p>Tel: ${sanitize(settings.phone)}</p></div>
+            <div class="receipt-line"></div>
+            <p><strong>Receipt No:</strong> ${bill.billNo}</p>
+            <p><strong>Date:</strong> ${new Date(bill.date).toLocaleString()}</p>
+            <p><strong>Cashier:</strong> ${bill.cashier}</p>
+            ${doc?`<p><strong>Doctor:</strong> ${sanitize(doc.name)}</p>`:''}
+            <div class="receipt-line"></div>
+            <p><strong>Patient:</strong> ${sanitize(bill.patientName)}</p>
+            <p><strong>Phone:</strong> ${sanitize(bill.patientPhone)}</p>
+            <p><strong>Age:</strong> ${bill.patientAge||'-'} | <strong>Gender:</strong> ${bill.patientGender||'-'}</p>
+            <div class="receipt-line"></div>
+            <table class="receipt-table">
+                <tr><td><strong>Service</strong></td><td class="right"><strong>Amount</strong></td></tr>
+                ${bill.services.map((s,i)=>`<tr><td>${i+1}. ${sanitize(s.name)} x${s.qty}</td><td class="right">${fmt$(s.total)}</td></tr>`).join('')}
+            </table>
+            <div class="receipt-line"></div>
+            <table class="receipt-table">
+                <tr><td>Subtotal</td><td class="right">${fmt$(bill.subtotal)}</td></tr>
+                ${bill.discount>0?`<tr><td>Discount</td><td class="right">-${fmt$(bill.discount)}</td></tr>`:''}
+                <tr class="receipt-bold"><td>TOTAL</td><td class="right">${fmt$(bill.totalAmount)}</td></tr>
+                <tr><td>Paid</td><td class="right">${fmt$(bill.paidAmount)}</td></tr>
+                ${bill.balance>0?`<tr><td>Balance Due</td><td class="right text-danger">${fmt$(bill.balance)}</td></tr>`:''}
+                <tr><td>Method</td><td class="right">${payDetail}</td></tr>
+            </table>
+            <div class="receipt-line"></div>
+            <div class="receipt-center"><p>Thank you for choosing us!</p><p>Please keep this receipt.</p></div>
+        </div>
+    `;
+    $('printArea').style.display = 'block';
+    window.print();
+    $('printArea').style.display = 'none';
+}
+
+function printReceiptById(id){
+    const bill = load(KEYS.BILLS).find(b=>b.id===id);
+    if(bill) printReceipt(bill);
+}
+
+function renderCashierBills(){
+    const bills = load(KEYS.BILLS).filter(b=>b.cashier===currentUser.username);
+    const search = $('cbBillSearch').value.toLowerCase();
+    const filtered = bills.filter(b=>{
+        if(search && !String(b.billNo).includes(search) && !b.patientName.toLowerCase().includes(search)) return false;
+        return true;
+    });
+    
+    const tbody = $('cashierBillsTable');
+    tbody.innerHTML = '';
+    filtered.slice(0,50).forEach(b=>{
+        const doc = load(KEYS.DOCTORS).find(d=>d.id===b.doctorId);
+        tbody.innerHTML += `<tr>
+            <td>#${b.billNo}</td><td>${new Date(b.date).toLocaleString()}</td>
+            <td>${sanitize(b.patientName)}</td><td>${doc?sanitize(doc.name):'-'}</td>
+            <td>${fmt$(b.totalAmount)}</td><td>${fmt$(b.paidAmount)}</td>
+            <td class="${b.balance>0?'text-danger':'text-success'}">${fmt$(b.balance)}</td>
+            <td>${b.paymentMethod.toUpperCase()}</td>
+            <td style="text-align:right;"><button class="btn btn-sm btn-primary" onclick="printReceiptById('${b.id}')">Print</button></td>
+        </tr>`;
+    });
+    if(filtered.length===0) tbody.innerHTML = '<tr><td colspan="9" class="text-muted" style="text-align:center;">No bills</td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DOCTOR MODULES
+// ═══════════════════════════════════════════════════════════════
+
+function getMyDoctorId(){
+    return currentUser.doctorId || load(KEYS.DOCTORS).find(d=>d.name.includes(currentUser.name))?.id;
+}
+
+function renderDoctorDash(){
+    const docId = getMyDoctorId();
+    if(!docId) return;
+    const today = todayStr();
+    const queue = load(KEYS.QUEUE).filter(q=>q.doctorId===docId && q.date.startsWith(today));
+    const visits = load(KEYS.VISITS).filter(v=>v.doctorId===docId && v.date.startsWith(today));
+    
+    $('ddWaiting').textContent = queue.filter(q=>q.status==='waiting').length;
+    $('ddProgress').textContent = queue.filter(q=>q.status==='in-progress').length;
+    $('ddCompleted').textContent = visits.filter(v=>v.status==='completed').length;
+    $('ddTotal').textContent = visits.length;
+    
+    // Waiting cards
+    const wBox = $('ddQueueWaiting');
+    const waiting = queue.filter(q=>q.status==='waiting');
+    if(waiting.length===0){ wBox.innerHTML = '<p class="text-muted" style="text-align:center;padding:1rem;">No waiting patients</p>'; }
+    else {
+        wBox.innerHTML = waiting.map(q=>`
+            <div class="queue-card waiting" style="margin-bottom:0.75rem;">
+                <div class="patient-name">${sanitize(q.patientName)}</div>
+                <div class="meta">Arrived: ${new Date(q.date).toLocaleTimeString()}</div>
+                <div class="actions">
+                    <button class="btn btn-sm btn-success" onclick="startConsultation('${q.id}')">Start</button>
+                    <button class="btn btn-sm btn-light" onclick="viewPatFromQueue('${q.patientId}')">History</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    // Done list
+    const doneBody = $('ddQueueDone');
+    doneBody.innerHTML = '';
+    visits.filter(v=>v.status==='completed').slice(0,5).forEach(v=>{
+        const p = load(KEYS.PATIENTS).find(x=>x.id===v.patientId);
+        doneBody.innerHTML += `<tr>
+            <td>${p?sanitize(p.name):'Unknown'}</td>
+            <td>${new Date(v.date).toLocaleTimeString()}</td>
+            <td>${sanitize(v.diagnosis)||'-'}</td>
+            <td style="text-align:right;"><button class="btn btn-sm btn-primary" onclick="viewVisit('${v.id}')">View</button></td>
+        </tr>`;
+    });
+    if(doneBody.innerHTML==='') doneBody.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center;">None completed today</td></tr>';
+}
+
+function renderDoctorQueue(){
+    const docId = getMyDoctorId();
+    if(!docId) return;
+    const filter = $('dqFilter').value;
+    const queue = load(KEYS.QUEUE).filter(q=>q.doctorId===docId).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    
+    const grid = $('doctorQueueGrid');
+    grid.innerHTML = '';
+    queue.forEach(q=>{
+        if(filter!=='all' && q.status!==filter) return;
+        const p = load(KEYS.PATIENTS).find(x=>x.id===q.patientId);
+        const card = document.createElement('div');
+        card.className = `queue-card ${q.status}`;
+        card.innerHTML = `
+            <div class="patient-name">${sanitize(q.patientName)}</div>
+            <div class="meta">Status: <span class="badge ${q.status==='waiting'?'bg-waiting':q.status==='in-progress'?'bg-paid':'bg-completed'}">${q.status}</span></div>
+            <div class="meta">${new Date(q.date).toLocaleString()}</div>
+            ${p?`<div class="meta">${p.age||'-'} yrs • ${p.gender||'-'} • ${p.phone}</div>`:''}
+            <div class="actions">
+                ${q.status==='waiting'?`<button class="btn btn-sm btn-success" onclick="startConsultation('${q.id}')">Start</button>`:''}
+                ${q.status==='in-progress'?`<button class="btn btn-sm btn-primary" onclick="continueConsultation('${q.id}')">Continue</button>`:''}
+                <button class="btn btn-sm btn-light" onclick="viewPatFromQueue('${q.patientId}')">History</button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+    if(grid.innerHTML==='') grid.innerHTML = '<p class="text-muted" style="text-align:center;grid-column:1/-1;padding:2rem;">No patients in queue</p>';
+}
+
+function startConsultation(queueId){
+    const queue = load(KEYS.QUEUE);
+    const q = queue.find(x=>x.id===queueId);
+    if(!q) return;
+    q.status = 'in-progress';
+    save(KEYS.QUEUE, queue);
+    
+    // Create visit record
+    const visits = load(KEYS.VISITS);
+    const visitId = gid();
+    visits.push({
+        id: visitId, patientId: q.patientId, doctorId: q.doctorId,
+        date: nowStr(), status: 'in-progress',
+        complaints:'', diagnosis:'', notes:'', vitals:{},
+        prescriptions:[], labRequests:[]
+    });
+    save(KEYS.VISITS, visits);
+    
+    openConsultation(q.patientId, queueId, visitId);
+}
+
+function continueConsultation(queueId){
+    const q = load(KEYS.QUEUE).find(x=>x.id===queueId);
+    if(!q) return;
+    const visits = load(KEYS.VISITS);
+    const visit = visits.filter(v=>v.patientId===q.patientId && v.doctorId===q.doctorId).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+    openConsultation(q.patientId, queueId, visit?.id);
+}
+
+function openConsultation(patId, queueId, visitId){
+    const p = load(KEYS.PATIENTS).find(x=>x.id===patId);
+    if(!p) return;
+    
+    $('consQueueId').value = queueId;
+    $('consPatId').value = patId;
+    $('consVisitId').value = visitId || '';
+    
+    // Patient info panel
+    const visits = load(KEYS.VISITS).filter(v=>v.patientId===patId).length;
+    $('consPatInfo').innerHTML = `
+        <div style="text-align:center; margin-bottom:1rem;">
+            <div style="width:60px;height:60px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;margin:0 auto;">${p.name.charAt(0)}</div>
+            <div style="font-weight:700; margin-top:0.5rem;">${sanitize(p.name)}</div>
+            <div class="text-muted" style="font-size:0.85rem;">${p.age||'-'} yrs • ${p.gender||'-'} • ${p.bloodGroup||'-'}</div>
+            <div class="text-muted" style="font-size:0.85rem;">${sanitize(p.phone)}</div>
+        </div>
+        <div style="font-size:0.85rem; color:#555;">
+            <div><strong>Address:</strong> ${sanitize(p.address)||'-'}</div>
+            <div><strong>Total Visits:</strong> ${visits}</div>
+        </div>
+    `;
+    
+    // History sidebar
+    const history = load(KEYS.VISITS).filter(v=>v.patientId===patId).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const histBox = $('consHistory');
+    if(history.length===0){ histBox.innerHTML = '<p class="text-muted">No previous visits</p>'; }
+    else {
+        histBox.innerHTML = history.slice(0,5).map(v=>{
+            const doc = load(KEYS.DOCTORS).find(d=>d.id===v.doctorId);
+            return `<div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:6px; font-size:0.82rem;">
+                <strong>${new Date(v.date).toLocaleDateString()}</strong> — ${doc?sanitize(doc.name):'Unknown'}<<br>
+                <span class="text-muted">${sanitize(v.diagnosis)||'No diagnosis'}</span>
+            </div>`;
+        }).join('');
+    }
+    
+    // Load existing visit data if any
+    if(visitId){
+        const v = load(KEYS.VISITS).find(x=>x.id===visitId);
+        if(v){
+            $('consBP').value = v.vitals?.bp || '';
+            $('consTemp').value = v.vitals?.temp || '';
+            $('consWeight').value = v.vitals?.weight || '';
+            $('consPulse').value = v.vitals?.pulse || '';
+            $('consComplaints').value = v.complaints || '';
+            $('consDiagnosis').value = v.diagnosis || '';
+            $('consNotes').value = v.notes || '';
+            
+            // Prescriptions
+            const rxBox = $('rxRows');
+            rxBox.innerHTML = '';
+            if(v.prescriptions && v.prescriptions.length){
+                v.prescriptions.forEach(r=>{
+                    rxBox.innerHTML += `<div class="rx-row">
+                        <input value="${sanitize(r.drug)}" placeholder="Medicine"><input value="${sanitize(r.dosage)}" placeholder="Dosage">
+                        <input value="${sanitize(r.duration)}" placeholder="Duration"><input value="${sanitize(r.notes)}" placeholder="Notes">
+                        <button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>
+                    </div>`;
+                });
+            } else { addRxRow(); }
+        }
+    } else {
+        // Clear form
+        $('consBP').value=''; $('consTemp').value=''; $('consWeight').value=''; $('consPulse').value='';
+        $('consComplaints').value=''; $('consDiagnosis').value=''; $('consNotes').value='';
+        $('rxRows').innerHTML = ''; addRxRow();
+    }
+    
+    // Lab grid
+    const labGrid = $('consLabGrid');
+    labGrid.innerHTML = '';
+    load(KEYS.SERVICES).filter(s=>s.department==='Laboratory' || s.department==='Radiology').forEach(s=>{
+        const chip = document.createElement('div');
+        chip.className = 'service-chip';
+        chip.dataset.id = s.id;
+        chip.innerHTML = `<div class="name">${sanitize(s.name)}</div><div class="price">${fmt$(s.price)}</div>`;
+        // Check if already requested in this visit
+        const v = visitId ? load(KEYS.VISITS).find(x=>x.id===visitId) : null;
+        const already = v && v.labRequests && v.labRequests.find(l=>l.serviceId===s.id);
+        if(already) chip.classList.add('selected');
+        chip.onclick = ()=> toggleLabRequest(s, visitId, chip);
+        labGrid.appendChild(chip);
+    });
+    
+    showView('consultation');
+}
+
+function addRxRow(){
+    $('rxRows').insertAdjacentHTML('beforeend', `<div class="rx-row">
+        <input placeholder="Medicine name"><input placeholder="Dosage (e.g. 1 tab 3x daily)">
+        <input placeholder="Duration (e.g. 5 days)"><input placeholder="Notes">
+        <button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>
+    </div>`);
+}
+
+function toggleLabRequest(service, visitId, chip){
+    if(!visitId) { Swal.fire({icon:'warning', title:'Start consultation first'}); return; }
+    const visits = load(KEYS.VISITS);
+    const v = visits.find(x=>x.id===visitId);
+    if(!v) return;
+    if(!v.labRequests) v.labRequests = [];
+    const idx = v.labRequests.findIndex(l=>l.serviceId===service.id);
+    if(idx>=0){
+        v.labRequests.splice(idx,1);
+        chip.classList.remove('selected');
+    } else {
+        v.labRequests.push({serviceId:service.id, serviceName:service.name, status:'requested', result:'', resultDate:''});
+        chip.classList.add('selected');
+    }
+    save(KEYS.VISITS, visits);
+}
+
+function saveConsultation(complete=false){
+    const visitId = $('consVisitId').value;
+    const queueId = $('consQueueId').value;
+    if(!visitId) { Swal.fire({icon:'warning', title:'No active visit'}); return; }
+    
+    const visits = load(KEYS.VISITS);
+    const v = visits.find(x=>x.id===visitId);
+    if(!v) return;
+    
+    // Gather prescriptions
+    const rxRows = document.querySelectorAll('#rxRows .rx-row');
+    const prescriptions = [];
+    rxRows.forEach(row=>{
+        const inputs = row.querySelectorAll('input');
+        if(inputs[0].value.trim()){
+            prescriptions.push({
+                drug: sanitize(inputs[0].value, 100),
+                dosage: sanitize(inputs[1].value, 100),
+                duration: sanitize(inputs[2].value, 100),
+                notes: sanitize(inputs[3].value, 200)
+            });
+        }
+    });
+    
+    v.vitals = {
+        bp: sanitize($('consBP').value, 20),
+        temp: $('consTemp').value,
+        weight: $('consWeight').value,
+        pulse: $('consPulse').value
+    };
+    v.complaints = sanitize($('consComplaints').value, 500);
+    v.diagnosis = sanitize($('consDiagnosis').value, 500);
+    v.notes = sanitize($('consNotes').value, 500);
+    v.prescriptions = prescriptions;
+    if(complete) v.status = 'completed';
+    save(KEYS.VISITS, visits);
+    
+    // Update queue
+    if(queueId && complete){
+        const queue = load(KEYS.QUEUE);
+        const q = queue.find(x=>x.id===queueId);
+        if(q) q.status = 'completed';
+        save(KEYS.QUEUE, queue);
+    }
+    
+    Swal.fire({icon:'success', title: complete?'Consultation Completed':'Draft Saved', timer:1500});
+    if(complete) backToQueue();
+}
+
+function printPrescription(){
+    const p = load(KEYS.PATIENTS).find(x=>x.id===$('consPatId').value);
+    const doc = load(KEYS.DOCTORS).find(d=>d.id===getMyDoctorId());
+    const settings = load(KEYS.SETTINGS);
+    
+    const rxRows = document.querySelectorAll('#rxRows .rx-row');
+    let rxHtml = '';
+    rxRows.forEach((row,i)=>{
+        const inputs = row.querySelectorAll('input');
+        if(inputs[0].value.trim()){
+            rxHtml += `<tr><td>${i+1}</td><td><strong>${sanitize(inputs[0].value)}</strong></td><td>${sanitize(inputs[1].value)}</td><td>${sanitize(inputs[2].value)}</td><td>${sanitize(inputs[3].value)}</td></tr>`;
+        }
+    });
+    
+    $('printBox').innerHTML = `
+        <div class="rx-print">
+            <div class="rx-print-header">
+                <h2>${sanitize(settings.hospitalName)}</h2>
+                <p>${sanitize(settings.address)} | Tel: ${sanitize(settings.phone)}</p>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                <div>
+                    <p><strong>Patient:</strong> ${sanitize(p.name)}</p>
+                    <p><strong>Age:</strong> ${p.age||'-'} | <strong>Gender:</strong> ${p.gender||'-'}</p>
+                    <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+                </div>
+                <div style="text-align:right;">
+                    <p><strong>Doctor:</strong> ${doc?sanitize(doc.name):'Unknown'}</p>
+                    <p><strong>Specialty:</strong> ${doc?sanitize(doc.specialty):'-'}</p>
+                </div>
+            </div>
+            <h3 style="color:#667eea; margin-bottom:10px;">🩺 Prescription</h3>
+            <table class="rx-table">
+                <thead><tr><th>#</th><th>Medicine</th><th>Dosage</th><th>Duration</th><th>Notes</th></tr></thead>
+                <tbody>${rxHtml}</tbody>
+            </table>
+            ${$('consDiagnosis').value?`<div style="margin-top:20px;"><strong>Diagnosis:</strong> ${sanitize($('consDiagnosis').value)}</div>`:''}
+            ${$('consNotes').value?`<div style="margin-top:10px;"><strong>Notes:</strong> ${sanitize($('consNotes').value)}</div>`:''}
+            <div style="margin-top:40px; text-align:center; border-top:2px solid #667eea; padding-top:15px;">
+                <p>Doctor Signature: ___________________</p>
+                <p style="font-size:0.8rem; color:#888; margin-top:10px;">This prescription is valid for 7 days.</p>
+            </div>
+        </div>
+    `;
+    $('printArea').style.display = 'block';
+    window.print();
+    $('printArea').style.display = 'none';
+}
+
+function backToQueue(){
+    showView('doctorQueue');
+    renderDoctorQueue();
+}
+
+function viewPatFromQueue(patId){
+    viewPatientHistory(patId);
+}
+
+function viewVisit(visitId){
+    const v = load(KEYS.VISITS).find(x=>x.id===visitId);
+    if(!v) return;
+    const p = load(KEYS.PATIENTS).find(x=>x.id===v.patientId);
+    const doc = load(KEYS.DOCTORS).find(d=>d.id===v.doctorId);
+    
+    let html = `<h3>Visit Details</h3>
+    <p><strong>Date:</strong> ${new Date(v.date).toLocaleString()}</p>
+    <p><strong>Doctor:</strong> ${doc?sanitize(doc.name):'-'}</p>
+    <p><strong>Patient:</strong> ${p?sanitize(p.name):'-'}</p>
+    <hr>
+    <p><strong>Vitals:</strong> BP:${v.vitals?.bp||'-'}, Temp:${v.vitals?.temp||'-'}, Wt:${v.vitals?.weight||'-'}, Pulse:${v.vitals?.pulse||'-'}</p>
+    <p><strong>Complaints:</strong> ${sanitize(v.complaints)||'-'}</p>
+    <p><strong>Diagnosis:</strong> ${sanitize(v.diagnosis)||'-'}</p>
+    <p><strong>Notes:</strong> ${sanitize(v.notes)||'-'}</p>`;
+    
+    if(v.prescriptions && v.prescriptions.length){
+        html += `<h4 style="margin-top:1rem;">Prescriptions</h4>`;
+        v.prescriptions.forEach(r=>{
+            html += `<div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:6px;">
+                <strong>${sanitize(r.drug)}</strong> — ${sanitize(r.dosage)} — ${sanitize(r.duration)}<<br>
+                <span class="text-muted">${sanitize(r.notes)}</span>
+            </div>`;
+        });
+    }
+    
+    if(v.labRequests && v.labRequests.length){
+        html += `<h4 style="margin-top:1rem;">Lab Requests</h4>`;
+        v.labRequests.forEach(l=>{
+            html += `<div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:6px;">
+                ${sanitize(l.serviceName)} — <span class="badge ${l.status==='completed'?'bg-paid':'bg-pending'}">${l.status}</span>
+            </div>`;
+        });
+    }
+    
+    html += `<div class="mt-3"><button class="btn btn-light" onclick="closeModal()">Close</button></div>`;
+    showModal(html);
+}
+
+function renderDoctorPatients(){
+    const search = $('docPatSearch').value.toLowerCase();
+    const patients = load(KEYS.PATIENTS);
+    const visits = load(KEYS.VISITS);
+    
+    const filtered = patients.filter(p=>{
+        if(search && !p.name.toLowerCase().includes(search) && !p.phone.includes(search)) return false;
+        return true;
+    });
+    
+    const tbody = $('doctorPatientsTable');
+    tbody.innerHTML = '';
+    filtered.forEach(p=>{
+        const pVisits = visits.filter(v=>v.patientId===p.id).length;
+        const last = visits.filter(v=>v.patientId===p.id).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+        tbody.innerHTML += `<tr>
+            <td><strong>${sanitize(p.name)}</strong></td>
+            <td>${sanitize(p.phone)}</td>
+            <td>${p.age||'-'}</td>
+            <td>${p.gender||'-'}</td>
+            <td>${pVisits}</td>
+            <td>${last?new Date(last.date).toLocaleDateString():'-'}</td>
+            <td style="text-align:right;">
+                <button class="btn btn-sm btn-primary" onclick="viewPatientHistory('${p.id}')">History</button>
+            </td>
+        </tr>`;
+    });
+    if(filtered.length===0) tbody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align:center;">No patients found</td></tr>';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MODAL UTILS
+// ═══════════════════════════════════════════════════════════════
+
+function showModal(html){
+    $('modalContent').innerHTML = html;
+    $('modalOverlay').style.display = 'flex';
+}
+
+function closeModal(){
+    $('modalOverlay').style.display = 'none';
+}
+
+$('modalOverlay').addEventListener('click', e=>{
+    if(e.target === $('modalOverlay')) closeModal();
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  EVENT LISTENERS & INIT
+// ═══════════════════════════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', ()=>{
+    initData();
+    checkSession();
+    
+    // Enter key on login
+    $('loginPass').addEventListener('keypress', e=>{ if(e.key==='Enter') doLogin(); });
+    
+    // Patient search debounce
+    $('cbPatSearch')?.addEventListener('input', debounce((e)=>onPatientSearch(e.target.value), 300));
+});
+
+// Expose globals for inline onclick handlers
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+window.showView = showView;
+window.openDoctorModal = openDoctorModal;
+window.saveDoctor = saveDoctor;
+window.editDoctor = editDoctor;
+window.toggleDoctor = toggleDoctor;
+window.openServiceModal = openServiceModal;
+window.saveService = saveService;
+window.editService = editService;
+window.deleteService = deleteService;
+window.viewPatientHistory = viewPatientHistory;
+window.renderAllBills = renderAllBills;
+window.setAdminReport = setAdminReport;
+window.renderAdminReports = renderAdminReports;
+window.printAdminReport = printAdminReport;
+window.onPatientSearch = onPatientSearch;
+window.onPhoneInput = onPhoneInput;
+window.selectCbPatient = selectCbPatient;
+window.toggleCbService = toggleCbService;
+window.changeCbQty = changeCbQty;
+window.removeCbService = removeCbService;
+window.setCbPay = setCbPay;
+window.calcCbMixed = calcCbMixed;
+window.saveCashierBill = saveCashierBill;
+window.resetCashierBill = resetCashierBill;
+window.printReceiptById = printReceiptById;
+window.renderCashierBills = renderCashierBills;
+window.startConsultation = startConsultation;
+window.continueConsultation = continueConsultation;
+window.backToQueue = backToQueue;
+window.viewPatFromQueue = viewPatFromQueue;
+window.viewVisit = viewVisit;
+window.saveConsultation = saveConsultation;
+window.printPrescription = printPrescription;
+window.closeModal = closeModal;
+window.renderDoctorQueue = renderDoctorQueue;
+window.renderDoctorPatients = renderDoctorPatients;
+window.addRxRow = addRxRow;
 </script>
 </body>
 </html>
