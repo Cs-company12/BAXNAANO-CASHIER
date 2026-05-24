@@ -3,1920 +3,1588 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baxnaano HMS — Hospital & Doctor Management</title>
+    <title>BAXNAANO LAB - Cashier System</title>
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; min-height: 100vh; color: #333; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); background-attachment: fixed; min-height: 100vh; color: #333; }
         
-        /* Login */
-        .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
-        .login-box { background: white; padding: 2.5rem; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 420px; text-align: center; }
-        .login-box img { width: 70px; margin-bottom: 1rem; }
-        .login-box h2 { color: #667eea; margin-bottom: 0.25rem; }
-        .login-box p { color: #888; margin-bottom: 1.5rem; font-size: 0.9rem; }
-        .login-input { width: 100%; padding: 12px 14px; margin-bottom: 0.75rem; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 15px; transition: 0.2s; }
-        .login-input:focus { outline: none; border-color: #667eea; }
-        .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
-        .login-btn:hover { opacity: 0.95; transform: translateY(-1px); }
+        .login-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-box { background: white; padding: 2.5rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 400px; text-align: center; }
+        .login-box img { width: 90px; margin-bottom: 1rem; }
+        .login-box h2 { margin-bottom: 1.5rem; color: #667eea; }
+        .login-input { width: 100%; padding: 12px 15px; margin-bottom: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: all 0.3s; }
+        .login-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .login-btn { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: transform 0.2s; }
+        .login-btn:hover { transform: translateY(-2px); }
         
-        /* Nav */
-        .navbar { background: white; padding: 0.75rem 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); position: sticky; top: 0; z-index: 1000; display: none; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .nav-brand { font-weight: 700; color: #667eea; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; }
-        .nav-menu { display: flex; gap: 0.4rem; margin-left: auto; flex-wrap: wrap; }
-        .nav-btn { padding: 8px 14px; border: none; background: #f0f0f0; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s; }
-        .nav-btn:hover, .nav-btn.active { background: #667eea; color: white; }
-        .user-pill { background: #f0f0f0; padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; color: #555; display: flex; align-items: center; gap: 0.4rem; }
-        .role-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; background: #667eea; color: white; padding: 2px 6px; border-radius: 4px; }
+        .navbar { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 0.8rem 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; display: none; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+        .nav-brand { font-size: 1.3rem; font-weight: bold; color: #667eea; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-menu { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+        .nav-btn { padding: 8px 16px; border: none; background: #f0f0f0; border-radius: 8px; cursor: pointer; transition: all 0.3s; font-size: 14px; font-weight: 500; }
+        .nav-btn:hover { background: #667eea; color: white; }
+        .nav-btn.active { background: #667eea; color: white; }
+        .nav-right { margin-left: auto; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+        .user-info { font-weight: 500; color: #667eea; }
         
-        /* Views */
-        .view { display: none; max-width: 1300px; margin: 0 auto; padding: 1.5rem; animation: fadeIn 0.3s; }
-        .view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .unified-section { min-height: 100vh; padding: 1.5rem; display: none; max-width: 1400px; margin: 0 auto; }
+        .unified-section.active { display: block; animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Cards */
-        .card { background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 1rem; }
-        .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; color: #444; }
-        .card-header-flex { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
-        
-        /* Stats */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .stat { background: white; padding: 1.25rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 4px solid #667eea; }
-        .stat.green { border-left-color: #28a745; }
-        .stat.red { border-left-color: #dc3545; }
-        .stat.orange { border-left-color: #fd7e14; }
-        .stat.purple { border-left-color: #764ba2; }
-        .stat small { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat div { font-size: 1.5rem; font-weight: 700; color: #333; margin-top: 0.25rem; }
+        .stat-card { background: white; padding: 1.2rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.08); transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-card small { font-size: 0.8rem; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card div { font-size: 1.6rem; font-weight: bold; color: #667eea; margin-top: 0.3rem; }
+        .stat-card .profit { color: #28a745; }
+        .stat-card .danger { color: #dc3545; }
+        .stat-card .warning { color: #ffc107; }
         
-        /* Forms */
-        .form-label { display: block; font-size: 0.78rem; font-weight: 600; color: #555; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.3px; }
-        .form-control { width: 100%; padding: 10px 12px; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: 0.2s; }
+        .card-modern { background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+        .card-title { font-size: 1.1rem; font-weight: 600; color: #333; display: flex; align-items: center; gap: 0.5rem; }
+        
+        .section-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #667eea; font-weight: 700; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e0e0e0; }
+        
+        .table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .table th { background: #f8f9fa; padding: 10px; text-align: left; border-bottom: 2px solid #e0e0e0; font-weight: 600; }
+        .table td { padding: 10px; border-bottom: 1px solid #f0f0f0; }
+        .table tr:hover { background: #f8f9fa; }
+        
+        .btn-accent { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .btn-accent:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .btn-success { background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+        .btn-success:hover { background: #218838; }
+        .btn-danger { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-warning { background: #ffc107; color: #000; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .btn-outline { background: white; color: #667eea; border: 2px solid #667eea; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .btn-outline:hover { background: #667eea; color: white; }
+        .btn-sm { padding: 4px 10px; font-size: 0.85rem; }
+        .btn-lg { padding: 14px 28px; font-size: 1.1rem; }
+        
+        .form-control { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; transition: border-color 0.2s; }
         .form-control:focus { outline: none; border-color: #667eea; }
-        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-        textarea.form-control { resize: vertical; min-height: 80px; }
-        .input-group { position: relative; }
-        .input-group i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #888; }
-        .input-group .form-control { padding-left: 36px; }
+        .form-select { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; }
         
-        /* Buttons */
-        .btn { padding: 10px 18px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-warning { background: #ffc107; color: #212529; }
-        .btn-light { background: #f8f9fa; color: #555; border: 1px solid #e0e0e0; }
-        .btn-info { background: #17a2b8; color: white; }
-        .btn:hover { transform: translateY(-1px); opacity: 0.92; }
-        .btn-lg { padding: 14px 28px; font-size: 16px; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; }
-        .btn-block { display: block; width: 100%; }
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+        .bg-danger { background: #dc3545; color: white; }
+        .bg-warning { background: #ffc107; color: #000; }
+        .bg-success { background: #28a745; color: white; }
+        .bg-info { background: #17a2b8; color: white; }
+        .bg-secondary { background: #6c757d; color: white; }
         
-        /* Tables */
-        .table-wrap { overflow-x: auto; }
-        .table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-        .table th { background: #f8f9fa; padding: 10px; text-align: left; font-weight: 600; color: #555; border-bottom: 2px solid #e0e0e0; white-space: nowrap; }
-        .table td { padding: 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
-        .table tr:hover { background: #fafbfc; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; display: inline-block; }
-        .bg-paid { background: #d4edda; color: #155724; }
-        .bg-pending { background: #fff3cd; color: #856404; }
-        .bg-waiting { background: #d1ecf1; color: #0c5460; }
-        .bg-active { background: #d4edda; color: #155724; }
-        .bg-inactive { background: #f8d7da; color: #721c24; }
-        .bg-completed { background: #d4edda; color: #155724; }
+        .alert { padding: 12px; border-radius: 6px; margin-bottom: 1rem; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         
-        /* Search dropdown */
-        .search-results { background: white; border: 1px solid #e0e0e0; border-radius: 8px; max-height: 220px; overflow-y: auto; position: absolute; width: 100%; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: none; }
-        .search-result-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f5f5f5; }
+        .d-flex { display: flex; } .d-none { display: none !important; }
+        .justify-between { justify-content: space-between; }
+        .align-center { align-items: center; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-1 { gap: 0.5rem; } .gap-2 { gap: 1rem; }
+        .mt-1 { margin-top: 0.5rem; } .mt-2 { margin-top: 1rem; } .mt-3 { margin-top: 1.5rem; }
+        .mb-1 { margin-bottom: 0.5rem; } .mb-2 { margin-bottom: 1rem; } .mb-3 { margin-bottom: 1.5rem; }
+        .w-100 { width: 100%; } .w-auto { width: auto; }
+        .text-muted { color: #6c757d; }
+        .text-right { text-align: right; }
+        .font-mono { font-family: 'Courier New', monospace; }
+        
+        /* Search */
+        .search-results { background: white; border: 1px solid #ddd; border-radius: 6px; max-height: 200px; overflow-y: auto; position: absolute; width: 100%; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .search-result-item { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.2s; }
         .search-result-item:hover { background: #f8f9fa; }
-        .search-result-item .name { font-weight: 600; color: #333; }
-        .search-result-item .meta { font-size: 0.8rem; color: #888; }
+        .search-result-item:last-child { border-bottom: none; }
+        .search-wrapper { position: relative; }
         
-        /* Services selector */
-        .service-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem; }
-        .service-chip { border: 2px solid #e0e0e0; border-radius: 10px; padding: 0.75rem; cursor: pointer; transition: 0.2s; text-align: center; background: white; }
-        .service-chip:hover { border-color: #667eea; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102,126,234,0.1); }
-        .service-chip.selected { border-color: #667eea; background: #f0f4ff; }
-        .service-chip .name { font-weight: 600; font-size: 0.85rem; color: #333; }
-        .service-chip .price { color: #667eea; font-weight: 700; font-size: 1rem; margin-top: 0.2rem; }
-        .service-chip .dept { font-size: 0.7rem; color: #888; margin-top: 0.2rem; }
+        /* Services */
+        .service-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
+        .service-row .form-control { flex: 2; }
+        .service-row .form-control.price { flex: 1; min-width: 100px; }
+        .service-row .form-control.qty { flex: 0.5; min-width: 60px; }
+        .service-row .form-control.total { flex: 1; min-width: 100px; background: #f8f9fa; }
+        .service-row button { flex: 0; }
         
-        /* Bill summary */
-        .bill-box { background: #f8f9fa; border-radius: 10px; padding: 1rem; }
-        .bill-line { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9rem; }
-        .bill-line.total { font-size: 1.1rem; font-weight: 700; color: #667eea; border-top: 2px solid #667eea; margin-top: 6px; padding-top: 10px; }
+        /* Patient History Card */
+        .history-card { background: #f8f9fa; border-left: 4px solid #667eea; padding: 0.75rem 1rem; border-radius: 6px; margin-top: 0.75rem; }
+        .history-card h4 { font-size: 0.9rem; color: #667eea; margin-bottom: 0.3rem; }
+        .history-card p { font-size: 0.85rem; color: #555; margin: 2px 0; }
         
-        /* Payment methods */
-        .pay-methods { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-        .pay-method { padding: 8px 16px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; background: white; }
-        .pay-method.active { border-color: #667eea; background: #f0f4ff; color: #667eea; }
-        .mixed-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: none; justify-content: center; align-items: center; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal-box { background: white; border-radius: 12px; padding: 1.5rem; width: 100%; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); animation: modalIn 0.2s ease; }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .modal-title { font-size: 1.2rem; font-weight: 600; color: #333; }
+        .modal-close { background: none; border: none; font-size: 1.5rem; color: #6c757d; cursor: pointer; }
+        .modal-close:hover { color: #333; }
         
-        /* Queue cards */
-        .queue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
-        .queue-card { background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 2px solid #e0e0e0; transition: 0.2s; }
-        .queue-card:hover { border-color: #667eea; }
-        .queue-card.waiting { border-left: 4px solid #ffc107; }
-        .queue-card.in-progress { border-left: 4px solid #17a2b8; }
-        .queue-card.completed { border-left: 4px solid #28a745; opacity: 0.85; }
-        .queue-card .patient-name { font-weight: 700; font-size: 1.05rem; color: #333; }
-        .queue-card .meta { font-size: 0.82rem; color: #666; margin-top: 0.25rem; }
-        .queue-card .actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; }
-        
-        /* Prescription builder */
-        .rx-row { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr auto; gap: 0.5rem; align-items: end; margin-bottom: 0.5rem; }
-        .rx-row input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
-        
-        /* Doctor profile card */
-        .doc-card { background: white; border-radius: 12px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: center; border-top: 4px solid #667eea; }
-        .doc-card .avatar { width: 60px; height: 60px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; margin: 0 auto 0.75rem; }
-        .doc-card .name { font-weight: 700; font-size: 1.1rem; }
-        .doc-card .spec { color: #667eea; font-size: 0.85rem; font-weight: 500; margin-bottom: 0.5rem; }
-        .doc-card .stats { display: flex; justify-content: center; gap: 1rem; margin-top: 0.75rem; font-size: 0.8rem; color: #666; }
-        
-        /* Receipt print */
-        .receipt { max-width: 360px; margin: 0 auto; background: white; padding: 24px; font-family: 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.4; }
-        .receipt-center { text-align: center; }
-        .receipt h3 { font-size: 18px; margin-bottom: 4px; font-family: 'Segoe UI', sans-serif; }
-        .receipt p { margin: 2px 0; }
-        .receipt-line { border-top: 1px dashed #333; margin: 10px 0; }
-        .receipt-table { width: 100%; }
-        .receipt-table td { padding: 3px 0; }
-        .receipt-table .right { text-align: right; }
-        .receipt-bold { font-weight: bold; font-size: 14px; }
-        
-        /* Prescription print */
-        .rx-print { max-width: 600px; margin: 0 auto; background: white; padding: 30px; font-family: 'Segoe UI', sans-serif; font-size: 14px; }
-        .rx-print-header { text-align: center; border-bottom: 2px solid #667eea; padding-bottom: 15px; margin-bottom: 20px; }
-        .rx-print h2 { color: #667eea; margin-bottom: 5px; }
-        .rx-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        .rx-table th, .rx-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        .rx-table th { background: #f8f9fa; }
+        /* Receipt */
+        .receipt { max-width: 320px; margin: 0 auto; background: white; padding: 20px; font-family: 'Courier New', monospace; font-size: 12px; }
+        .receipt-header { text-align: center; margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 10px; }
+        .receipt-header h3 { font-size: 16px; margin-bottom: 5px; }
+        .receipt-header p { margin: 2px 0; font-size: 11px; }
+        .receipt-items { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .receipt-items td, .receipt-items th { padding: 4px 0; text-align: left; }
+        .receipt-items .text-right { text-align: right; }
+        .receipt-total { border-top: 1px dashed #333; margin-top: 10px; padding-top: 10px; }
+        .receipt-total-row { display: flex; justify-content: space-between; margin: 3px 0; }
+        .receipt-footer { text-align: center; margin-top: 15px; border-top: 1px dashed #333; padding-top: 10px; font-size: 11px; }
+        .receipt-barcode { text-align: center; font-family: monospace; letter-spacing: 3px; margin: 10px 0; }
         
         @media print {
-            body > * { display: none !important; }
-            #printArea, #printArea * { display: block !important; visibility: visible !important; }
+            body * { visibility: hidden; }
+            #printArea, #printArea * { visibility: visible; }
             #printArea { position: absolute; left: 0; top: 0; width: 100%; }
             .no-print { display: none !important; }
         }
         
-        .hidden { display: none !important; }
-        .text-muted { color: #888; }
-        .text-success { color: #28a745; }
-        .text-danger { color: #dc3545; }
-        .text-right { text-align: right; }
-        .d-flex { display: flex; }
-        .justify-between { justify-content: space-between; }
-        .align-center { align-items: center; }
-        .gap-1 { gap: 0.5rem; } .gap-2 { gap: 1rem; }
-        .mt-1 { margin-top: 0.5rem; } .mt-2 { margin-top: 1rem; } .mt-3 { margin-top: 1.5rem; }
-        .mb-1 { margin-bottom: 0.5rem; } .mb-2 { margin-bottom: 1rem; }
-        .w-100 { width: 100%; }
-        
         @media (max-width: 900px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .form-row { grid-template-columns: 1fr; }
-            .service-grid { grid-template-columns: repeat(2, 1fr); }
-            .mixed-inputs { grid-template-columns: 1fr; }
-            .rx-row { grid-template-columns: 1fr; }
+            .billing-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr; }
             .navbar { padding: 0.5rem; }
+            .nav-btn { padding: 6px 10px; font-size: 12px; }
+            .unified-section { padding: 1rem 0.75rem; }
+            .service-row { flex-wrap: wrap; }
         }
     </style>
 </head>
 <body>
 
 <!-- LOGIN -->
-<div id="loginView" class="login-wrap">
+<div id="loginContainer" class="login-container">
     <div class="login-box">
         <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" alt="Logo">
-        <h2>BAXNAANO HMS</h2>
-        <p>Hospital & Doctor Management</p>
-        <input type="text" id="loginUser" class="login-input" placeholder="Username" autocomplete="username">
-        <input type="password" id="loginPass" class="login-input" placeholder="Password" autocomplete="current-password">
-        <button class="login-btn" onclick="doLogin()">Login</button>
-        <p class="text-muted" style="margin-top:1rem;font-size:0.8rem;">
-            Demo: <strong>admin</strong>/admin123 | <strong>cashier1</strong>/5656 | <strong>doctor1</strong>/1234
-        </p>
+        <h2>🔐 BAXNAANO LAB</h2>
+        <p style="color:#6c757d; margin-bottom:1rem;">Cashier Login Only</p>
+        <input type="text" id="loginUsername" class="login-input" placeholder="Username" maxlength="50" autocomplete="username">
+        <input type="password" id="loginPassword" class="login-input" placeholder="Password" autocomplete="current-password">
+        <button id="loginBtn" class="login-btn">Login</button>
+        <div id="loginAlert" class="alert alert-danger d-none mt-2"></div>
     </div>
 </div>
 
-<!-- APP -->
-<div id="appWrap" style="display:none;">
-    <div class="navbar" id="navbar">
-        <div class="nav-brand">
-            <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" style="width:26px;height:26px;">
-            Baxnaano HMS
+<!-- NAVBAR -->
+<div id="navbar" class="navbar">
+    <div class="nav-brand">
+        <img src="https://raw.githubusercontent.com/Cs-company12/lab-baxnaano/main/images.png" style="width:28px;height:28px;">
+        Lab Cashier
+    </div>
+    <div class="nav-menu" id="navMenu"></div>
+    <div class="nav-right">
+        <span class="user-info" id="userDisplay"></span>
+        <button class="btn-accent" id="logoutBtn">Logout</button>
+    </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboardView" class="unified-section">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <small>Today's Patients</small>
+            <div id="dashTodayPatients">0</div>
         </div>
-        <div class="nav-menu" id="navMenu"></div>
-        <div class="d-flex align-center gap-1">
-            <span class="user-pill"><span id="userName">User</span><span class="role-tag" id="userRole">admin</span></span>
-            <button class="btn btn-sm btn-light" onclick="doLogout()">Logout</button>
+        <div class="stat-card">
+            <small>Today's Income</small>
+            <div class="profit" id="dashTodayIncome">$0.00</div>
+        </div>
+        <div class="stat-card">
+            <small>Pending Bills</small>
+            <div class="danger" id="dashPendingBills">0</div>
+        </div>
+        <div class="stat-card">
+            <small>Total Patients</small>
+            <div id="dashTotalPatients">0</div>
         </div>
     </div>
-
-    <!-- ========== ADMIN VIEWS ========== -->
     
-    <!-- ADMIN DASHBOARD -->
-    <div id="adminDashView" class="view">
-        <div class="stats-grid">
-            <div class="stat green"><small>Today's Patients</small><div id="adPatients">0</div></div>
-            <div class="stat"><small>Today's Income</small><div id="adIncome">$0</div></div>
-            <div class="stat purple"><small>Doctors On Duty</small><div id="adDoctors">0</div></div>
-            <div class="stat orange"><small>Pending Labs</small><div id="adPendingLabs">0</div></div>
-            <div class="stat red"><small>Pending Bills</small><div id="adPendingBills">0</div></div>
-            <div class="stat green"><small>Total Patients</small><div id="adTotalPatients">0</div></div>
-        </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-            <div class="card">
-                <div class="card-title">🕐 Recent Bills</div>
-                <div class="table-wrap"><table class="table"><thead><tr><th>#</th><th>Patient</th><th>Amount</th><th>Status</th></tr></thead><tbody id="adRecentBills"></tbody></table></div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="card-modern">
+            <div class="card-header">
+                <div class="card-title"><i class="bi bi-clock-history"></i> Recent Patients (Today)</div>
             </div>
-            <div class="card">
-                <div class="card-title">👨‍⚕️ Doctors Status</div>
-                <div class="table-wrap"><table class="table"><thead><tr><th>Doctor</th><th>Specialty</th><th>Status</th><th>Today's Patients</th></tr></thead><tbody id="adDocStatus"></tbody></table></div>
+            <div style="max-height: 40vh; overflow: auto;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Bill #</th>
+                            <th>Patient</th>
+                            <th>Phone</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th style="text-align:right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentPatientsTable"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="card-modern">
+            <div class="card-header">
+                <div class="card-title"><i class="bi bi-exclamation-circle"></i> Pending Bills (Action Needed)</div>
+            </div>
+            <div style="max-height: 40vh; overflow: auto;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Bill #</th>
+                            <th>Patient</th>
+                            <th>Balance</th>
+                            <th>Date</th>
+                            <th style="text-align:right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendingBillsTable"></tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- DOCTOR MANAGEMENT -->
-    <div id="doctorsView" class="view">
-        <div class="card">
-            <div class="card-header-flex">
-                <div class="card-title">👨‍⚕️ Doctor Management</div>
-                <button class="btn btn-primary" onclick="openDoctorModal()">+ Add Doctor</button>
+<!-- BILLING / REGISTRATION -->
+<div id="billingView" class="unified-section">
+    <div class="billing-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        
+        <!-- SECTION 1: PATIENT REGISTRATION -->
+        <div>
+            <div class="card-modern">
+                <div class="section-label"><i class="bi bi-person-vcard"></i> Section 1 — Patient Registration</div>
+                
+                <div class="search-wrapper mb-2">
+                    <label style="font-size:0.85rem; color:#6c757d; display:block; margin-bottom:4px;">Search Existing Patient (Name, Phone, or ID)</label>
+                    <div style="position:relative;">
+                        <i class="bi bi-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#6c757d;"></i>
+                        <input id="patientSearch" class="form-control" placeholder="Type name, phone, or patient ID..." style="padding-left:36px;">
+                        <div id="patientSearchResults" class="search-results d-none"></div>
+                    </div>
+                </div>
+                
+                <form id="patientForm">
+                    <input type="hidden" id="patientId">
+                    <div class="mb-2">
+                        <label style="font-size:0.85rem; color:#6c757d;">Patient ID</label>
+                        <input id="ptDisplayId" class="form-control" style="background:#f8f9fa; font-weight:bold; color:#667eea;" readonly placeholder="Auto-generated">
+                    </div>
+                    <div class="mb-2">
+                        <label style="font-size:0.85rem; color:#6c757d;">Full Name *</label>
+                        <input id="ptName" class="form-control" placeholder="Full Name" required>
+                    </div>
+                    <div class="d-flex gap-1 mb-2">
+                        <div style="flex:1;">
+                            <label style="font-size:0.85rem; color:#6c757d;">Phone Number *</label>
+                            <input id="ptPhone" class="form-control" placeholder="Phone" required>
+                        </div>
+                        <div style="flex:0.4;">
+                            <label style="font-size:0.85rem; color:#6c757d;">Age *</label>
+                            <input id="ptAge" class="form-control" type="number" min="0" max="150" placeholder="Age" required>
+                        </div>
+                        <div style="flex:0.6;">
+                            <label style="font-size:0.85rem; color:#6c757d;">Gender *</label>
+                            <select id="ptGender" class="form-select w-100" required>
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-1">
+                        <label style="font-size:0.85rem; color:#6c757d;">Address (Optional)</label>
+                        <input id="ptAddress" class="form-control" placeholder="Address">
+                    </div>
+                </form>
+                
+                <!-- Patient History -->
+                <div id="patientHistoryCard" class="history-card d-none">
+                    <h4><i class="bi bi-clock-history"></i> Patient History</h4>
+                    <p id="phVisits">Total Visits: 0</p>
+                    <p id="phLast">Last Visit: -</p>
+                    <p id="phTotal">Total Paid: $0.00</p>
+                    <button class="btn-accent btn-sm mt-1" onclick="viewPatientBills()">View All Bills</button>
+                </div>
             </div>
-            <div class="table-wrap">
+        </div>
+        
+        <!-- SECTION 2: SERVICES, DOCTOR & PAYMENT -->
+        <div>
+            <div class="card-modern">
+                <div class="section-label"><i class="bi bi-clipboard-plus"></i> Section 2 — Services, Doctor & Payment</div>
+                
+                <div class="mb-2">
+                    <label style="font-size:0.85rem; color:#6c757d;">Referred By (Doctor) *</label>
+                    <div class="d-flex gap-1 align-center">
+                        <select id="doctorSelect" class="form-select w-100" required>
+                            <option value="">Select Doctor...</option>
+                        </select>
+                        <button class="btn-outline btn-sm" onclick="openDoctorModal()" title="Add Doctor">+</button>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-between align-center mb-2">
+                    <span style="font-size:0.9rem; font-weight:500;">Services / Tests</span>
+                    <button class="btn-outline btn-sm" onclick="openServiceModal()">+ Add Service</button>
+                </div>
+                
+                <div id="servicesList">
+                    <div class="service-row" data-index="0">
+                        <select class="form-control service-select" required>
+                            <option value="">Select Service...</option>
+                        </select>
+                        <input type="number" class="form-control qty" value="1" min="1" placeholder="Qty">
+                        <input type="number" class="form-control price" placeholder="Price" readonly>
+                        <input type="number" class="form-control total" placeholder="Total" readonly>
+                        <button type="button" class="btn-danger btn-sm" onclick="removeServiceRow(this)" style="display:none;">×</button>
+                    </div>
+                </div>
+                <button class="btn-accent btn-sm mt-1" onclick="addServiceRow()">+ Add Another Service</button>
+                
+                <div class="mt-2">
+                    <label style="font-size:0.85rem; color:#6c757d;">Notes / Remarks</label>
+                    <textarea id="billNotes" class="form-control" rows="2" placeholder="Any special instructions or notes..."></textarea>
+                </div>
+                
+                <div class="mt-2" style="background:#f8f9fa; padding:1rem; border-radius:8px;">
+                    <div class="d-flex justify-between align-center mb-1">
+                        <span>Subtotal:</span>
+                        <strong id="billSubtotal">$0.00</strong>
+                    </div>
+                    <div class="d-flex justify-between align-center mb-1">
+                        <span>Discount:</span>
+                        <input id="billDiscount" type="number" min="0" step="0.01" class="form-control" style="width:100px; text-align:right;" value="0">
+                    </div>
+                    <div class="d-flex justify-between align-center" style="font-size:1.2rem; color:#667eea; border-top:2px solid #667eea; padding-top:0.5rem;">
+                        <strong>Total:</strong>
+                        <strong id="billTotal">$0.00</strong>
+                    </div>
+                </div>
+                
+                <div class="mt-2">
+                    <label style="font-size:0.85rem; color:#6c757d;">Payment Method</label>
+                    <select id="paymentMethod" class="form-select w-100 mt-1">
+                        <option value="cash">Cash</option>
+                        <option value="evc">EVC Plus</option>
+                        <option value="zaad">Zaad</option>
+                        <option value="mixed">Mixed Payment</option>
+                    </select>
+                </div>
+                
+                <div id="mixedPaymentBox" class="d-none mt-2">
+                    <div class="d-flex gap-1 mb-1">
+                        <div style="flex:1;">
+                            <label style="font-size:0.8rem; color:#6c757d;">Cash</label>
+                            <input id="mixedCash" class="form-control" type="number" min="0" step="0.01" value="0">
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:0.8rem; color:#6c757d;">EVC Plus</label>
+                            <input id="mixedEVC" class="form-control" type="number" min="0" step="0.01" value="0">
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:0.8rem; color:#6c757d;">Zaad</label>
+                            <input id="mixedZaad" class="form-control" type="number" min="0" step="0.01" value="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-2">
+                    <label style="font-size:0.85rem; color:#6c757d;">Paid Amount</label>
+                    <input id="paidAmount" class="form-control" type="number" min="0" step="0.01" placeholder="Enter paid amount">
+                </div>
+                
+                <div class="mt-1" id="balanceBox" style="display:none;">
+                    <div class="d-flex justify-between align-center" style="font-size:1rem;">
+                        <span>Balance:</span>
+                        <strong id="balanceAmount" style="color:#dc3545;">$0.00</strong>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-1 mt-3">
+                    <button class="btn-danger w-100" onclick="clearBill()">Clear</button>
+                    <button class="btn-success w-100 btn-lg" onclick="payAndPrint()">💰 Pay & Print Receipt</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SERVICES MANAGEMENT -->
+<div id="servicesView" class="unified-section">
+    <div class="card-modern">
+        <div class="card-header">
+            <div class="card-title"><i class="bi bi-gear"></i> Manage Services & Prices</div>
+        </div>
+        <form id="serviceForm" class="d-flex gap-1 flex-wrap align-center mb-3">
+            <input type="hidden" id="editServiceId">
+            <input id="svcName" class="form-control" placeholder="Service / Test Name" required style="flex:2; min-width:150px;">
+            <input id="svcPrice" class="form-control" type="number" min="0" step="0.01" placeholder="Price ($)" required style="flex:1; min-width:100px;">
+            <button class="btn-accent" type="submit" style="min-width:80px;">Save</button>
+        </form>
+        <div style="max-height: 55vh; overflow: auto;">
+            <table class="table">
+                <thead><tr><th>Service Name</th><th>Price</th><th style="text-align:right;">Action</th></tr></thead>
+                <tbody id="servicesTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- BILLS HISTORY -->
+<div id="billsView" class="unified-section">
+    <div class="card-modern">
+        <div class="card-header">
+            <div class="card-title"><i class="bi bi-receipt"></i> Bills History</div>
+            <div class="d-flex gap-1">
+                <input type="date" id="billsDateFilter" class="form-control">
+                <input id="billsSearch" class="form-control" placeholder="Search bill #, patient, or phone...">
+            </div>
+        </div>
+        <div style="max-height: 60vh; overflow: auto;">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Bill #</th>
+                        <th>Date</th>
+                        <th>Patient</th>
+                        <th>Phone</th>
+                        <th>Doctor</th>
+                        <th>Services</th>
+                        <th>Total</th>
+                        <th>Paid</th>
+                        <th>Balance</th>
+                        <th>Method</th>
+                        <th style="text-align:right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="billsTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- REPORTS -->
+<div id="reportsView" class="unified-section">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="card-modern">
+            <div class="card-title mb-2"><i class="bi bi-calendar-check"></i> Daily Summary</div>
+            <div class="d-flex gap-1 align-center mb-2 flex-wrap">
+                <input type="date" id="reportDate" class="form-control w-auto" value="">
+                <button class="btn-accent" onclick="renderDailyReport()">Load</button>
+                <button class="btn-accent" onclick="printDailyReport()">🖨️ Print</button>
+            </div>
+            <div class="stats-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="stat-card"><small>Patients</small><div id="repPatients">0</div></div>
+                <div class="stat-card"><small>Income</small><div class="profit" id="repIncome">$0</div></div>
+                <div class="stat-card"><small>Pending</small><div class="danger" id="repPending">0</div></div>
+                <div class="stat-card"><small>Completed</small><div class="profit" id="repCompleted">0</div></div>
+            </div>
+            <div id="dailyReportDetails" style="max-height: 300px; overflow-y: auto;"></div>
+        </div>
+        
+        <div class="card-modern">
+            <div class="card-title mb-2"><i class="bi bi-cash-stack"></i> Payment Methods Report</div>
+            <div class="d-flex gap-1 align-center mb-2 flex-wrap">
+                <input type="date" id="methodReportFrom" class="form-control w-auto">
+                <input type="date" id="methodReportTo" class="form-control w-auto">
+                <button class="btn-accent" onclick="renderMethodReport()">Load</button>
+                <button class="btn-accent" onclick="printMethodReport()">🖨️ Print</button>
+            </div>
+            <div class="stats-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                <div class="stat-card"><small>Cash</small><div id="repCash">$0</div></div>
+                <div class="stat-card"><small>EVC Plus</small><div id="repEVC">$0</div></div>
+                <div class="stat-card"><small>Zaad</small><div id="repZaad">$0</div></div>
+            </div>
+            <div id="methodReportDetails" style="max-height: 250px; overflow-y: auto;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- SETTINGS — DOCTORS -->
+<div id="settingsView" class="unified-section">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="card-modern">
+            <div class="card-title mb-2"><i class="bi bi-person-badge"></i> Manage Doctors</div>
+            <form id="doctorForm" class="d-flex gap-1 flex-wrap align-center mb-3">
+                <input type="hidden" id="editDoctorId">
+                <input id="docName" class="form-control" placeholder="Doctor Name" required style="flex:2; min-width:150px;">
+                <input id="docSpecialty" class="form-control" placeholder="Specialty (Optional)" style="flex:1; min-width:120px;">
+                <button class="btn-accent" type="submit" style="min-width:80px;">Save</button>
+            </form>
+            <div style="max-height: 45vh; overflow: auto;">
                 <table class="table">
-                    <thead><tr><th>Name</th><th>Specialty</th><th>Phone</th><th>Username</th><th>Status</th><th>Patients Today</th><th style="text-align:right;">Action</th></tr></thead>
+                    <thead><tr><th>Doctor Name</th><th>Specialty</th><th style="text-align:right;">Action</th></tr></thead>
                     <tbody id="doctorsTable"></tbody>
                 </table>
             </div>
         </div>
-    </div>
-
-    <!-- PATIENTS REGISTRY -->
-    <div id="patientsView" class="view">
-        <div class="card">
-            <div class="card-header-flex">
-                <div class="card-title">🏥 Patient Registry</div>
-                <div class="d-flex gap-1">
-                    <div class="input-group"><i class="bi bi-search"></i><input id="patSearch" class="form-control" placeholder="Search name or phone..." style="width:220px;" oninput="renderPatients()"></div>
-                </div>
+        
+        <div class="card-modern">
+            <div class="card-title mb-2"><i class="bi bi-shield-exclamation"></i> System Settings</div>
+            <div class="alert alert-warning">
+                <strong>⚠️ Warning:</strong> These actions cannot be undone.
             </div>
-            <div class="table-wrap">
-                <table class="table">
-                    <thead><tr><th>ID</th><th>Name</th><th>Phone</th><th>Age/Gender</th><th>Address</th><th>Visits</th><th>Last Visit</th><th style="text-align:right;">Action</th></tr></thead>
-                    <tbody id="patientsTable"></tbody>
-                </table>
+            <div class="d-flex gap-1 flex-wrap">
+                <button class="btn-danger w-100" onclick="resetAllData()">🗑️ Reset All Data</button>
             </div>
+            <p class="text-muted mt-2" style="font-size:0.85rem;">Resetting will clear all patients, bills, services, and doctors. Use with caution.</p>
         </div>
     </div>
-
-    <!-- SERVICES MANAGEMENT -->
-    <div id="servicesView" class="view">
-        <div class="card">
-            <div class="card-header-flex">
-                <div class="card-title">🧪 Services & Pricing</div>
-                <button class="btn btn-primary" onclick="openServiceModal()">+ Add Service</button>
-            </div>
-            <div class="table-wrap">
-                <table class="table">
-                    <thead><tr><th>Name</th><th>Department</th><th>Price</th><th>Cost</th><th>Margin</th><th style="text-align:right;">Action</th></tr></thead>
-                    <tbody id="servicesTable"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- ALL BILLS -->
-    <div id="allBillsView" class="view">
-        <div class="card">
-            <div class="card-header-flex">
-                <div class="card-title">🧾 All Bills</div>
-                <div class="d-flex gap-1">
-                    <input id="allBillSearch" class="form-control" placeholder="Search..." style="width:200px;" oninput="renderAllBills()">
-                    <select id="allBillStatus" class="form-control" style="width:130px;" onchange="renderAllBills()"><option value="all">All</option><option value="paid">Paid</option><option value="pending">Pending</option></select>
-                </div>
-            </div>
-            <div class="table-wrap">
-                <table class="table">
-                    <thead><tr><th>Receipt</th><th>Date</th><th>Patient</th><th>Doctor</th><th>Total</th><th>Paid</th><th>Balance</th><th>Method</th><th>Cashier</th><th style="text-align:right;">Action</th></tr></thead>
-                    <tbody id="allBillsTable"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- ADMIN REPORTS -->
-    <div id="adminReportsView" class="view">
-        <div class="stats-grid">
-            <div class="stat"><small>Revenue</small><div id="arRevenue">$0</div></div>
-            <div class="stat green"><small>Profit</small><div id="arProfit">$0</div></div>
-            <div class="stat orange"><small>Pending</small><div id="arPending">$0</div></div>
-            <div class="stat purple"><small>Patients</small><div id="arPatients">0</div></div>
-        </div>
-        <div class="card">
-            <div class="card-header-flex">
-                <div class="card-title">📈 Financial Reports</div>
-                <div class="d-flex gap-1">
-                    <button class="btn btn-sm btn-light" onclick="setAdminReport('today')">Today</button>
-                    <button class="btn btn-sm btn-light" onclick="setAdminReport('week')">Week</button>
-                    <button class="btn btn-sm btn-light" onclick="setAdminReport('month')">Month</button>
-                    <input type="date" id="arFrom" class="form-control" style="width:auto;" onchange="renderAdminReports()">
-                    <input type="date" id="arTo" class="form-control" style="width:auto;" onchange="renderAdminReports()">
-                    <button class="btn btn-primary btn-sm" onclick="printAdminReport()">🖨️ Print</button>
-                </div>
-            </div>
-            <div class="table-wrap"><table class="table"><thead><tr><th>Receipt</th><th>Date</th><th>Patient</th><th>Doctor</th><th>Services</th><th>Total</th><th>Profit</th><th>Method</th></tr></thead><tbody id="arTable"></tbody></table></div>
-        </div>
-    </div>
-
-    <!-- ========== CASHIER VIEWS ========== -->
-
-    <!-- CASHIER DASHBOARD -->
-    <div id="cashierDashView" class="view">
-        <div class="stats-grid">
-            <div class="stat green"><small>Today's Patients</small><div id="cdPatients">0</div></div>
-            <div class="stat"><small>Today's Income</small><div id="cdIncome">$0</div></div>
-            <div class="stat orange"><small>Pending Bills</small><div id="cdPending">0</div></div>
-            <div class="stat red"><small>My Total Bills</small><div id="cdTotalBills">0</div></div>
-        </div>
-        <div class="card">
-            <div class="card-title">🕐 My Recent Bills</div>
-            <div class="table-wrap"><table class="table"><thead><tr><th>#</th><th>Time</th><th>Patient</th><th>Amount</th><th>Status</th><th style="text-align:right;">Action</th></tr></thead><tbody id="cdRecent"></tbody></table></div>
-        </div>
-    </div>
-
-    <!-- CASHIER NEW BILL -->
-    <div id="cashierBillView" class="view">
-        <div style="display:grid; grid-template-columns: 1fr 380px; gap:1.5rem;">
-            <div>
-                <div class="card">
-                    <div class="card-title">👤 Patient Lookup</div>
-                    <div style="position:relative;">
-                        <div class="input-group"><i class="bi bi-search"></i><input type="text" id="cbPatSearch" class="form-control" placeholder="Search by phone or name..." oninput="onPatientSearch(this.value)"></div>
-                        <div id="cbPatResults" class="search-results"></div>
-                    </div>
-                    <div id="cbPatForm" class="mt-2">
-                        <input type="hidden" id="cbPatId">
-                        <div class="form-row">
-                            <div><label class="form-label">Full Name *</label><input id="cbPatName" class="form-control" placeholder="Patient name"></div>
-                            <div><label class="form-label">Phone *</label><input id="cbPatPhone" class="form-control" placeholder="Phone" oninput="onPhoneInput(this.value)"></div>
-                        </div>
-                        <div class="form-row">
-                            <div><label class="form-label">Age</label><input id="cbPatAge" class="form-control" type="number" min="0" placeholder="Years"></div>
-                            <div><label class="form-label">Gender</label><select id="cbPatGender" class="form-control"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
-                            <div><label class="form-label">Address</label><input id="cbPatAddress" class="form-control" placeholder="Address"></div>
-                        </div>
-                        <div class="form-row">
-                            <div><label class="form-label">Referring Doctor</label><select id="cbDoctor" class="form-control"><option value="">None / Walk-in</option></select></div>
-                            <div><label class="form-label">Blood Group</label><input id="cbPatBlood" class="form-control" placeholder="e.g. O+"></div>
-                        </div>
-                        <div id="cbPatBadge" class="hidden mt-1"><span class="badge bg-paid" id="cbVisitBadge">New Patient</span></div>
-                    </div>
-                </div>
-                <div class="card">
-                    <div class="card-title">🧪 Select Services</div>
-                    <div class="service-grid" id="cbServiceGrid"></div>
-                </div>
-            </div>
-            <div>
-                <div class="card" style="position:sticky; top:80px;">
-                    <div class="card-title">🧾 Bill Summary</div>
-                    <div id="cbSelected" style="max-height:220px; overflow-y:auto; margin-bottom:1rem;"><p class="text-muted" style="text-align:center;padding:1rem 0;">No services selected</p></div>
-                    <div class="bill-box">
-                        <div class="bill-line"><span>Subtotal:</span><span id="cbSubtotal">$0.00</span></div>
-                        <div class="bill-line"><span>Discount:</span><input id="cbDiscount" type="number" min="0" step="0.01" class="form-control" style="width:90px;text-align:right;padding:4px 8px;" value="0" oninput="calcCashierBill()"></div>
-                        <div class="bill-line total"><span>TOTAL:</span><span id="cbTotal">$0.00</span></div>
-                    </div>
-                    <div class="mt-2">
-                        <label class="form-label">Payment Method</label>
-                        <div class="pay-methods">
-                            <button type="button" class="pay-method active" data-method="cash" onclick="setCbPay('cash')">Cash</button>
-                            <button type="button" class="pay-method" data-method="evc" onclick="setCbPay('evc')">EVC Plus</button>
-                            <button type="button" class="pay-method" data-method="zaad" onclick="setCbPay('zaad')">Zaad</button>
-                            <button type="button" class="pay-method" data-method="mixed" onclick="setCbPay('mixed')">Mixed</button>
-                        </div>
-                        <div id="cbMixedBox" class="hidden mixed-inputs mb-2">
-                            <div><label class="form-label">Cash</label><input id="cbPayCash" class="form-control" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcCbMixed()"></div>
-                            <div><label class="form-label">EVC Plus</label><input id="cbPayEvc" class="form-control" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcCbMixed()"></div>
-                            <div><label class="form-label">Zaad</label><input id="cbPayZaad" class="form-control" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcCbMixed()"></div>
-                        </div>
-                        <div id="cbSingleBox">
-                            <label class="form-label">Paid Amount</label>
-                            <input id="cbPaid" class="form-control" type="number" min="0" step="0.01" placeholder="0.00" oninput="calcCashierBill()">
-                        </div>
-                        <div class="mt-2" style="font-size:0.9rem;">
-                            <div class="d-flex justify-between"><span>Balance:</span><span id="cbBalance" class="text-danger">$0.00</span></div>
-                            <div class="d-flex justify-between mt-1"><span>Status:</span><span id="cbStatus" class="badge bg-pending">Pending</span></div>
-                        </div>
-                        <button class="btn btn-success w-100 mt-3 btn-lg" onclick="saveCashierBill()">💾 Save & Print Receipt</button>
-                        <button class="btn btn-light w-100 mt-1" onclick="resetCashierBill()">Clear All</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- CASHIER BILLS LIST -->
-    <div id="cashierBillsView" class="view">
-        <div class="card">
-            <div class="card-header-flex">
-                <div class="card-title">🧾 My Bills</div>
-                <div class="d-flex gap-1"><input id="cbBillSearch" class="form-control" placeholder="Search..." style="width:200px;" oninput="renderCashierBills()"></div>
-            </div>
-            <div class="table-wrap">
-                <table class="table">
-                    <thead><tr><th>Receipt #</th><th>Date</th><th>Patient</th><th>Doctor</th><th>Total</th><th>Paid</th><th>Balance</th><th>Method</th><th style="text-align:right;">Action</th></tr></thead>
-                    <tbody id="cashierBillsTable"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- ========== DOCTOR VIEWS ========== -->
-
-    <!-- DOCTOR DASHBOARD -->
-    <div id="doctorDashView" class="view">
-        <div class="stats-grid">
-            <div class="stat orange"><small>Waiting</small><div id="ddWaiting">0</div></div>
-            <div class="stat"><small>In Progress</small><div id="ddProgress">0</div></div>
-            <div class="stat green"><small>Completed Today</small><div id="ddCompleted">0</div></div>
-            <div class="stat purple"><small>My Total Patients</small><div id="ddTotal">0</div></div>
-        </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-            <div class="card">
-                <div class="card-title">⏳ My Queue — Waiting</div>
-                <div id="ddQueueWaiting"></div>
-            </div>
-            <div class="card">
-                <div class="card-title">✅ Recently Completed</div>
-                <div class="table-wrap">
-                    <table class="table"><thead><tr><th>Patient</th><th>Time</th><th>Diagnosis</th><th style="text-align:right;">Action</th></tr></thead><tbody id="ddQueueDone"></tbody></table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- DOCTOR QUEUE -->
-    <div id="doctorQueueView" class="view">
-        <div class="card">
-            <div class="card-header-flex">
-                <div class="card-title">📋 My Patient Queue</div>
-                <div class="d-flex gap-1">
-                    <select id="dqFilter" class="form-control" style="width:140px;" onchange="renderDoctorQueue()">
-                        <option value="all">All</option><option value="waiting">Waiting</option><option value="in-progress">In Progress</option><option value="completed">Completed</option>
-                    </select>
-                </div>
-            </div>
-            <div class="queue-grid" id="doctorQueueGrid"></div>
-        </div>
-    </div>
-
-    <!-- DOCTOR PATIENT SEARCH / HISTORY -->
-    <div id="doctorPatientsView" class="view">
-        <div class="card">
-            <div class="card-header-flex">
-                <div class="card-title">🔍 Patient History</div>
-                <div class="input-group"><i class="bi bi-search"></i><input id="docPatSearch" class="form-control" placeholder="Search patient name or phone..." style="width:280px;" oninput="renderDoctorPatients()"></div>
-            </div>
-            <div class="table-wrap">
-                <table class="table">
-                    <thead><tr><th>Name</th><th>Phone</th><th>Age</th><th>Gender</th><th>Visits</th><th>Last Visit</th><th style="text-align:right;">Action</th></tr></thead>
-                    <tbody id="doctorPatientsTable"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- CONSULTATION VIEW (Modal-like inline) -->
-    <div id="consultationView" class="view">
-        <div style="display:grid; grid-template-columns: 280px 1fr; gap:1.5rem;">
-            <div>
-                <div class="card">
-                    <div class="card-title">👤 Patient Info</div>
-                    <div id="consPatInfo"></div>
-                    <button class="btn btn-light w-100 mt-2" onclick="backToQueue()">← Back to Queue</button>
-                </div>
-                <div class="card mt-2">
-                    <div class="card-title">📋 Visit History</div>
-                    <div style="max-height:300px; overflow-y:auto;" id="consHistory"></div>
-                </div>
-            </div>
-            <div>
-                <div class="card">
-                    <div class="card-title">🩺 Consultation</div>
-                    <input type="hidden" id="consQueueId">
-                    <input type="hidden" id="consPatId">
-                    <input type="hidden" id="consVisitId">
-                    
-                    <div class="form-row">
-                        <div><label class="form-label">Blood Pressure</label><input id="consBP" class="form-control" placeholder="e.g. 120/80"></div>
-                        <div><label class="form-label">Temperature (°C)</label><input id="consTemp" class="form-control" type="number" step="0.1" placeholder="e.g. 37.0"></div>
-                        <div><label class="form-label">Weight (kg)</label><input id="consWeight" class="form-control" type="number" step="0.1" placeholder="e.g. 65"></div>
-                        <div><label class="form-label">Pulse</label><input id="consPulse" class="form-control" type="number" placeholder="bpm"></div>
-                    </div>
-                    <div class="mb-2"><label class="form-label">Chief Complaints</label><textarea id="consComplaints" class="form-control" placeholder="Patient symptoms and complaints..."></textarea></div>
-                    <div class="mb-2"><label class="form-label">Diagnosis</label><textarea id="consDiagnosis" class="form-control" placeholder="Doctor diagnosis..."></textarea></div>
-                    <div class="mb-2"><label class="form-label">Notes</label><textarea id="consNotes" class="form-control" placeholder="Additional notes..."></textarea></div>
-                </div>
-                
-                <div class="card">
-                    <div class="card-title">💊 Prescription</div>
-                    <div id="rxRows">
-                        <div class="rx-row">
-                            <input placeholder="Medicine name"><input placeholder="Dosage"><input placeholder="Duration"><input placeholder="Notes"><button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>
-                        </div>
-                    </div>
-                    <button class="btn btn-sm btn-light mt-1" onclick="addRxRow()">+ Add Medicine</button>
-                </div>
-                
-                <div class="card">
-                    <div class="card-title">🧪 Request Lab Tests</div>
-                    <div class="service-grid" id="consLabGrid"></div>
-                </div>
-                
-                <div class="d-flex gap-1 mt-1">
-                    <button class="btn btn-success btn-lg" onclick="saveConsultation(true)">✅ Complete & Save</button>
-                    <button class="btn btn-warning btn-lg" onclick="saveConsultation(false)">💾 Save Draft</button>
-                    <button class="btn btn-primary" onclick="printPrescription()">🖨️ Print Rx</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
 
-<!-- MODALS (simulated with hidden divs) -->
-<div id="modalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; padding:20px;">
-    <div id="modalContent" style="background:white; border-radius:12px; max-width:500px; width:100%; max-height:90vh; overflow-y:auto; padding:1.5rem; box-shadow:0 20px 60px rgba(0,0,0,0.3);"></div>
+<!-- ADD SERVICE MODAL -->
+<div id="serviceModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title">➕ Add New Service</div>
+            <button class="modal-close" onclick="closeServiceModal()">&times;</button>
+        </div>
+        <div class="mb-2">
+            <label style="font-size:0.85rem; color:#6c757d;">Service / Test Name</label>
+            <input id="modalSvcName" class="form-control" placeholder="e.g. Blood Test, X-Ray...">
+        </div>
+        <div class="mb-2">
+            <label style="font-size:0.85rem; color:#6c757d;">Price ($)</label>
+            <input id="modalSvcPrice" class="form-control" type="number" min="0" step="0.01" placeholder="0.00">
+        </div>
+        <div class="d-flex gap-1">
+            <button class="btn-outline w-100" onclick="closeServiceModal()">Cancel</button>
+            <button class="btn-success w-100" onclick="saveModalService()">Save Service</button>
+        </div>
+    </div>
+</div>
+
+<!-- ADD DOCTOR MODAL -->
+<div id="doctorModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title">➕ Add New Doctor</div>
+            <button class="modal-close" onclick="closeDoctorModal()">&times;</button>
+        </div>
+        <div class="mb-2">
+            <label style="font-size:0.85rem; color:#6c757d;">Doctor Name</label>
+            <input id="modalDocName" class="form-control" placeholder="Dr. Name...">
+        </div>
+        <div class="mb-2">
+            <label style="font-size:0.85rem; color:#6c757d;">Specialty (Optional)</label>
+            <input id="modalDocSpecialty" class="form-control" placeholder="e.g. General, Cardiology...">
+        </div>
+        <div class="d-flex gap-1">
+            <button class="btn-outline w-100" onclick="closeDoctorModal()">Cancel</button>
+            <button class="btn-success w-100" onclick="saveModalDoctor()">Save Doctor</button>
+        </div>
+    </div>
 </div>
 
 <!-- PRINT AREA -->
 <div id="printArea" style="display:none;">
-    <div id="printBox"></div>
+    <div class="receipt" id="receiptContent"></div>
 </div>
 
 <script>
 'use strict';
 
-// ── CONFIG & KEYS ──
-const KEYS = {
-    USERS: 'hms_users_v1',
-    DOCTORS: 'hms_doctors_v1',
-    PATIENTS: 'hms_patients_v1',
-    SERVICES: 'hms_services_v1',
-    BILLS: 'hms_bills_v1',
-    VISITS: 'hms_visits_v1',
-    QUEUE: 'hms_queue_v1',
-    SETTINGS: 'hms_settings_v1',
-    SESSION: 'hms_session_v1'
+const CONFIG = {
+    KEYS: {
+        PATIENTS: 'lab_patients_v4',
+        BILLS: 'lab_bills_v4',
+        SERVICES: 'lab_services_v4',
+        DOCTORS: 'lab_doctors_v4',
+        BILL_COUNTER: 'lab_bill_counter_v4',
+        PATIENT_COUNTER: 'lab_patient_counter_v4',
+        SESSION: 'lab_session_v4'
+    },
+    CASHIER: { username: 'cashier', password: '5656' }
 };
 
-const ROLES = { ADMIN: 'admin', CASHIER: 'cashier', DOCTOR: 'doctor' };
-
 let currentUser = null;
-let cbServices = []; // cashier selected services
-let cbPayMethod = 'cash';
-let docQueueFilter = 'all';
 
 // ── UTILITIES ──
-function $(id){ return document.getElementById(id); }
-function load(key, def=[]){ try{ const d=localStorage.getItem(key); return d?JSON.parse(d):def; }catch(e){ return def; } }
-function save(key, data){ localStorage.setItem(key, JSON.stringify(data)); }
-function hashPw(pw){ return btoa(pw.split('').reverse().join('') + '_hms_salt'); }
-function gid(){ return 'ID_'+Date.now().toString(36)+'_'+Math.random().toString(36).substr(2,5); }
-function fmt$(n){ return '$'+(parseFloat(n)||0).toFixed(2); }
-function nowStr(){ return new Date().toISOString(); }
-function todayStr(){ return new Date().toISOString().split('T')[0]; }
-function sanitize(t, max=200){ if(typeof t!=='string')return''; return t.replace(/[<>"'&]/g,c=>({'<<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','&':'&amp;'}[c])).substring(0,max).trim(); }
-function debounce(fn, w){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),w); }; }
+function $(id) { return document.getElementById(id); }
+function load(key, def=[]) { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : def; } catch { return def; } }
+function save(key, data) { try { localStorage.setItem(key, JSON.stringify(data)); return true; } catch(e) { console.error(e); return false; } }
+function sanitize(text, max=200) { 
+    if (typeof text !== 'string') return ''; 
+    return text.replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','&':'&amp;'}[c])).substring(0,max).trim(); 
+}
+function gid() { return 'ID_' + Date.now() + '_' + Math.random().toString(36).substr(2,6); }
+function fmtMoney(n) { return '$' + (parseFloat(n)||0).toFixed(2); }
+function fmtDate(d) { return new Date(d).toLocaleDateString(); }
+function todayStr() { return new Date().toISOString().split('T')[0]; }
+function debounce(fn, w) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), w); }; }
 
-// ── INIT DATA ──
-function initData(){
-    if(load(KEYS.USERS).length===0){
-        save(KEYS.USERS, [
-            {id:gid(), username:'admin', password:hashPw('admin123'), name:'Administrator', role:ROLES.ADMIN, status:'active'},
-            {id:gid(), username:'cashier1', password:hashPw('5656'), name:'Cashier One', role:ROLES.CASHIER, status:'active'},
-            {id:gid(), username:'doctor1', password:hashPw('1234'), name:'Dr. Ahmed Ali', role:ROLES.DOCTOR, status:'active', doctorId:''}
-        ]);
-    }
-    if(load(KEYS.DOCTORS).length===0){
-        const d1 = {id:gid(), userId:'', name:'Dr. Ahmed Ali', specialty:'General Medicine', phone:'0611111111', email:'ahmed@baxnaano.so', status:'active', createdAt:nowStr()};
-        const d2 = {id:gid(), userId:'', name:'Dr. Fatima Hassan', specialty:'Pediatrics', phone:'0622222222', email:'fatima@baxnaano.so', status:'active', createdAt:nowStr()};
-        save(KEYS.DOCTORS, [d1, d2]);
-        // Link users to doctors
-        const users = load(KEYS.USERS);
-        users.forEach(u=>{
-            if(u.username==='doctor1') { u.doctorId = d1.id; d1.userId = u.id; }
-        });
-        save(KEYS.USERS, users);
-        save(KEYS.DOCTORS, [d1, d2]);
-    }
-    if(load(KEYS.SERVICES).length===0){
-        save(KEYS.SERVICES, [
-            {id:gid(), name:'Blood Test', price:15, cost:8, department:'Laboratory'},
-            {id:gid(), name:'Urine Analysis', price:10, cost:5, department:'Laboratory'},
-            {id:gid(), name:'Malaria Test', price:12, cost:6, department:'Laboratory'},
-            {id:gid(), name:'X-Ray', price:25, cost:15, department:'Radiology'},
-            {id:gid(), name:'Ultrasound', price:30, cost:18, department:'Radiology'},
-            {id:gid(), name:'Consultation', price:10, cost:0, department:'General'},
-            {id:gid(), name:'Injection', price:5, cost:1, department:'General'},
-            {id:gid(), name:'Stool Test', price:8, cost:4, department:'Laboratory'},
-            {id:gid(), name:'HIV Test', price:20, cost:12, department:'Laboratory'},
-            {id:gid(), name:'COVID-19 Test', price:18, cost:10, department:'Laboratory'},
-            {id:gid(), name:'Blood Sugar', price:10, cost:5, department:'Laboratory'},
-            {id:gid(), name:'Dressing', price:7, cost:2, department:'General'}
-        ]);
-    }
-    if(!load(KEYS.SETTINGS).nextBillNo){
-        save(KEYS.SETTINGS, {nextBillNo:1, hospitalName:'BAXNAANO LAB & HOSPITAL', address:'Mogadishu, Somalia', phone:'+252 61 234 5678'});
-    }
+function getNextBillNo() {
+    let counter = parseInt(localStorage.getItem(CONFIG.KEYS.BILL_COUNTER)) || 0;
+    counter++;
+    localStorage.setItem(CONFIG.KEYS.BILL_COUNTER, counter);
+    return counter;
+}
+
+function getNextPatientNo() {
+    let counter = parseInt(localStorage.getItem(CONFIG.KEYS.PATIENT_COUNTER)) || 0;
+    counter++;
+    localStorage.setItem(CONFIG.KEYS.PATIENT_COUNTER, counter);
+    return 'P-' + String(counter).padStart(3, '0');
 }
 
 // ── AUTH ──
-function doLogin(){
-    const u = $('loginUser').value.trim();
-    const p = $('loginPass').value;
-    const user = load(KEYS.USERS).find(x => x.username===u && x.password===hashPw(p) && x.status==='active');
-    if(!user){ Swal.fire({icon:'error', title:'Invalid Login', timer:1500}); return; }
-    currentUser = user;
-    localStorage.setItem(KEYS.SESSION, user.username);
-    $('loginView').style.display = 'none';
-    $('appWrap').style.display = 'block';
-    $('navbar').style.display = 'flex';
-    $('userName').textContent = user.name;
-    $('userRole').textContent = user.role;
-    setupNav();
-    routeByRole();
-}
-
-function doLogout(){
-    localStorage.removeItem(KEYS.SESSION);
-    location.reload();
-}
-
-function checkSession(){
-    const sess = localStorage.getItem(KEYS.SESSION);
-    if(!sess) return;
-    const user = load(KEYS.USERS).find(x => x.username===sess);
-    if(!user || user.status!=='active') return;
-    currentUser = user;
-    $('loginView').style.display = 'none';
-    $('appWrap').style.display = 'block';
-    $('navbar').style.display = 'flex';
-    $('userName').textContent = user.name;
-    $('userRole').textContent = user.role;
-    setupNav();
-    routeByRole();
-}
-
-function setupNav(){
-    const menu = $('navMenu');
-    menu.innerHTML = '';
-    const items = [];
-    if(currentUser.role===ROLES.ADMIN){
-        items.push(
-            {id:'adminDash', label:'📊 Dashboard'},
-            {id:'doctors', label:'👨‍⚕️ Doctors'},
-            {id:'patients', label:'🏥 Patients'},
-            {id:'services', label:'🧪 Services'},
-            {id:'allBills', label:'🧾 Bills'},
-            {id:'adminReports', label:'📈 Reports'}
-        );
-    } else if(currentUser.role===ROLES.CASHIER){
-        items.push(
-            {id:'cashierDash', label:'📊 Dashboard'},
-            {id:'cashierBill', label:'💰 New Bill'},
-            {id:'cashierBills', label:'🧾 Bills'},
-            {id:'cashierReports', label:'📈 Reports'}
-        );
-    } else if(currentUser.role===ROLES.DOCTOR){
-        items.push(
-            {id:'doctorDash', label:'📊 Dashboard'},
-            {id:'doctorQueue', label:'📋 My Queue'},
-            {id:'doctorPatients', label:'🔍 Patients'},
-            {id:'doctorReports', label:'📈 Reports'}
-        );
+function initData() {
+    const services = load(CONFIG.KEYS.SERVICES);
+    if (services.length === 0) {
+        save(CONFIG.KEYS.SERVICES, [
+            { id: gid(), name: 'Blood Test', price: 15.00 },
+            { id: gid(), name: 'Urine Test', price: 10.00 },
+            { id: gid(), name: 'X-Ray', price: 25.00 },
+            { id: gid(), name: 'Ultrasound', price: 30.00 },
+            { id: gid(), name: 'ECG', price: 20.00 },
+            { id: gid(), name: 'General Checkup', price: 12.00 }
+        ]);
     }
-    items.forEach(it=>{
+    const doctors = load(CONFIG.KEYS.DOCTORS);
+    if (doctors.length === 0) {
+        save(CONFIG.KEYS.DOCTORS, [
+            { id: gid(), name: 'Dr. General', specialty: 'General Practitioner' }
+        ]);
+    }
+}
+
+function checkSession() {
+    const sess = localStorage.getItem(CONFIG.KEYS.SESSION);
+    if (sess === CONFIG.CASHIER.username) {
+        currentUser = CONFIG.CASHIER;
+        showApp();
+        return;
+    }
+    showLogin();
+}
+
+function showLogin() {
+    $('loginContainer').style.display = 'flex';
+    $('navbar').style.display = 'none';
+    document.querySelectorAll('.unified-section').forEach(el => el.classList.remove('active'));
+}
+
+function showApp() {
+    $('loginContainer').style.display = 'none';
+    $('navbar').style.display = 'flex';
+    $('userDisplay').textContent = '👤 Cashier';
+    setupNav();
+    showView('dashboard');
+}
+
+function setupNav() {
+    const menu = $('navMenu'); menu.innerHTML = '';
+    const items = [
+        {v:'dashboard', l:'📊 Dashboard'},
+        {v:'billing', l:'🧾 New Bill'},
+        {v:'bills', l:'📋 Bills'},
+        {v:'services', l:'⚙️ Services'},
+        {v:'reports', l:'📈 Reports'},
+        {v:'settings', l:'🔧 Settings'}
+    ];
+    items.forEach(it => {
         const b = document.createElement('button');
-        b.className = 'nav-btn';
-        b.dataset.view = it.id;
-        b.textContent = it.label;
-        b.onclick = ()=> showView(it.id);
-        menu.appendChild(b);
+        b.className = 'nav-btn'; b.dataset.view = it.v; b.textContent = it.l;
+        b.onclick = () => showView(it.v); menu.appendChild(b);
     });
+    if (menu.firstChild) menu.firstChild.classList.add('active');
 }
 
-function routeByRole(){
-    if(currentUser.role===ROLES.ADMIN) showView('adminDash');
-    else if(currentUser.role===ROLES.CASHIER) showView('cashierDash');
-    else if(currentUser.role===ROLES.DOCTOR) showView('doctorDash');
+function showView(name) {
+    document.querySelectorAll('.unified-section').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const t = $(name + 'View');
+    const b = document.querySelector(`[data-view="${name}"]`);
+    if (t) t.classList.add('active');
+    if (b) b.classList.add('active');
+    
+    if (name === 'dashboard') renderDashboard();
+    if (name === 'billing') { clearBill(); renderServiceSelects(); renderDoctorSelect(); }
+    if (name === 'services') renderServices();
+    if (name === 'bills') renderBills();
+    if (name === 'reports') { renderDailyReport(); renderMethodReport(); }
+    if (name === 'settings') renderSettings();
 }
 
-function showView(name){
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    const v = $(name+'View');
-    const btn = document.querySelector(`[data-view="${name}"]`);
-    if(v) v.classList.add('active');
-    if(btn) btn.classList.add('active');
-    
-    // Render specific
-    if(name==='adminDash') renderAdminDash();
-    if(name==='doctors') renderDoctors();
-    if(name==='patients') renderPatients();
-    if(name==='services') renderServicesMgmt();
-    if(name==='allBills') renderAllBills();
-    if(name==='adminReports') { setAdminReport('today'); renderAdminReports(); }
-    
-    if(name==='cashierDash') renderCashierDash();
-    if(name==='cashierBill') { resetCashierBill(); renderCbServices(); }
-    if(name==='cashierBills') renderCashierBills();
-    
-    if(name==='doctorDash') renderDoctorDash();
-    if(name==='doctorQueue') renderDoctorQueue();
-    if(name==='doctorPatients') renderDoctorPatients();
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  ADMIN MODULES
-// ═══════════════════════════════════════════════════════════════
-
-function renderAdminDash(){
-    const bills = load(KEYS.BILLS);
-    const today = todayStr();
-    const todayBills = bills.filter(b=>b.date.startsWith(today));
-    const doctors = load(KEYS.DOCTORS).filter(d=>d.status==='active');
-    const queue = load(KEYS.QUEUE);
-    const pendingLabs = queue.filter(q=>q.status==='waiting' && q.type==='lab').length; // simplified
-    
-    $('adPatients').textContent = new Set(todayBills.map(b=>b.patientId)).size;
-    $('adIncome').textContent = fmt$(todayBills.reduce((s,b)=>s+b.paidAmount,0));
-    $('adDoctors').textContent = doctors.length;
-    $('adPendingLabs').textContent = pendingLabs || Math.floor(Math.random()*3); // demo fallback
-    $('adPendingBills').textContent = bills.filter(b=>b.status==='pending').length;
-    $('adTotalPatients').textContent = load(KEYS.PATIENTS).length;
-    
-    const rb = $('adRecentBills');
-    rb.innerHTML = '';
-    todayBills.slice(0,8).forEach(b=>{
-        rb.innerHTML += `<tr><td>#${b.billNo}</td><td>${sanitize(b.patientName)}</td><td>${fmt$(b.totalAmount)}</td><td><span class="badge ${b.status==='paid'?'bg-paid':'bg-pending'}">${b.status}</span></td></tr>`;
-    });
-    if(todayBills.length===0) rb.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center;">No bills today</td></tr>';
-    
-    const ds = $('adDocStatus');
-    ds.innerHTML = '';
-    doctors.forEach(d=>{
-        const docBills = todayBills.filter(b=>b.doctorId===d.id).length;
-        ds.innerHTML += `<tr><td>${sanitize(d.name)}</td><td>${sanitize(d.specialty)}</td><td><span class="badge bg-active">Active</span></td><td>${docBills}</td></tr>`;
-    });
-}
-
-// ── DOCTOR CRUD ──
-function renderDoctors(){
-    const doctors = load(KEYS.DOCTORS);
-    const users = load(KEYS.USERS);
-    const tbody = $('doctorsTable');
-    tbody.innerHTML = '';
-    doctors.forEach(d=>{
-        const u = users.find(x=>x.id===d.userId);
-        const todayVisits = load(KEYS.VISITS).filter(v=>v.doctorId===d.id && v.date.startsWith(todayStr())).length;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td><strong>${sanitize(d.name)}</strong></td>
-            <td>${sanitize(d.specialty)}</td>
-            <td>${sanitize(d.phone)}</td>
-            <td>${u ? u.username : '-'}</td>
-            <td><span class="badge ${d.status==='active'?'bg-active':'bg-inactive'}">${d.status}</span></td>
-            <td>${todayVisits}</td>
-            <td style="text-align:right;">
-                <button class="btn btn-sm btn-primary" onclick="editDoctor('${d.id}')">Edit</button>
-                <button class="btn btn-sm btn-${d.status==='active'?'danger':'success'}" onclick="toggleDoctor('${d.id}')">${d.status==='active'?'Deactivate':'Activate'}</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-function openDoctorModal(docId=null){
-    const doctors = load(KEYS.DOCTORS);
-    const doc = docId ? doctors.find(d=>d.id===docId) : null;
-    const html = `
-        <h3 style="margin-bottom:1rem;">${doc?'Edit':'Add'} Doctor</h3>
-        <div class="form-row" style="grid-template-columns:1fr;">
-            <div><label class="form-label">Full Name</label><input id="mdName" class="form-control" value="${doc?sanitize(doc.name):''}"></div>
-        </div>
-        <div class="form-row">
-            <div><label class="form-label">Specialty</label><input id="mdSpec" class="form-control" value="${doc?sanitize(doc.specialty):''}"></div>
-            <div><label class="form-label">Phone</label><input id="mdPhone" class="form-control" value="${doc?sanitize(doc.phone):''}"></div>
-        </div>
-        <div class="form-row">
-            <div><label class="form-label">Email</label><input id="mdEmail" class="form-control" value="${doc?sanitize(doc.email):''}"></div>
-            <div><label class="form-label">Username (for login)</label><input id="mdUser" class="form-control" value="${doc?'':''}" placeholder="e.g. doctor2"></div>
-        </div>
-        ${!doc?'<div class="form-row"><div><label class="form-label">Password</label><input id="mdPass" class="form-control" type="password" placeholder="Min 4 characters"></div></div>':''}
-        <div class="d-flex gap-1 mt-3">
-            <button class="btn btn-success" onclick="saveDoctor('${docId||''}')">Save</button>
-            <button class="btn btn-light" onclick="closeModal()">Cancel</button>
-        </div>
-    `;
-    showModal(html);
-}
-
-function saveDoctor(docId){
-    const name = sanitize($('mdName').value.trim(), 100);
-    const spec = sanitize($('mdSpec').value.trim(), 100);
-    const phone = sanitize($('mdPhone').value.trim(), 50);
-    const email = sanitize($('mdEmail').value.trim(), 100);
-    const username = $('mdUser') ? sanitize($('mdUser').value.trim(), 50) : '';
-    const password = $('mdPass') ? $('mdPass').value : '';
-    if(!name || !spec){ Swal.fire({icon:'warning', title:'Name and specialty required'}); return; }
-    
-    const doctors = load(KEYS.DOCTORS);
-    const users = load(KEYS.USERS);
-    
-    if(docId){
-        const idx = doctors.findIndex(d=>d.id===docId);
-        if(idx!==-1){ doctors[idx] = {...doctors[idx], name, specialty, phone, email}; }
+function handleLogin() {
+    const u = $('loginUsername').value.trim();
+    const p = $('loginPassword').value;
+    if (u === CONFIG.CASHIER.username && p === CONFIG.CASHIER.password) {
+        currentUser = CONFIG.CASHIER;
+        localStorage.setItem(CONFIG.KEYS.SESSION, u);
+        showApp();
+        Swal.fire({icon:'success', title:'Welcome Cashier', timer:1200});
     } else {
-        if(!username || !password || users.find(u=>u.username===username)){
-            Swal.fire({icon:'warning', title:'Valid unique username & password required'}); return;
-        }
-        const newDocId = gid();
-        const userId = gid();
-        users.push({id:userId, username, password:hashPw(password), name, role:ROLES.DOCTOR, status:'active', doctorId:newDocId});
-        doctors.push({id:newDocId, userId, name, specialty, phone, email, status:'active', createdAt:nowStr()});
-        save(KEYS.USERS, users);
+        Swal.fire({icon:'error', title:'Invalid credentials', text:'Use cashier / 5656', timer:2000});
     }
-    save(KEYS.DOCTORS, doctors);
-    closeModal();
-    renderDoctors();
-    Swal.fire({icon:'success', title:'Saved', timer:1200});
 }
 
-function editDoctor(id){ openDoctorModal(id); }
-function toggleDoctor(id){
-    const doctors = load(KEYS.DOCTORS);
-    const d = doctors.find(x=>x.id===id);
-    if(!d) return;
-    d.status = d.status==='active' ? 'inactive' : 'active';
-    // Also toggle user
-    const users = load(KEYS.USERS);
-    const u = users.find(x=>x.id===d.userId);
-    if(u) u.status = d.status;
-    save(KEYS.DOCTORS, doctors);
-    save(KEYS.USERS, users);
-    renderDoctors();
-}
-
-// ── PATIENTS ──
-function renderPatients(){
-    const patients = load(KEYS.PATIENTS);
-    const search = $('patSearch').value.toLowerCase();
-    const visits = load(KEYS.VISITS);
-    const bills = load(KEYS.BILLS);
+// ── DASHBOARD ──
+function renderDashboard() {
+    const patients = load(CONFIG.KEYS.PATIENTS);
+    const bills = load(CONFIG.KEYS.BILLS);
+    const today = todayStr();
     
-    const filtered = patients.filter(p=>{
-        if(search && !p.name.toLowerCase().includes(search) && !p.phone.includes(search)) return false;
-        return true;
-    });
+    const todayBills = bills.filter(b => b.date.startsWith(today));
+    const todayIncome = todayBills.reduce((sum, b) => sum + b.paid, 0);
+    const pendingBills = bills.filter(b => b.status === 'pending');
     
-    const tbody = $('patientsTable');
-    tbody.innerHTML = '';
-    filtered.forEach(p=>{
-        const pVisits = visits.filter(v=>v.patientId===p.id).length;
-        const lastBill = bills.filter(b=>b.patientId===p.id).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
+    $('dashTodayPatients').textContent = todayBills.length;
+    $('dashTodayIncome').textContent = fmtMoney(todayIncome);
+    $('dashPendingBills').textContent = pendingBills.length;
+    $('dashTotalPatients').textContent = patients.length;
+    
+    // Recent patients
+    const tbody = $('recentPatientsTable'); tbody.innerHTML = '';
+    todayBills.slice(0, 15).forEach(b => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><code>${p.id.substr(0,8)}</code></td>
-            <td><strong>${sanitize(p.name)}</strong></td>
-            <td>${sanitize(p.phone)}</td>
-            <td>${p.age||'-'} / ${p.gender||'-'}</td>
-            <td>${sanitize(p.address)||'-'}</td>
-            <td>${pVisits}</td>
-            <td>${lastBill ? new Date(lastBill.date).toLocaleDateString() : '-'}</td>
+            <td><strong>#${b.billNo}</strong></td>
+            <td>${sanitize(b.patientName)}</td>
+            <td>${sanitize(b.phone)}</td>
+            <td>${fmtMoney(b.total)}</td>
+            <td><span class="badge ${b.status==='paid'?'bg-success':'bg-danger'}">${b.status}</span></td>
             <td style="text-align:right;">
-                <button class="btn btn-sm btn-primary" onclick="viewPatientHistory('${p.id}')">History</button>
+                <button class="btn-accent btn-sm" onclick="reprintBill('${b.id}')">🖨️ Print</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
-    if(filtered.length===0) tbody.innerHTML = '<tr><td colspan="8" class="text-muted" style="text-align:center;">No patients found</td></tr>';
-}
-
-function viewPatientHistory(patId){
-    const p = load(KEYS.PATIENTS).find(x=>x.id===patId);
-    const visits = load(KEYS.VISITS).filter(v=>v.patientId===patId).sort((a,b)=>new Date(b.date)-new Date(a.date));
-    const bills = load(KEYS.BILLS).filter(b=>b.patientId===patId).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    if (todayBills.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted" style="text-align:center; padding:2rem;">No patients today</td></tr>';
+    }
     
-    let html = `<h3>Patient History: ${sanitize(p.name)}</h3><p class="text-muted">Phone: ${p.phone} | Age: ${p.age||'-'} | Gender: ${p.gender||'-'}</p><hr>`;
-    
-    html += `<h4 style="margin:1rem 0 0.5rem;">🏥 Visits (${visits.length})</h4>`;
-    if(visits.length===0) html += '<p class="text-muted">No visits recorded.</p>';
-    visits.forEach(v=>{
-        const doc = load(KEYS.DOCTORS).find(d=>d.id===v.doctorId);
-        html += `<div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:8px;">
-            <strong>${new Date(v.date).toLocaleString()}</strong> — ${doc ? sanitize(doc.name) : 'Unknown Doctor'}<<br>
-            <span class="text-muted">Complaints:</span> ${sanitize(v.complaints)||'-'}<<br>
-            <span class="text-muted">Diagnosis:</span> ${sanitize(v.diagnosis)||'-'}<<br>
-            ${v.prescriptions && v.prescriptions.length ? `<span class="text-muted">Rx:</span> ${v.prescriptions.map(r=>sanitize(r.drug)).join(', ')}` : ''}
-        </div>`;
+    // Pending bills
+    const ptbody = $('pendingBillsTable'); ptbody.innerHTML = '';
+    pendingBills.slice(0, 15).forEach(b => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>#${b.billNo}</strong></td>
+            <td>${sanitize(b.patientName)}</td>
+            <td class="danger">${fmtMoney(b.balance)}</td>
+            <td>${new Date(b.date).toLocaleDateString()}</td>
+            <td style="text-align:right;">
+                <button class="btn-success btn-sm" onclick="payBalancePrompt('${b.id}')">Pay Balance</button>
+                <button class="btn-accent btn-sm" onclick="reprintBill('${b.id}')">Print</button>
+            </td>
+        `;
+        ptbody.appendChild(tr);
     });
-    
-    html += `<h4 style="margin:1rem 0 0.5rem;">💰 Bills (${bills.length})</h4>`;
-    if(bills.length===0) html += '<p class="text-muted">No bills found.</p>';
-    bills.forEach(b=>{
-        html += `<div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:8px;">
-            Receipt #${b.billNo} — ${fmt$(b.totalAmount)} — ${b.status} — ${new Date(b.date).toLocaleDateString()}
-        </div>`;
-    });
-    
-    html += `<div class="mt-3"><button class="btn btn-light" onclick="closeModal()">Close</button></div>`;
-    showModal(html);
+    if (pendingBills.length === 0) {
+        ptbody.innerHTML = '<tr><td colspan="5" class="text-muted" style="text-align:center; padding:2rem;">No pending bills</td></tr>';
+    }
 }
 
 // ── SERVICES ──
-function renderServicesMgmt(){
-    const services = load(KEYS.SERVICES);
-    const tbody = $('servicesTable');
-    tbody.innerHTML = '';
-    services.forEach(s=>{
-        const margin = s.price - (s.cost||0);
+function renderServices() {
+    $('editServiceId').value = '';
+    $('serviceForm').reset();
+    renderServicesTable();
+}
+
+function renderServicesTable() {
+    const services = load(CONFIG.KEYS.SERVICES);
+    const tbody = $('servicesTable'); tbody.innerHTML = '';
+    services.forEach(s => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><strong>${sanitize(s.name)}</strong></td>
-            <td>${sanitize(s.department)}</td>
-            <td>${fmt$(s.price)}</td>
-            <td>${fmt$(s.cost||0)}</td>
-            <td class="${margin>=0?'text-success':'text-danger'}">${fmt$(margin)}</td>
+            <td>${fmtMoney(s.price)}</td>
             <td style="text-align:right;">
-                <button class="btn btn-sm btn-primary" onclick="editService('${s.id}')">Edit</button>
-                <button class="btn btn-sm btn-danger" onclick="deleteService('${s.id}')">Delete</button>
+                <button class="btn-accent btn-sm" onclick="editService('${s.id}')">Edit</button>
+                <button class="btn-danger btn-sm" onclick="deleteService('${s.id}')">Delete</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-function openServiceModal(sid=null){
-    const services = load(KEYS.SERVICES);
-    const s = sid ? services.find(x=>x.id===sid) : null;
-    const html = `
-        <h3 style="margin-bottom:1rem;">${s?'Edit':'Add'} Service</h3>
-        <div class="form-row" style="grid-template-columns:1fr;"><div><label class="form-label">Service Name</label><input id="msName" class="form-control" value="${s?sanitize(s.name):''}"></div></div>
-        <div class="form-row">
-            <div><label class="form-label">Department</label><select id="msDept" class="form-control"><option>Laboratory</option><option>Radiology</option><option>General</option><option>Pharmacy</option><option>Dental</option></select></div>
-            <div><label class="form-label">Price ($)</label><input id="msPrice" class="form-control" type="number" min="0" step="0.01" value="${s?s.price:''}"></div>
-            <div><label class="form-label">Cost ($)</label><input id="msCost" class="form-control" type="number" min="0" step="0.01" value="${s?s.cost||0:0}"></div>
+function renderServiceSelects() {
+    const services = load(CONFIG.KEYS.SERVICES);
+    document.querySelectorAll('.service-select').forEach(sel => {
+        const currentVal = sel.value;
+        sel.innerHTML = '<option value="">Select Service...</option>' + 
+            services.map(s => `<option value="${s.id}" data-price="${s.price}">${sanitize(s.name)} - ${fmtMoney(s.price)}</option>`).join('');
+        sel.value = currentVal;
+    });
+}
+
+function handleServiceSubmit(e) {
+    e.preventDefault();
+    const id = $('editServiceId').value;
+    const obj = { name: sanitize($('svcName').value, 100), price: parseFloat($('svcPrice').value) || 0 };
+    if (!obj.name) { Swal.fire({icon:'warning', title:'Enter service name'}); return; }
+    const services = load(CONFIG.KEYS.SERVICES);
+    if (id) { const i = services.findIndex(s => s.id === id); if (i !== -1) services[i] = { ...services[i], ...obj }; }
+    else { services.push({ ...obj, id: gid() }); }
+    save(CONFIG.KEYS.SERVICES, services);
+    Swal.fire({icon:'success', title:'Saved', timer:1200});
+    renderServices();
+}
+
+function editService(id) {
+    const s = load(CONFIG.KEYS.SERVICES).find(x => x.id === id);
+    if (!s) return;
+    $('editServiceId').value = s.id;
+    $('svcName').value = s.name;
+    $('svcPrice').value = s.price;
+}
+
+function deleteService(id) {
+    Swal.fire({title:'Delete this service?', icon:'warning', showCancelButton:true}).then(r => {
+        if (!r.isConfirmed) return;
+        save(CONFIG.KEYS.SERVICES, load(CONFIG.KEYS.SERVICES).filter(s => s.id !== id));
+        Swal.fire({icon:'success', title:'Deleted', timer:1200});
+        renderServices();
+    });
+}
+
+// ── DOCTORS ──
+function renderDoctorSelect() {
+    const doctors = load(CONFIG.KEYS.DOCTORS);
+    const sel = $('doctorSelect');
+    const currentVal = sel.value;
+    sel.innerHTML = '<option value="">Select Doctor...</option>' + 
+        doctors.map(d => `<option value="${d.id}">${sanitize(d.name)}${d.specialty ? ' (' + sanitize(d.specialty) + ')' : ''}</option>`).join('');
+    sel.value = currentVal;
+}
+
+function renderSettings() {
+    $('editDoctorId').value = '';
+    $('doctorForm').reset();
+    renderDoctorsTable();
+}
+
+function renderDoctorsTable() {
+    const doctors = load(CONFIG.KEYS.DOCTORS);
+    const tbody = $('doctorsTable'); tbody.innerHTML = '';
+    doctors.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${sanitize(d.name)}</strong></td>
+            <td>${sanitize(d.specialty) || '-'}</td>
+            <td style="text-align:right;">
+                <button class="btn-accent btn-sm" onclick="editDoctor('${d.id}')">Edit</button>
+                <button class="btn-danger btn-sm" onclick="deleteDoctor('${d.id}')">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function handleDoctorSubmit(e) {
+    e.preventDefault();
+    const id = $('editDoctorId').value;
+    const obj = { name: sanitize($('docName').value, 100), specialty: sanitize($('docSpecialty').value, 100) };
+    if (!obj.name) { Swal.fire({icon:'warning', title:'Enter doctor name'}); return; }
+    const doctors = load(CONFIG.KEYS.DOCTORS);
+    if (id) { const i = doctors.findIndex(d => d.id === id); if (i !== -1) doctors[i] = { ...doctors[i], ...obj }; }
+    else { doctors.push({ ...obj, id: gid() }); }
+    save(CONFIG.KEYS.DOCTORS, doctors);
+    Swal.fire({icon:'success', title:'Saved', timer:1200});
+    renderSettings();
+}
+
+function editDoctor(id) {
+    const d = load(CONFIG.KEYS.DOCTORS).find(x => x.id === id);
+    if (!d) return;
+    $('editDoctorId').value = d.id;
+    $('docName').value = d.name;
+    $('docSpecialty').value = d.specialty || '';
+}
+
+function deleteDoctor(id) {
+    Swal.fire({title:'Delete this doctor?', icon:'warning', showCancelButton:true}).then(r => {
+        if (!r.isConfirmed) return;
+        save(CONFIG.KEYS.DOCTORS, load(CONFIG.KEYS.DOCTORS).filter(d => d.id !== id));
+        Swal.fire({icon:'success', title:'Deleted', timer:1200});
+        renderSettings();
+    });
+}
+
+// ── MODALS ──
+function openServiceModal() { $('modalSvcName').value = ''; $('modalSvcPrice').value = ''; $('serviceModal').classList.add('active'); $('modalSvcName').focus(); }
+function closeServiceModal() { $('serviceModal').classList.remove('active'); }
+function saveModalService() {
+    const name = sanitize($('modalSvcName').value.trim(), 100);
+    const price = parseFloat($('modalSvcPrice').value) || 0;
+    if (!name) { Swal.fire({icon:'warning', title:'Enter service name'}); return; }
+    if (price <= 0) { Swal.fire({icon:'warning', title:'Enter valid price'}); return; }
+    const services = load(CONFIG.KEYS.SERVICES);
+    services.push({ id: gid(), name, price });
+    save(CONFIG.KEYS.SERVICES, services);
+    Swal.fire({icon:'success', title:'Service Added', timer:1200});
+    closeServiceModal();
+    renderServiceSelects();
+}
+
+function openDoctorModal() { $('modalDocName').value = ''; $('modalDocSpecialty').value = ''; $('doctorModal').classList.add('active'); $('modalDocName').focus(); }
+function closeDoctorModal() { $('doctorModal').classList.remove('active'); }
+function saveModalDoctor() {
+    const name = sanitize($('modalDocName').value.trim(), 100);
+    const specialty = sanitize($('modalDocSpecialty').value.trim(), 100);
+    if (!name) { Swal.fire({icon:'warning', title:'Enter doctor name'}); return; }
+    const doctors = load(CONFIG.KEYS.DOCTORS);
+    doctors.push({ id: gid(), name, specialty });
+    save(CONFIG.KEYS.DOCTORS, doctors);
+    Swal.fire({icon:'success', title:'Doctor Added', timer:1200});
+    closeDoctorModal();
+    renderDoctorSelect();
+}
+
+// ── BILLING ──
+function addServiceRow() {
+    const container = $('servicesList');
+    const row = document.createElement('div');
+    row.className = 'service-row';
+    row.innerHTML = `
+        <select class="form-control service-select" required><option value="">Select Service...</option></select>
+        <input type="number" class="form-control qty" value="1" min="1" placeholder="Qty">
+        <input type="number" class="form-control price" placeholder="Price" readonly>
+        <input type="number" class="form-control total" placeholder="Total" readonly>
+        <button type="button" class="btn-danger btn-sm" onclick="removeServiceRow(this)">×</button>
+    `;
+    container.appendChild(row);
+    renderServiceSelects();
+    attachServiceListeners(row);
+}
+
+function removeServiceRow(btn) {
+    const rows = $('servicesList').querySelectorAll('.service-row');
+    if (rows.length > 1) { btn.closest('.service-row').remove(); calculateBill(); }
+}
+
+function attachServiceListeners(row) {
+    const select = row.querySelector('.service-select');
+    const qty = row.querySelector('.qty');
+    const price = row.querySelector('.price');
+    const total = row.querySelector('.total');
+    
+    select.addEventListener('change', function() {
+        const opt = this.options[this.selectedIndex];
+        const p = parseFloat(opt.dataset.price) || 0;
+        price.value = p.toFixed(2);
+        const q = parseInt(qty.value) || 1;
+        total.value = (p * q).toFixed(2);
+        calculateBill();
+    });
+    qty.addEventListener('input', function() {
+        const p = parseFloat(price.value) || 0;
+        const q = parseInt(this.value) || 1;
+        total.value = (p * q).toFixed(2);
+        calculateBill();
+    });
+}
+
+function calculateBill() {
+    let subtotal = 0;
+    document.querySelectorAll('.service-row').forEach(row => {
+        subtotal += parseFloat(row.querySelector('.total').value) || 0;
+    });
+    const discount = parseFloat($('billDiscount').value) || 0;
+    const total = Math.max(0, subtotal - discount);
+    $('billSubtotal').textContent = fmtMoney(subtotal);
+    $('billTotal').textContent = fmtMoney(total);
+    $('paidAmount').placeholder = 'Total: ' + fmtMoney(total);
+    updateBalance();
+}
+
+function updateBalance() {
+    const total = parseFloat($('billTotal').textContent.replace('$','').replace(',','')) || 0;
+    const paid = parseFloat($('paidAmount').value) || 0;
+    const balance = total - paid;
+    if (balance > 0 && paid > 0) {
+        $('balanceBox').style.display = 'block';
+        $('balanceAmount').textContent = fmtMoney(balance);
+        $('balanceAmount').style.color = '#dc3545';
+    } else if (balance < 0) {
+        $('balanceBox').style.display = 'block';
+        $('balanceAmount').textContent = fmtMoney(Math.abs(balance)) + ' (Change)';
+        $('balanceAmount').style.color = '#28a745';
+    } else {
+        $('balanceBox').style.display = 'none';
+    }
+}
+
+// ── PATIENT SEARCH & HISTORY ──
+function searchPatients(query) {
+    const patients = load(CONFIG.KEYS.PATIENTS);
+    const q = query.toLowerCase().trim();
+    if (!q) return [];
+    return patients.filter(p => 
+        p.name.toLowerCase().includes(q) || 
+        p.phone.includes(q) ||
+        (p.patientNo && p.patientNo.toLowerCase().includes(q))
+    ).slice(0, 10);
+}
+
+function showPatientResults(results) {
+    const box = $('patientSearchResults');
+    if (results.length === 0) { box.classList.add('d-none'); return; }
+    box.innerHTML = results.map(p => `
+        <div class="search-result-item" onclick="selectPatient('${p.id}')">
+            <strong>${sanitize(p.patientNo || 'N/A')} — ${sanitize(p.name)}</strong><br>
+            <small style="color:#6c757d;">📞 ${sanitize(p.phone)} | ${p.age} yrs, ${p.gender}${p.address ? ' | ' + sanitize(p.address) : ''}</small>
         </div>
-        <div class="d-flex gap-1 mt-3">
-            <button class="btn btn-success" onclick="saveService('${sid||''}')">Save</button>
-            <button class="btn btn-light" onclick="closeModal()">Cancel</button>
+    `).join('');
+    box.classList.remove('d-none');
+}
+
+function selectPatient(id) {
+    const p = load(CONFIG.KEYS.PATIENTS).find(x => x.id === id);
+    if (!p) return;
+    $('patientId').value = p.id;
+    $('ptDisplayId').value = p.patientNo || 'N/A';
+    $('ptName').value = p.name;
+    $('ptPhone').value = p.phone;
+    $('ptAge').value = p.age;
+    $('ptGender').value = p.gender;
+    $('ptAddress').value = p.address || '';
+    $('patientSearchResults').classList.add('d-none');
+    $('patientSearch').value = '';
+    showPatientHistory(p.id);
+    Swal.fire({icon:'info', title:'Patient Loaded', text:`${sanitize(p.name)} (${p.patientNo || ''})`, timer:1500});
+}
+
+function showPatientHistory(patientId) {
+    const bills = load(CONFIG.KEYS.BILLS).filter(b => b.patientId === patientId);
+    const card = $('patientHistoryCard');
+    if (bills.length === 0) { card.classList.add('d-none'); return; }
+    
+    const totalPaid = bills.reduce((sum, b) => sum + b.paid, 0);
+    const lastVisit = bills[0].date;
+    
+    $('phVisits').textContent = 'Total Visits: ' + bills.length;
+    $('phLast').textContent = 'Last Visit: ' + new Date(lastVisit).toLocaleDateString();
+    $('phTotal').textContent = 'Total Paid: ' + fmtMoney(totalPaid);
+    card.classList.remove('d-none');
+}
+
+function viewPatientBills() {
+    const patientId = $('patientId').value;
+    if (!patientId) return;
+    const bills = load(CONFIG.KEYS.BILLS).filter(b => b.patientId === patientId);
+    if (bills.length === 0) { Swal.fire({icon:'info', title:'No history found'}); return; }
+    
+    let html = '<table style="width:100%; font-size:0.9rem;"><tr style="background:#f8f9fa;"><th>Bill #</th><th>Date</th><th>Total</th><th>Paid</th><th>Status</th></tr>';
+    bills.forEach(b => {
+        html += `<tr><td>#${b.billNo}</td><td>${new Date(b.date).toLocaleDateString()}</td><td>${fmtMoney(b.total)}</td><td>${fmtMoney(b.paid)}</td><td>${b.status}</td></tr>`;
+    });
+    html += '</table>';
+    
+    Swal.fire({
+        title: 'Patient Bill History',
+        html: html,
+        width: 600,
+        confirmButtonText: 'Close'
+    });
+}
+
+function clearBill() {
+    $('patientForm').reset();
+    $('patientId').value = '';
+    $('ptDisplayId').value = '';
+    $('patientSearch').value = '';
+    $('patientHistoryCard').classList.add('d-none');
+    $('servicesList').innerHTML = `
+        <div class="service-row" data-index="0">
+            <select class="form-control service-select" required><option value="">Select Service...</option></select>
+            <input type="number" class="form-control qty" value="1" min="1" placeholder="Qty">
+            <input type="number" class="form-control price" placeholder="Price" readonly>
+            <input type="number" class="form-control total" placeholder="Total" readonly>
+            <button type="button" class="btn-danger btn-sm" onclick="removeServiceRow(this)" style="display:none;">×</button>
         </div>
     `;
-    showModal(html);
-    if(s) $('msDept').value = s.department;
+    renderServiceSelects();
+    renderDoctorSelect();
+    document.querySelectorAll('.service-row').forEach(row => attachServiceListeners(row));
+    $('billDiscount').value = 0;
+    $('paidAmount').value = '';
+    $('paymentMethod').value = 'cash';
+    $('mixedPaymentBox').classList.add('d-none');
+    $('mixedCash').value = 0;
+    $('mixedEVC').value = 0;
+    $('mixedZaad').value = 0;
+    $('balanceBox').style.display = 'none';
+    $('billNotes').value = '';
+    calculateBill();
 }
 
-function saveService(sid){
-    const name = sanitize($('msName').value.trim(), 100);
-    const dept = $('msDept').value;
-    const price = parseFloat($('msPrice').value)||0;
-    const cost = parseFloat($('msCost').value)||0;
-    if(!name){ Swal.fire({icon:'warning', title:'Name required'}); return; }
-    const services = load(KEYS.SERVICES);
-    if(sid){
-        const idx = services.findIndex(s=>s.id===sid);
-        if(idx!==-1) services[idx] = {...services[idx], name, department:dept, price, cost};
-    } else {
-        services.push({id:gid(), name, department:dept, price, cost});
+function payAndPrint() {
+    const patientId = $('patientId').value;
+    const name = sanitize($('ptName').value.trim(), 100);
+    const phone = sanitize($('ptPhone').value.trim(), 50);
+    const age = parseInt($('ptAge').value) || 0;
+    const gender = $('ptGender').value;
+    const address = sanitize($('ptAddress').value.trim(), 200);
+    const doctorId = $('doctorSelect').value;
+    const notes = sanitize($('billNotes').value.trim(), 500);
+    
+    if (!name || !phone || !age || !gender) {
+        Swal.fire({icon:'warning', title:'Fill all required patient fields'}); return;
     }
-    save(KEYS.SERVICES, services);
-    closeModal();
-    renderServicesMgmt();
+    if (!doctorId) {
+        Swal.fire({icon:'warning', title:'Select a doctor'}); return;
+    }
+    
+    const doctor = load(CONFIG.KEYS.DOCTORS).find(d => d.id === doctorId);
+    const doctorName = doctor ? doctor.name : 'N/A';
+    
+    const services = [];
+    let hasService = false;
+    document.querySelectorAll('.service-row').forEach(row => {
+        const sel = row.querySelector('.service-select');
+        const svcId = sel.value;
+        if (!svcId) return;
+        const opt = sel.options[sel.selectedIndex];
+        const svcName = opt.text.split(' - ')[0];
+        const qty = parseInt(row.querySelector('.qty').value) || 1;
+        const price = parseFloat(row.querySelector('.price').value) || 0;
+        const total = parseFloat(row.querySelector('.total').value) || 0;
+        services.push({ id: svcId, name: svcName, qty, price, total });
+        hasService = true;
+    });
+    
+    if (!hasService) { Swal.fire({icon:'warning', title:'Add at least one service'}); return; }
+    
+    const subtotal = services.reduce((sum, s) => sum + s.total, 0);
+    const discount = parseFloat($('billDiscount').value) || 0;
+    const total = Math.max(0, subtotal - discount);
+    
+    const method = $('paymentMethod').value;
+    let paid = 0;
+    let paymentDetails = { method };
+    
+    if (method === 'mixed') {
+        const cash = parseFloat($('mixedCash').value) || 0;
+        const evc = parseFloat($('mixedEVC').value) || 0;
+        const zaad = parseFloat($('mixedZaad').value) || 0;
+        paid = cash + evc + zaad;
+        paymentDetails = { method, cash, evc, zaad };
+    } else {
+        paid = parseFloat($('paidAmount').value) || 0;
+    }
+    
+    if (paid <= 0) { Swal.fire({icon:'warning', title:'Enter paid amount'}); return; }
+    
+    // Save or update patient
+    let finalPatientId = patientId;
+    let patientNo = '';
+    const patients = load(CONFIG.KEYS.PATIENTS);
+    
+    if (!finalPatientId) {
+        const existing = patients.find(p => p.phone === phone);
+        if (existing) {
+            finalPatientId = existing.id;
+            patientNo = existing.patientNo;
+            const idx = patients.findIndex(p => p.id === existing.id);
+            patients[idx] = { ...patients[idx], name, age, gender, address, updatedAt: new Date().toISOString() };
+        } else {
+            finalPatientId = gid();
+            patientNo = getNextPatientNo();
+            patients.push({ id: finalPatientId, patientNo, name, phone, age, gender, address, createdAt: new Date().toISOString() });
+        }
+        save(CONFIG.KEYS.PATIENTS, patients);
+    } else {
+        const idx = patients.findIndex(p => p.id === finalPatientId);
+        if (idx !== -1) {
+            patientNo = patients[idx].patientNo;
+            patients[idx] = { ...patients[idx], name, phone, age, gender, address, updatedAt: new Date().toISOString() };
+            save(CONFIG.KEYS.PATIENTS, patients);
+        }
+    }
+    
+    const billNo = getNextBillNo();
+    let status = paid >= total ? 'paid' : 'pending';
+    
+    const bill = {
+        id: gid(),
+        billNo: billNo,
+        date: new Date().toISOString(),
+        patientId: finalPatientId,
+        patientNo: patientNo,
+        patientName: name,
+        phone: phone,
+        age: age,
+        gender: gender,
+        address: address,
+        doctorId: doctorId,
+        doctorName: doctorName,
+        services: services,
+        subtotal: subtotal,
+        discount: discount,
+        total: total,
+        paid: paid,
+        balance: Math.max(0, total - paid),
+        paymentMethod: method,
+        paymentDetails: paymentDetails,
+        notes: notes,
+        cashier: 'Cashier',
+        status: status
+    };
+    
+    const bills = load(CONFIG.KEYS.BILLS);
+    bills.unshift(bill);
+    save(CONFIG.KEYS.BILLS, bills);
+    
+    printReceipt(bill);
+    Swal.fire({icon:'success', title:'Bill Saved & Printed', text:`Receipt #${billNo}`, timer:2000});
+    clearBill();
 }
 
-function editService(id){ openServiceModal(id); }
-function deleteService(id){
-    Swal.fire({title:'Delete service?', icon:'warning', showCancelButton:true}).then(r=>{
-        if(r.isConfirmed){ save(KEYS.SERVICES, load(KEYS.SERVICES).filter(s=>s.id!==id)); renderServicesMgmt(); }
+// ── PAY BALANCE ──
+function payBalancePrompt(billId) {
+    const bill = load(CONFIG.KEYS.BILLS).find(b => b.id === billId);
+    if (!bill) return;
+    
+    Swal.fire({
+        title: 'Pay Balance',
+        html: `<p>Bill #${bill.billNo} — ${sanitize(bill.patientName)}</p>
+               <p>Total: ${fmtMoney(bill.total)} | Paid: ${fmtMoney(bill.paid)} | Balance: <strong style="color:#dc3545;">${fmtMoney(bill.balance)}</strong></p>
+               <input id="swalPayAmount" class="swal2-input" type="number" min="0.01" step="0.01" placeholder="Enter amount to pay" value="${bill.balance.toFixed(2)}">`,
+        showCancelButton: true,
+        confirmButtonText: 'Pay & Print',
+        preConfirm: () => {
+            const amt = parseFloat(document.getElementById('swalPayAmount').value);
+            if (!amt || amt <= 0) { Swal.showValidationMessage('Enter valid amount'); }
+            return amt;
+        }
+    }).then(result => {
+        if (!result.isConfirmed) return;
+        const payAmount = result.value;
+        const allBills = load(CONFIG.KEYS.BILLS);
+        const idx = allBills.findIndex(b => b.id === billId);
+        if (idx === -1) return;
+        
+        allBills[idx].paid += payAmount;
+        allBills[idx].balance = Math.max(0, allBills[idx].total - allBills[idx].paid);
+        if (allBills[idx].balance <= 0) allBills[idx].status = 'paid';
+        save(CONFIG.KEYS.BILLS, allBills);
+        
+        // Print updated receipt
+        printReceipt(allBills[idx]);
+        Swal.fire({icon:'success', title:'Payment Updated', timer:1500});
+        renderDashboard();
+        renderBills();
     });
 }
 
-// ── ALL BILLS ──
-function renderAllBills(){
-    const bills = load(KEYS.BILLS);
-    const search = $('allBillSearch').value.toLowerCase();
-    const status = $('allBillStatus').value;
-    const doctors = load(KEYS.DOCTORS);
+// ── RECEIPT ──
+function printReceipt(bill) {
+    const itemsHtml = bill.services.map(s => `
+        <tr><td>${s.qty}x ${sanitize(s.name)}</td><td class="text-right">${fmtMoney(s.price)}</td><td class="text-right">${fmtMoney(s.total)}</td></tr>
+    `).join('');
     
-    const filtered = bills.filter(b=>{
-        if(status!=='all' && b.status!==status) return false;
-        if(search && !String(b.billNo).includes(search) && !b.patientName.toLowerCase().includes(search) && !b.patientPhone.includes(search)) return false;
+    const methodText = bill.paymentMethod === 'mixed' 
+        ? `Cash: ${fmtMoney(bill.paymentDetails.cash||0)} | EVC: ${fmtMoney(bill.paymentDetails.evc||0)} | Zaad: ${fmtMoney(bill.paymentDetails.zaad||0)}`
+        : bill.paymentMethod.toUpperCase();
+    
+    const notesHtml = bill.notes ? `<p><strong>Notes:</strong> ${sanitize(bill.notes)}</p>` : '';
+    
+    $('receiptContent').innerHTML = `
+        <div class="receipt-header">
+            <h3>🧪 BAXNAANO LAB</h3>
+            <p>Lab Management System</p>
+            <p>${new Date(bill.date).toLocaleString()}</p>
+        </div>
+        <p><strong>Receipt #:</strong> ${bill.billNo}</p>
+        <p><strong>Patient ID:</strong> ${sanitize(bill.patientNo || 'N/A')}</p>
+        <p><strong>Patient:</strong> ${sanitize(bill.patientName)}</p>
+        <p><strong>Phone:</strong> ${sanitize(bill.phone)}</p>
+        <p><strong>Age:</strong> ${bill.age} | <strong>Gender:</strong> ${bill.gender}</p>
+        <p><strong>Doctor:</strong> ${sanitize(bill.doctorName)}</p>
+        ${notesHtml}
+        <hr style="border:0; border-top:1px dashed #333; margin:8px 0;">
+        <table class="receipt-items">
+            <tr><th>Item</th><th class="text-right">Price</th><th class="text-right">Total</th></tr>
+            ${itemsHtml}
+        </table>
+        <div class="receipt-total">
+            <div class="receipt-total-row"><span>Subtotal:</span><span>${fmtMoney(bill.subtotal)}</span></div>
+            ${bill.discount > 0 ? `<div class="receipt-total-row"><span>Discount:</span><span>-${fmtMoney(bill.discount)}</span></div>` : ''}
+            <div class="receipt-total-row" style="font-weight:bold; font-size:14px; margin-top:5px;"><span>TOTAL:</span><span>${fmtMoney(bill.total)}</span></div>
+            <div class="receipt-total-row"><span>Paid:</span><span>${fmtMoney(bill.paid)}</span></div>
+            ${bill.balance > 0 ? `<div class="receipt-total-row"><span>Balance:</span><span style="color:#dc3545;">${fmtMoney(bill.balance)}</span></div>` : ''}
+            ${bill.paid > bill.total ? `<div class="receipt-total-row"><span>Change:</span><span style="color:#28a745;">${fmtMoney(bill.paid - bill.total)}</span></div>` : ''}
+            <div class="receipt-total-row"><span>Method:</span><span>${methodText}</span></div>
+        </div>
+        <div class="receipt-barcode">**** ${bill.billNo} ****</div>
+        <div class="receipt-footer">
+            <p><strong>Cashier:</strong> ${bill.cashier}</p>
+            <p>Thank you for choosing BAXNAANO LAB!</p>
+            <p>For results, please visit the lab</p>
+        </div>
+    `;
+    
+    $('printArea').style.display = 'block';
+    window.print();
+    $('printArea').style.display = 'none';
+}
+
+// ── BILLS HISTORY ──
+function renderBills() {
+    const bills = load(CONFIG.KEYS.BILLS);
+    const filterDate = $('billsDateFilter').value;
+    const filterSearch = $('billsSearch').value.toLowerCase();
+    
+    const filtered = bills.filter(b => {
+        if (filterDate && !b.date.startsWith(filterDate)) return false;
+        if (filterSearch && !String(b.billNo).includes(filterSearch) && !b.patientName.toLowerCase().includes(filterSearch) && !b.phone.includes(filterSearch) && !(b.patientNo && b.patientNo.toLowerCase().includes(filterSearch))) return false;
         return true;
     });
     
-    const tbody = $('allBillsTable');
-    tbody.innerHTML = '';
-    filtered.slice(0,100).forEach(b=>{
-        const doc = doctors.find(d=>d.id===b.doctorId);
-        tbody.innerHTML += `<tr>
-            <td>#${b.billNo}</td>
+    const tbody = $('billsTable'); tbody.innerHTML = '';
+    filtered.forEach(b => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>#${b.billNo}</strong></td>
             <td>${new Date(b.date).toLocaleString()}</td>
             <td>${sanitize(b.patientName)}</td>
-            <td>${doc ? sanitize(doc.name) : '-'}</td>
-            <td>${fmt$(b.totalAmount)}</td>
-            <td>${fmt$(b.paidAmount)}</td>
-            <td class="${b.balance>0?'text-danger':'text-success'}">${fmt$(b.balance)}</td>
-            <td>${b.paymentMethod.toUpperCase()}</td>
-            <td>${b.cashier}</td>
-            <td style="text-align:right;"><button class="btn btn-sm btn-primary" onclick="printReceiptById('${b.id}')">🖨️ Print</button></td>
-        </tr>`;
+            <td>${sanitize(b.phone)}</td>
+            <td>${sanitize(b.doctorName)}</td>
+            <td>${b.services.length} items</td>
+            <td>${fmtMoney(b.total)}</td>
+            <td>${fmtMoney(b.paid)}</td>
+            <td class="${b.balance > 0 ? 'danger' : 'text-muted'}">${fmtMoney(b.balance)}</td>
+            <td><span class="badge ${b.paymentMethod==='cash'?'bg-success':b.paymentMethod==='evc'?'bg-info':b.paymentMethod==='zaad'?'bg-warning':'bg-secondary'}">${b.paymentMethod}</span></td>
+            <td style="text-align:right;">
+                ${b.balance > 0 ? `<button class="btn-success btn-sm" onclick="payBalancePrompt('${b.id}')">Pay</button>` : ''}
+                <button class="btn-accent btn-sm" onclick="reprintBill('${b.id}')">🖨️ Print</button>
+                <button class="btn-danger btn-sm" onclick="deleteBill('${b.id}')">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
     });
-    if(filtered.length===0) tbody.innerHTML = '<tr><td colspan="10" class="text-muted" style="text-align:center;">No bills found</td></tr>';
+    if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" class="text-muted" style="text-align:center; padding:2rem;">No bills found</td></tr>';
+    }
 }
 
-// ── ADMIN REPORTS ──
-function setAdminReport(range){
-    const today = new Date();
-    if(range==='today'){ $('arFrom').value = todayStr(); $('arTo').value = todayStr(); }
-    else if(range==='week'){ const s=new Date(today); s.setDate(today.getDate()-6); $('arFrom').value=s.toISOString().split('T')[0]; $('arTo').value=todayStr(); }
-    else if(range==='month'){ const s=new Date(today.getFullYear(), today.getMonth(), 1); $('arFrom').value=s.toISOString().split('T')[0]; $('arTo').value=todayStr(); }
-    renderAdminReports();
+function reprintBill(billId) {
+    const bill = load(CONFIG.KEYS.BILLS).find(b => b.id === billId);
+    if (bill) printReceipt(bill);
 }
 
-function renderAdminReports(){
-    const from = $('arFrom').value;
-    const to = $('arTo').value;
-    const bills = load(KEYS.BILLS);
-    const services = load(KEYS.SERVICES);
-    
-    const filtered = bills.filter(b=>{
-        const d = b.date.split('T')[0];
-        if(from && d<<from) return false;
-        if(to && d>to) return false;
-        return true;
+function deleteBill(id) {
+    Swal.fire({title:'Delete this bill?', text:'This action cannot be undone.', icon:'warning', showCancelButton:true}).then(r => {
+        if (!r.isConfirmed) return;
+        save(CONFIG.KEYS.BILLS, load(CONFIG.KEYS.BILLS).filter(b => b.id !== id));
+        Swal.fire({icon:'success', title:'Deleted', timer:1200});
+        renderBills();
     });
-    
-    const revenue = filtered.reduce((s,b)=>s+b.paidAmount,0);
-    const profit = filtered.reduce((s,b)=>{
-        const itemsProfit = b.services.reduce((sum,svc)=>{
-            const real = services.find(x=>x.id===svc.id);
-            return sum + (svc.total - (real?real.cost*svc.qty:0));
-        },0);
-        return s + itemsProfit - b.discount;
-    },0);
-    const pending = filtered.filter(b=>b.status==='pending').reduce((s,b)=>s+b.balance,0);
-    
-    $('arRevenue').textContent = fmt$(revenue);
-    $('arProfit').textContent = fmt$(profit);
-    $('arPending').textContent = fmt$(pending);
-    $('arPatients').textContent = new Set(filtered.map(b=>b.patientId)).size;
-    
-    const tbody = $('arTable');
-    tbody.innerHTML = '';
-    filtered.forEach(b=>{
-        const doc = load(KEYS.DOCTORS).find(d=>d.id===b.doctorId);
-        tbody.innerHTML += `<tr>
-            <td>#${b.billNo}</td><td>${new Date(b.date).toLocaleDateString()}</td>
-            <td>${sanitize(b.patientName)}</td><td>${doc?sanitize(doc.name):'-'}</td>
-            <td>${b.services.length} item(s)</td><td>${fmt$(b.totalAmount)}</td>
-            <td>${fmt$(b.profit||0)}</td><td>${b.paymentMethod.toUpperCase()}</td>
-        </tr>`;
-    });
-    if(filtered.length===0) tbody.innerHTML = '<tr><td colspan="8" class="text-muted" style="text-align:center;">No data</td></tr>';
 }
 
-function printAdminReport(){
-    const w=window.open('','_blank');
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Report</title>
-    <style>body{font-family:Arial;padding:20px} table{width:100%;border-collapse:collapse} th,td{padding:8px;text-align:left;border-bottom:1px solid #ddd} th{background:#f8f9fa} @media print{button{display:none}}</style></head>
-    <body><h2>Baxnaano HMS — Report</h2><p><strong>Period:</strong> ${$('arFrom').value} to ${$('arTo').value}</p>
-    <p><strong>Revenue:</strong> ${$('arRevenue').textContent} | <strong>Profit:</strong> ${$('arProfit').textContent} | <strong>Pending:</strong> ${$('arPending').textContent} | <strong>Patients:</strong> ${$('arPatients').textContent}</p>
-    <hr><table><thead><tr><th>Receipt</th><th>Date</th><th>Patient</th><th>Doctor</th><th>Services</th><th>Total</th><th>Profit</th><th>Method</th></tr></thead>
-    <tbody>${$('arTable').innerHTML}</tbody></table><br><button onclick="window.print()">Print</button></body></html>`);
+// ── REPORTS ──
+function renderDailyReport() {
+    const date = $('reportDate').value || todayStr();
+    const bills = load(CONFIG.KEYS.BILLS).filter(b => b.date.startsWith(date));
+    const income = bills.reduce((sum, b) => sum + b.paid, 0);
+    const pending = bills.filter(b => b.status === 'pending').length;
+    const completed = bills.filter(b => b.status === 'paid').length;
+    
+    $('repPatients').textContent = bills.length;
+    $('repIncome').textContent = fmtMoney(income);
+    $('repPending').textContent = pending;
+    $('repCompleted').textContent = completed;
+    
+    const box = $('dailyReportDetails'); box.innerHTML = '';
+    if (bills.length === 0) {
+        box.innerHTML = '<p class="text-muted">No data for this date.</p>';
+    } else {
+        const tbl = document.createElement('table'); tbl.className = 'table';
+        tbl.innerHTML = '<thead><tr><th>Bill #</th><th>Patient</th><th>Doctor</th><th>Total</th><th>Paid</th><th>Status</th></tr></thead>';
+        const tbody = document.createElement('tbody');
+        bills.forEach(b => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>#${b.billNo}</td><td>${sanitize(b.patientName)}</td><td>${sanitize(b.doctorName)}</td><td>${fmtMoney(b.total)}</td><td>${fmtMoney(b.paid)}</td><td><span class="badge ${b.status==='paid'?'bg-success':'bg-danger'}">${b.status}</span></td>`;
+            tbody.appendChild(tr);
+        });
+        tbl.appendChild(tbody);
+        box.appendChild(tbl);
+    }
+}
+
+function printDailyReport() {
+    const w = window.open('', '_blank');
+    w.document.write(`
+        <!DOCTYPE html><html><head><meta charset="utf-8"><title>Daily Report</title>
+        <style>body{font-family:Arial;padding:20px} table{width:100%;border-collapse:collapse} th,td{padding:8px;text-align:left;border-bottom:1px solid #ddd} th{background:#f8f9fa} .badge{padding:4px 8px;border-radius:12px;font-size:0.75rem} .bg-success{background:#28a745;color:white} .bg-danger{background:#dc3545;color:white} @media print{button{display:none}}</style></head>
+        <body><h1>Daily Report - ${$('reportDate').value || todayStr()}</h1>
+        <p><strong>Patients:</strong> ${$('repPatients').textContent} | <strong>Income:</strong> ${$('repIncome').textContent} | <strong>Pending:</strong> ${$('repPending').textContent} | <strong>Completed:</strong> ${$('repCompleted').textContent}</p>
+        <div>${$('dailyReportDetails').innerHTML}</div><button onclick="window.print()">Print</button></body></html>
+    `);
     w.document.close();
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  CASHIER MODULES
-// ═══════════════════════════════════════════════════════════════
-
-function renderCashierDash(){
-    const bills = load(KEYS.BILLS);
-    const today = todayStr();
-    const myBills = bills.filter(b=>b.cashier===currentUser.username && b.date.startsWith(today));
-    const pending = bills.filter(b=>b.cashier===currentUser.username && b.status==='pending');
+function renderMethodReport() {
+    const from = $('methodReportFrom').value;
+    const to = $('methodReportTo').value;
+    const bills = load(CONFIG.KEYS.BILLS);
     
-    $('cdPatients').textContent = new Set(myBills.map(b=>b.patientId)).size;
-    $('cdIncome').textContent = fmt$(myBills.reduce((s,b)=>s+b.paidAmount,0));
-    $('cdPending').textContent = pending.length;
-    $('cdTotalBills').textContent = bills.filter(b=>b.cashier===currentUser.username).length;
-    
-    const rb = $('cdRecent');
-    rb.innerHTML = '';
-    myBills.slice(0,10).forEach(b=>{
-        rb.innerHTML += `<tr>
-            <td>#${b.billNo}</td><td>${new Date(b.date).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
-            <td>${sanitize(b.patientName)}</td><td>${fmt$(b.totalAmount)}</td>
-            <td><span class="badge ${b.status==='paid'?'bg-paid':'bg-pending'}">${b.status}</span></td>
-            <td style="text-align:right;"><button class="btn btn-sm btn-primary" onclick="printReceiptById('${b.id}')">Print</button></td>
-        </tr>`;
-    });
-    if(myBills.length===0) rb.innerHTML = '<tr><td colspan="6" class="text-muted" style="text-align:center;">No bills today</td></tr>';
-}
-
-// ── CASHIER BILLING ──
-function renderCbServices(){
-    const services = load(KEYS.SERVICES);
-    const grid = $('cbServiceGrid');
-    grid.innerHTML = '';
-    services.forEach(s=>{
-        const chip = document.createElement('div');
-        chip.className = 'service-chip';
-        chip.dataset.id = s.id;
-        chip.innerHTML = `<div class="name">${sanitize(s.name)}</div><div class="price">${fmt$(s.price)}</div><div class="dept">${sanitize(s.department)}</div>`;
-        chip.onclick = ()=> toggleCbService(s);
-        grid.appendChild(chip);
-    });
-    
-    // Populate doctor dropdown
-    const sel = $('cbDoctor');
-    sel.innerHTML = '<option value="">None / Walk-in</option>';
-    load(KEYS.DOCTORS).filter(d=>d.status==='active').forEach(d=>{
-        sel.innerHTML += `<option value="${d.id}">${sanitize(d.name)} (${d.specialty})</option>`;
-    });
-    
-    renderCbSelected();
-}
-
-function toggleCbService(service){
-    const idx = cbServices.findIndex(x=>x.id===service.id);
-    if(idx>=0) cbServices.splice(idx,1);
-    else cbServices.push({...service, qty:1});
-    renderCbServices();
-}
-
-function changeCbQty(id, delta){
-    const item = cbServices.find(x=>x.id===id);
-    if(!item) return;
-    item.qty = Math.max(1, item.qty+delta);
-    renderCbSelected();
-    calcCashierBill();
-}
-
-function removeCbService(id){
-    cbServices = cbServices.filter(x=>x.id!==id);
-    renderCbServices();
-}
-
-function renderCbSelected(){
-    document.querySelectorAll('.service-chip').forEach(chip=>{
-        chip.classList.toggle('selected', cbServices.find(s=>s.id===chip.dataset.id));
-    });
-    const box = $('cbSelected');
-    if(cbServices.length===0){
-        box.innerHTML = '<p class="text-muted" style="text-align:center;padding:1rem 0;">No services selected</p>';
-        calcCashierBill(); return;
-    }
-    box.innerHTML = cbServices.map(s=>`
-        <div class="d-flex justify-between align-center" style="padding:6px 0;border-bottom:1px solid #eee;">
-            <div><div style="font-weight:600;">${sanitize(s.name)}</div><div class="text-muted" style="font-size:0.8rem;">${fmt$(s.price)} each</div></div>
-            <div class="d-flex align-center gap-1">
-                <button class="btn btn-sm btn-light" onclick="changeCbQty('${s.id}',-1)">−</button>
-                <span style="min-width:20px;text-align:center;">${s.qty}</span>
-                <button class="btn btn-sm btn-light" onclick="changeCbQty('${s.id}',1)">+</button>
-                <button class="btn btn-sm btn-danger" onclick="removeCbService('${s.id}')">×</button>
-            </div>
-        </div>
-    `).join('');
-    calcCashierBill();
-}
-
-function setCbPay(method){
-    cbPayMethod = method;
-    document.querySelectorAll('#cashierBillView .pay-method').forEach(b=>b.classList.toggle('active', b.dataset.method===method));
-    if(method==='mixed'){ $('cbMixedBox').classList.remove('hidden'); $('cbSingleBox').classList.add('hidden'); }
-    else { $('cbMixedBox').classList.add('hidden'); $('cbSingleBox').classList.remove('hidden'); }
-    calcCashierBill();
-}
-
-function calcCbMixed(){
-    const total = (parseFloat($('cbPayCash').value)||0) + (parseFloat($('cbPayEvc').value)||0) + (parseFloat($('cbPayZaad').value)||0);
-    $('cbPaid').value = total.toFixed(2);
-    calcCashierBill();
-}
-
-function calcCashierBill(){
-    const subtotal = cbServices.reduce((sum,s)=>sum+(s.price*s.qty),0);
-    const discount = parseFloat($('cbDiscount').value)||0;
-    const total = Math.max(0, subtotal-discount);
-    
-    let paid = 0;
-    if(cbPayMethod==='mixed'){
-        paid = (parseFloat($('cbPayCash').value)||0)+(parseFloat($('cbPayEvc').value)||0)+(parseFloat($('cbPayZaad').value)||0);
-    } else {
-        paid = parseFloat($('cbPaid').value)||0;
-    }
-    
-    const balance = Math.max(0, total-paid);
-    const status = balance<=0.01 ? 'paid' : 'pending';
-    
-    $('cbSubtotal').textContent = fmt$(subtotal);
-    $('cbTotal').textContent = fmt$(total);
-    $('cbBalance').textContent = fmt$(balance);
-    $('cbBalance').className = balance>0 ? 'text-danger' : 'text-success';
-    $('cbStatus').textContent = status==='paid' ? 'PAID' : 'PENDING';
-    $('cbStatus').className = 'badge ' + (status==='paid'?'bg-paid':'bg-pending');
-    
-    return {subtotal, discount, total, paid, balance, status};
-}
-
-function resetCashierBill(){
-    cbServices = [];
-    $('cbPatId').value = '';
-    $('cbPatSearch').value = '';
-    $('cbPatName').value = ''; $('cbPatPhone').value = ''; $('cbPatAge').value = ''; $('cbPatGender').value = ''; $('cbPatAddress').value = ''; $('cbPatBlood').value = '';
-    $('cbDoctor').value = '';
-    $('cbPatBadge').classList.add('hidden');
-    $('cbDiscount').value = 0;
-    $('cbPaid').value = '';
-    $('cbPayCash').value = ''; $('cbPayEvc').value = ''; $('cbPayZaad').value = '';
-    setCbPay('cash');
-    renderCbServices();
-}
-
-function onPatientSearch(query){
-    const box = $('cbPatResults');
-    if(!query || query.length<<2){ box.style.display='none'; return; }
-    const patients = load(KEYS.PATIENTS);
-    const matches = patients.filter(p=> p.phone.includes(query) || p.name.toLowerCase().includes(query.toLowerCase()) ).slice(0,6);
-    if(matches.length===0){ box.style.display='none'; return; }
-    box.innerHTML = matches.map(p=>`
-        <div class="search-result-item" onclick="selectCbPatient('${p.id}')">
-            <div class="name">${sanitize(p.name)}</div>
-            <div class="meta">${p.phone} • ${p.age||'-'} yrs • ${p.gender||'-'} • ${p.visits||1} visit(s)</div>
-        </div>
-    `).join('');
-    box.style.display = 'block';
-}
-
-function onPhoneInput(phone){
-    if(phone.length<<6) return;
-    const p = load(KEYS.PATIENTS).find(x=>x.phone===phone);
-    if(p) selectCbPatient(p.id);
-}
-
-function selectCbPatient(id){
-    const p = load(KEYS.PATIENTS).find(x=>x.id===id);
-    if(!p) return;
-    $('cbPatId').value = p.id;
-    $('cbPatName').value = p.name;
-    $('cbPatPhone').value = p.phone;
-    $('cbPatAge').value = p.age||'';
-    $('cbPatGender').value = p.gender||'';
-    $('cbPatAddress').value = p.address||'';
-    $('cbPatBlood').value = p.bloodGroup||'';
-    
-    const visits = load(KEYS.VISITS).filter(v=>v.patientId===p.id).length + 1;
-    $('cbVisitBadge').textContent = `Existing Patient — Visit #${visits}`;
-    $('cbVisitBadge').className = 'badge bg-paid';
-    $('cbPatBadge').classList.remove('hidden');
-    $('cbPatResults').style.display = 'none';
-}
-
-function getOrCreateCbPatient(){
-    const id = $('cbPatId').value;
-    const name = sanitize($('cbPatName').value.trim(), 100);
-    const phone = sanitize($('cbPatPhone').value.trim(), 50);
-    const age = parseInt($('cbPatAge').value)||0;
-    const gender = $('cbPatGender').value;
-    const address = sanitize($('cbPatAddress').value.trim(), 200);
-    const blood = sanitize($('cbPatBlood').value.trim(), 10);
-    if(!name || !phone){ Swal.fire({icon:'warning', title:'Name and Phone required'}); return null; }
-    
-    const patients = load(KEYS.PATIENTS);
-    if(id){
-        const idx = patients.findIndex(p=>p.id===id);
-        if(idx!==-1){
-            patients[idx] = {...patients[idx], name, phone, age, gender, address, bloodGroup:blood, updatedAt:nowStr()};
-            save(KEYS.PATIENTS, patients);
-            return patients[idx];
-        }
-    }
-    const existing = patients.find(p=>p.phone===phone);
-    if(existing){
-        existing.name=name; existing.age=age; existing.gender=gender; existing.address=address; existing.bloodGroup=blood; existing.updatedAt=nowStr();
-        save(KEYS.PATIENTS, patients);
-        return existing;
-    }
-    const newP = {id:gid(), name, phone, age, gender, address, bloodGroup:blood, createdAt:nowStr(), visits:1};
-    patients.push(newP);
-    save(KEYS.PATIENTS, patients);
-    return newP;
-}
-
-function saveCashierBill(){
-    if(cbServices.length===0){ Swal.fire({icon:'warning', title:'Select at least one service'}); return; }
-    const patient = getOrCreateCbPatient();
-    if(!patient) return;
-    
-    const calc = calcCashierBill();
-    const settings = load(KEYS.SETTINGS);
-    const billNo = settings.nextBillNo++;
-    save(KEYS.SETTINGS, settings);
-    
-    const services = load(KEYS.SERVICES);
-    const billProfit = cbServices.reduce((sum,s)=>{
-        const real = services.find(x=>x.id===s.id);
-        return sum + ((s.price*s.qty) - (real?(real.cost||0)*s.qty:0));
-    },0) - calc.discount;
-    
-    const bill = {
-        id: gid(), billNo, date: nowStr(),
-        patientId: patient.id, patientName: patient.name, patientPhone: patient.phone,
-        patientAge: patient.age, patientGender: patient.gender,
-        doctorId: $('cbDoctor').value || null,
-        services: cbServices.map(s=>({id:s.id, name:s.name, qty:s.qty, price:s.price, total:s.price*s.qty})),
-        subtotal: calc.subtotal, discount: calc.discount, totalAmount: calc.total,
-        paidAmount: calc.paid, balance: calc.balance, paymentMethod: cbPayMethod,
-        paymentDetails: cbPayMethod==='mixed' ? {
-            cash: parseFloat($('cbPayCash').value)||0,
-            evc: parseFloat($('cbPayEvc').value)||0,
-            zaad: parseFloat($('cbPayZaad').value)||0
-        } : null,
-        status: calc.status, profit: billProfit,
-        cashier: currentUser.username
-    };
-    
-    const bills = load(KEYS.BILLS);
-    bills.unshift(bill);
-    save(KEYS.BILLS, bills);
-    
-    // If doctor selected, add to queue
-    if($('cbDoctor').value){
-        const queue = load(KEYS.QUEUE);
-        queue.push({
-            id: gid(), patientId: patient.id, patientName: patient.name,
-            doctorId: $('cbDoctor').value, status: 'waiting',
-            type: 'consultation', billId: bill.id, date: nowStr()
-        });
-        save(KEYS.QUEUE, queue);
-    }
-    
-    printReceipt(bill);
-    Swal.fire({icon:'success', title:`Receipt #${billNo} Saved`, timer:1800});
-    resetCashierBill();
-    renderCashierDash();
-}
-
-function printReceipt(bill){
-    const settings = load(KEYS.SETTINGS);
-    const doc = load(KEYS.DOCTORS).find(d=>d.id===bill.doctorId);
-    const payDetail = bill.paymentMethod==='mixed'
-        ? `Cash:${fmt$(bill.paymentDetails.cash)} EVC:${fmt$(bill.paymentDetails.evc)} Zaad:${fmt$(bill.paymentDetails.zaad)}`
-        : bill.paymentMethod.toUpperCase();
-    
-    $('printBox').innerHTML = `
-        <div class="receipt">
-            <div class="receipt-center"><h3>🧪 ${sanitize(settings.hospitalName)}</h3><p>${sanitize(settings.address)}</p><p>Tel: ${sanitize(settings.phone)}</p></div>
-            <div class="receipt-line"></div>
-            <p><strong>Receipt No:</strong> ${bill.billNo}</p>
-            <p><strong>Date:</strong> ${new Date(bill.date).toLocaleString()}</p>
-            <p><strong>Cashier:</strong> ${bill.cashier}</p>
-            ${doc?`<p><strong>Doctor:</strong> ${sanitize(doc.name)}</p>`:''}
-            <div class="receipt-line"></div>
-            <p><strong>Patient:</strong> ${sanitize(bill.patientName)}</p>
-            <p><strong>Phone:</strong> ${sanitize(bill.patientPhone)}</p>
-            <p><strong>Age:</strong> ${bill.patientAge||'-'} | <strong>Gender:</strong> ${bill.patientGender||'-'}</p>
-            <div class="receipt-line"></div>
-            <table class="receipt-table">
-                <tr><td><strong>Service</strong></td><td class="right"><strong>Amount</strong></td></tr>
-                ${bill.services.map((s,i)=>`<tr><td>${i+1}. ${sanitize(s.name)} x${s.qty}</td><td class="right">${fmt$(s.total)}</td></tr>`).join('')}
-            </table>
-            <div class="receipt-line"></div>
-            <table class="receipt-table">
-                <tr><td>Subtotal</td><td class="right">${fmt$(bill.subtotal)}</td></tr>
-                ${bill.discount>0?`<tr><td>Discount</td><td class="right">-${fmt$(bill.discount)}</td></tr>`:''}
-                <tr class="receipt-bold"><td>TOTAL</td><td class="right">${fmt$(bill.totalAmount)}</td></tr>
-                <tr><td>Paid</td><td class="right">${fmt$(bill.paidAmount)}</td></tr>
-                ${bill.balance>0?`<tr><td>Balance Due</td><td class="right text-danger">${fmt$(bill.balance)}</td></tr>`:''}
-                <tr><td>Method</td><td class="right">${payDetail}</td></tr>
-            </table>
-            <div class="receipt-line"></div>
-            <div class="receipt-center"><p>Thank you for choosing us!</p><p>Please keep this receipt.</p></div>
-        </div>
-    `;
-    $('printArea').style.display = 'block';
-    window.print();
-    $('printArea').style.display = 'none';
-}
-
-function printReceiptById(id){
-    const bill = load(KEYS.BILLS).find(b=>b.id===id);
-    if(bill) printReceipt(bill);
-}
-
-function renderCashierBills(){
-    const bills = load(KEYS.BILLS).filter(b=>b.cashier===currentUser.username);
-    const search = $('cbBillSearch').value.toLowerCase();
-    const filtered = bills.filter(b=>{
-        if(search && !String(b.billNo).includes(search) && !b.patientName.toLowerCase().includes(search)) return false;
+    const filtered = bills.filter(b => {
+        const d = b.date.split('T')[0];
+        if (from && d < from) return false;
+        if (to && d > to) return false;
         return true;
     });
     
-    const tbody = $('cashierBillsTable');
-    tbody.innerHTML = '';
-    filtered.slice(0,50).forEach(b=>{
-        const doc = load(KEYS.DOCTORS).find(d=>d.id===b.doctorId);
-        tbody.innerHTML += `<tr>
-            <td>#${b.billNo}</td><td>${new Date(b.date).toLocaleString()}</td>
-            <td>${sanitize(b.patientName)}</td><td>${doc?sanitize(doc.name):'-'}</td>
-            <td>${fmt$(b.totalAmount)}</td><td>${fmt$(b.paidAmount)}</td>
-            <td class="${b.balance>0?'text-danger':'text-success'}">${fmt$(b.balance)}</td>
-            <td>${b.paymentMethod.toUpperCase()}</td>
-            <td style="text-align:right;"><button class="btn btn-sm btn-primary" onclick="printReceiptById('${b.id}')">Print</button></td>
-        </tr>`;
-    });
-    if(filtered.length===0) tbody.innerHTML = '<tr><td colspan="9" class="text-muted" style="text-align:center;">No bills</td></tr>';
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  DOCTOR MODULES
-// ═══════════════════════════════════════════════════════════════
-
-function getMyDoctorId(){
-    return currentUser.doctorId || load(KEYS.DOCTORS).find(d=>d.name.includes(currentUser.name))?.id;
-}
-
-function renderDoctorDash(){
-    const docId = getMyDoctorId();
-    if(!docId) return;
-    const today = todayStr();
-    const queue = load(KEYS.QUEUE).filter(q=>q.doctorId===docId && q.date.startsWith(today));
-    const visits = load(KEYS.VISITS).filter(v=>v.doctorId===docId && v.date.startsWith(today));
+    const cash = filtered.filter(b => b.paymentMethod === 'cash' || (b.paymentMethod === 'mixed' && b.paymentDetails.cash > 0))
+        .reduce((sum, b) => sum + (b.paymentMethod === 'mixed' ? (b.paymentDetails.cash||0) : b.paid), 0);
+    const evc = filtered.filter(b => b.paymentMethod === 'evc' || (b.paymentMethod === 'mixed' && b.paymentDetails.evc > 0))
+        .reduce((sum, b) => sum + (b.paymentMethod === 'mixed' ? (b.paymentDetails.evc||0) : b.paid), 0);
+    const zaad = filtered.filter(b => b.paymentMethod === 'zaad' || (b.paymentMethod === 'mixed' && b.paymentDetails.zaad > 0))
+        .reduce((sum, b) => sum + (b.paymentMethod === 'mixed' ? (b.paymentDetails.zaad||0) : b.paid), 0);
     
-    $('ddWaiting').textContent = queue.filter(q=>q.status==='waiting').length;
-    $('ddProgress').textContent = queue.filter(q=>q.status==='in-progress').length;
-    $('ddCompleted').textContent = visits.filter(v=>v.status==='completed').length;
-    $('ddTotal').textContent = visits.length;
+    $('repCash').textContent = fmtMoney(cash);
+    $('repEVC').textContent = fmtMoney(evc);
+    $('repZaad').textContent = fmtMoney(zaad);
     
-    // Waiting cards
-    const wBox = $('ddQueueWaiting');
-    const waiting = queue.filter(q=>q.status==='waiting');
-    if(waiting.length===0){ wBox.innerHTML = '<p class="text-muted" style="text-align:center;padding:1rem;">No waiting patients</p>'; }
-    else {
-        wBox.innerHTML = waiting.map(q=>`
-            <div class="queue-card waiting" style="margin-bottom:0.75rem;">
-                <div class="patient-name">${sanitize(q.patientName)}</div>
-                <div class="meta">Arrived: ${new Date(q.date).toLocaleTimeString()}</div>
-                <div class="actions">
-                    <button class="btn btn-sm btn-success" onclick="startConsultation('${q.id}')">Start</button>
-                    <button class="btn btn-sm btn-light" onclick="viewPatFromQueue('${q.patientId}')">History</button>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    // Done list
-    const doneBody = $('ddQueueDone');
-    doneBody.innerHTML = '';
-    visits.filter(v=>v.status==='completed').slice(0,5).forEach(v=>{
-        const p = load(KEYS.PATIENTS).find(x=>x.id===v.patientId);
-        doneBody.innerHTML += `<tr>
-            <td>${p?sanitize(p.name):'Unknown'}</td>
-            <td>${new Date(v.date).toLocaleTimeString()}</td>
-            <td>${sanitize(v.diagnosis)||'-'}</td>
-            <td style="text-align:right;"><button class="btn btn-sm btn-primary" onclick="viewVisit('${v.id}')">View</button></td>
-        </tr>`;
-    });
-    if(doneBody.innerHTML==='') doneBody.innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center;">None completed today</td></tr>';
-}
-
-function renderDoctorQueue(){
-    const docId = getMyDoctorId();
-    if(!docId) return;
-    const filter = $('dqFilter').value;
-    const queue = load(KEYS.QUEUE).filter(q=>q.doctorId===docId).sort((a,b)=>new Date(b.date)-new Date(a.date));
-    
-    const grid = $('doctorQueueGrid');
-    grid.innerHTML = '';
-    queue.forEach(q=>{
-        if(filter!=='all' && q.status!==filter) return;
-        const p = load(KEYS.PATIENTS).find(x=>x.id===q.patientId);
-        const card = document.createElement('div');
-        card.className = `queue-card ${q.status}`;
-        card.innerHTML = `
-            <div class="patient-name">${sanitize(q.patientName)}</div>
-            <div class="meta">Status: <span class="badge ${q.status==='waiting'?'bg-waiting':q.status==='in-progress'?'bg-paid':'bg-completed'}">${q.status}</span></div>
-            <div class="meta">${new Date(q.date).toLocaleString()}</div>
-            ${p?`<div class="meta">${p.age||'-'} yrs • ${p.gender||'-'} • ${p.phone}</div>`:''}
-            <div class="actions">
-                ${q.status==='waiting'?`<button class="btn btn-sm btn-success" onclick="startConsultation('${q.id}')">Start</button>`:''}
-                ${q.status==='in-progress'?`<button class="btn btn-sm btn-primary" onclick="continueConsultation('${q.id}')">Continue</button>`:''}
-                <button class="btn btn-sm btn-light" onclick="viewPatFromQueue('${q.patientId}')">History</button>
-            </div>
-        `;
-        grid.appendChild(card);
-    });
-    if(grid.innerHTML==='') grid.innerHTML = '<p class="text-muted" style="text-align:center;grid-column:1/-1;padding:2rem;">No patients in queue</p>';
-}
-
-function startConsultation(queueId){
-    const queue = load(KEYS.QUEUE);
-    const q = queue.find(x=>x.id===queueId);
-    if(!q) return;
-    q.status = 'in-progress';
-    save(KEYS.QUEUE, queue);
-    
-    // Create visit record
-    const visits = load(KEYS.VISITS);
-    const visitId = gid();
-    visits.push({
-        id: visitId, patientId: q.patientId, doctorId: q.doctorId,
-        date: nowStr(), status: 'in-progress',
-        complaints:'', diagnosis:'', notes:'', vitals:{},
-        prescriptions:[], labRequests:[]
-    });
-    save(KEYS.VISITS, visits);
-    
-    openConsultation(q.patientId, queueId, visitId);
-}
-
-function continueConsultation(queueId){
-    const q = load(KEYS.QUEUE).find(x=>x.id===queueId);
-    if(!q) return;
-    const visits = load(KEYS.VISITS);
-    const visit = visits.filter(v=>v.patientId===q.patientId && v.doctorId===q.doctorId).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
-    openConsultation(q.patientId, queueId, visit?.id);
-}
-
-function openConsultation(patId, queueId, visitId){
-    const p = load(KEYS.PATIENTS).find(x=>x.id===patId);
-    if(!p) return;
-    
-    $('consQueueId').value = queueId;
-    $('consPatId').value = patId;
-    $('consVisitId').value = visitId || '';
-    
-    // Patient info panel
-    const visits = load(KEYS.VISITS).filter(v=>v.patientId===patId).length;
-    $('consPatInfo').innerHTML = `
-        <div style="text-align:center; margin-bottom:1rem;">
-            <div style="width:60px;height:60px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;margin:0 auto;">${p.name.charAt(0)}</div>
-            <div style="font-weight:700; margin-top:0.5rem;">${sanitize(p.name)}</div>
-            <div class="text-muted" style="font-size:0.85rem;">${p.age||'-'} yrs • ${p.gender||'-'} • ${p.bloodGroup||'-'}</div>
-            <div class="text-muted" style="font-size:0.85rem;">${sanitize(p.phone)}</div>
-        </div>
-        <div style="font-size:0.85rem; color:#555;">
-            <div><strong>Address:</strong> ${sanitize(p.address)||'-'}</div>
-            <div><strong>Total Visits:</strong> ${visits}</div>
-        </div>
-    `;
-    
-    // History sidebar
-    const history = load(KEYS.VISITS).filter(v=>v.patientId===patId).sort((a,b)=>new Date(b.date)-new Date(a.date));
-    const histBox = $('consHistory');
-    if(history.length===0){ histBox.innerHTML = '<p class="text-muted">No previous visits</p>'; }
-    else {
-        histBox.innerHTML = history.slice(0,5).map(v=>{
-            const doc = load(KEYS.DOCTORS).find(d=>d.id===v.doctorId);
-            return `<div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:6px; font-size:0.82rem;">
-                <strong>${new Date(v.date).toLocaleDateString()}</strong> — ${doc?sanitize(doc.name):'Unknown'}<<br>
-                <span class="text-muted">${sanitize(v.diagnosis)||'No diagnosis'}</span>
-            </div>`;
-        }).join('');
-    }
-    
-    // Load existing visit data if any
-    if(visitId){
-        const v = load(KEYS.VISITS).find(x=>x.id===visitId);
-        if(v){
-            $('consBP').value = v.vitals?.bp || '';
-            $('consTemp').value = v.vitals?.temp || '';
-            $('consWeight').value = v.vitals?.weight || '';
-            $('consPulse').value = v.vitals?.pulse || '';
-            $('consComplaints').value = v.complaints || '';
-            $('consDiagnosis').value = v.diagnosis || '';
-            $('consNotes').value = v.notes || '';
-            
-            // Prescriptions
-            const rxBox = $('rxRows');
-            rxBox.innerHTML = '';
-            if(v.prescriptions && v.prescriptions.length){
-                v.prescriptions.forEach(r=>{
-                    rxBox.innerHTML += `<div class="rx-row">
-                        <input value="${sanitize(r.drug)}" placeholder="Medicine"><input value="${sanitize(r.dosage)}" placeholder="Dosage">
-                        <input value="${sanitize(r.duration)}" placeholder="Duration"><input value="${sanitize(r.notes)}" placeholder="Notes">
-                        <button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>
-                    </div>`;
-                });
-            } else { addRxRow(); }
-        }
+    const box = $('methodReportDetails'); box.innerHTML = '';
+    if (filtered.length === 0) {
+        box.innerHTML = '<p class="text-muted">No data in this period.</p>';
     } else {
-        // Clear form
-        $('consBP').value=''; $('consTemp').value=''; $('consWeight').value=''; $('consPulse').value='';
-        $('consComplaints').value=''; $('consDiagnosis').value=''; $('consNotes').value='';
-        $('rxRows').innerHTML = ''; addRxRow();
-    }
-    
-    // Lab grid
-    const labGrid = $('consLabGrid');
-    labGrid.innerHTML = '';
-    load(KEYS.SERVICES).filter(s=>s.department==='Laboratory' || s.department==='Radiology').forEach(s=>{
-        const chip = document.createElement('div');
-        chip.className = 'service-chip';
-        chip.dataset.id = s.id;
-        chip.innerHTML = `<div class="name">${sanitize(s.name)}</div><div class="price">${fmt$(s.price)}</div>`;
-        // Check if already requested in this visit
-        const v = visitId ? load(KEYS.VISITS).find(x=>x.id===visitId) : null;
-        const already = v && v.labRequests && v.labRequests.find(l=>l.serviceId===s.id);
-        if(already) chip.classList.add('selected');
-        chip.onclick = ()=> toggleLabRequest(s, visitId, chip);
-        labGrid.appendChild(chip);
-    });
-    
-    showView('consultation');
-}
-
-function addRxRow(){
-    $('rxRows').insertAdjacentHTML('beforeend', `<div class="rx-row">
-        <input placeholder="Medicine name"><input placeholder="Dosage (e.g. 1 tab 3x daily)">
-        <input placeholder="Duration (e.g. 5 days)"><input placeholder="Notes">
-        <button class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>
-    </div>`);
-}
-
-function toggleLabRequest(service, visitId, chip){
-    if(!visitId) { Swal.fire({icon:'warning', title:'Start consultation first'}); return; }
-    const visits = load(KEYS.VISITS);
-    const v = visits.find(x=>x.id===visitId);
-    if(!v) return;
-    if(!v.labRequests) v.labRequests = [];
-    const idx = v.labRequests.findIndex(l=>l.serviceId===service.id);
-    if(idx>=0){
-        v.labRequests.splice(idx,1);
-        chip.classList.remove('selected');
-    } else {
-        v.labRequests.push({serviceId:service.id, serviceName:service.name, status:'requested', result:'', resultDate:''});
-        chip.classList.add('selected');
-    }
-    save(KEYS.VISITS, visits);
-}
-
-function saveConsultation(complete=false){
-    const visitId = $('consVisitId').value;
-    const queueId = $('consQueueId').value;
-    if(!visitId) { Swal.fire({icon:'warning', title:'No active visit'}); return; }
-    
-    const visits = load(KEYS.VISITS);
-    const v = visits.find(x=>x.id===visitId);
-    if(!v) return;
-    
-    // Gather prescriptions
-    const rxRows = document.querySelectorAll('#rxRows .rx-row');
-    const prescriptions = [];
-    rxRows.forEach(row=>{
-        const inputs = row.querySelectorAll('input');
-        if(inputs[0].value.trim()){
-            prescriptions.push({
-                drug: sanitize(inputs[0].value, 100),
-                dosage: sanitize(inputs[1].value, 100),
-                duration: sanitize(inputs[2].value, 100),
-                notes: sanitize(inputs[3].value, 200)
-            });
-        }
-    });
-    
-    v.vitals = {
-        bp: sanitize($('consBP').value, 20),
-        temp: $('consTemp').value,
-        weight: $('consWeight').value,
-        pulse: $('consPulse').value
-    };
-    v.complaints = sanitize($('consComplaints').value, 500);
-    v.diagnosis = sanitize($('consDiagnosis').value, 500);
-    v.notes = sanitize($('consNotes').value, 500);
-    v.prescriptions = prescriptions;
-    if(complete) v.status = 'completed';
-    save(KEYS.VISITS, visits);
-    
-    // Update queue
-    if(queueId && complete){
-        const queue = load(KEYS.QUEUE);
-        const q = queue.find(x=>x.id===queueId);
-        if(q) q.status = 'completed';
-        save(KEYS.QUEUE, queue);
-    }
-    
-    Swal.fire({icon:'success', title: complete?'Consultation Completed':'Draft Saved', timer:1500});
-    if(complete) backToQueue();
-}
-
-function printPrescription(){
-    const p = load(KEYS.PATIENTS).find(x=>x.id===$('consPatId').value);
-    const doc = load(KEYS.DOCTORS).find(d=>d.id===getMyDoctorId());
-    const settings = load(KEYS.SETTINGS);
-    
-    const rxRows = document.querySelectorAll('#rxRows .rx-row');
-    let rxHtml = '';
-    rxRows.forEach((row,i)=>{
-        const inputs = row.querySelectorAll('input');
-        if(inputs[0].value.trim()){
-            rxHtml += `<tr><td>${i+1}</td><td><strong>${sanitize(inputs[0].value)}</strong></td><td>${sanitize(inputs[1].value)}</td><td>${sanitize(inputs[2].value)}</td><td>${sanitize(inputs[3].value)}</td></tr>`;
-        }
-    });
-    
-    $('printBox').innerHTML = `
-        <div class="rx-print">
-            <div class="rx-print-header">
-                <h2>${sanitize(settings.hospitalName)}</h2>
-                <p>${sanitize(settings.address)} | Tel: ${sanitize(settings.phone)}</p>
-            </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <div>
-                    <p><strong>Patient:</strong> ${sanitize(p.name)}</p>
-                    <p><strong>Age:</strong> ${p.age||'-'} | <strong>Gender:</strong> ${p.gender||'-'}</p>
-                    <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
-                </div>
-                <div style="text-align:right;">
-                    <p><strong>Doctor:</strong> ${doc?sanitize(doc.name):'Unknown'}</p>
-                    <p><strong>Specialty:</strong> ${doc?sanitize(doc.specialty):'-'}</p>
-                </div>
-            </div>
-            <h3 style="color:#667eea; margin-bottom:10px;">🩺 Prescription</h3>
-            <table class="rx-table">
-                <thead><tr><th>#</th><th>Medicine</th><th>Dosage</th><th>Duration</th><th>Notes</th></tr></thead>
-                <tbody>${rxHtml}</tbody>
-            </table>
-            ${$('consDiagnosis').value?`<div style="margin-top:20px;"><strong>Diagnosis:</strong> ${sanitize($('consDiagnosis').value)}</div>`:''}
-            ${$('consNotes').value?`<div style="margin-top:10px;"><strong>Notes:</strong> ${sanitize($('consNotes').value)}</div>`:''}
-            <div style="margin-top:40px; text-align:center; border-top:2px solid #667eea; padding-top:15px;">
-                <p>Doctor Signature: ___________________</p>
-                <p style="font-size:0.8rem; color:#888; margin-top:10px;">This prescription is valid for 7 days.</p>
-            </div>
-        </div>
-    `;
-    $('printArea').style.display = 'block';
-    window.print();
-    $('printArea').style.display = 'none';
-}
-
-function backToQueue(){
-    showView('doctorQueue');
-    renderDoctorQueue();
-}
-
-function viewPatFromQueue(patId){
-    viewPatientHistory(patId);
-}
-
-function viewVisit(visitId){
-    const v = load(KEYS.VISITS).find(x=>x.id===visitId);
-    if(!v) return;
-    const p = load(KEYS.PATIENTS).find(x=>x.id===v.patientId);
-    const doc = load(KEYS.DOCTORS).find(d=>d.id===v.doctorId);
-    
-    let html = `<h3>Visit Details</h3>
-    <p><strong>Date:</strong> ${new Date(v.date).toLocaleString()}</p>
-    <p><strong>Doctor:</strong> ${doc?sanitize(doc.name):'-'}</p>
-    <p><strong>Patient:</strong> ${p?sanitize(p.name):'-'}</p>
-    <hr>
-    <p><strong>Vitals:</strong> BP:${v.vitals?.bp||'-'}, Temp:${v.vitals?.temp||'-'}, Wt:${v.vitals?.weight||'-'}, Pulse:${v.vitals?.pulse||'-'}</p>
-    <p><strong>Complaints:</strong> ${sanitize(v.complaints)||'-'}</p>
-    <p><strong>Diagnosis:</strong> ${sanitize(v.diagnosis)||'-'}</p>
-    <p><strong>Notes:</strong> ${sanitize(v.notes)||'-'}</p>`;
-    
-    if(v.prescriptions && v.prescriptions.length){
-        html += `<h4 style="margin-top:1rem;">Prescriptions</h4>`;
-        v.prescriptions.forEach(r=>{
-            html += `<div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:6px;">
-                <strong>${sanitize(r.drug)}</strong> — ${sanitize(r.dosage)} — ${sanitize(r.duration)}<<br>
-                <span class="text-muted">${sanitize(r.notes)}</span>
-            </div>`;
+        const tbl = document.createElement('table'); tbl.className = 'table';
+        tbl.innerHTML = '<thead><tr><th>Date</th><th>Bill #</th><th>Patient</th><th>Method</th><th>Amount</th></tr></thead>';
+        const tbody = document.createElement('tbody');
+        filtered.slice(0, 50).forEach(b => {
+            const tr = document.createElement('tr');
+            const methodDisplay = b.paymentMethod === 'mixed' 
+                ? `Mixed (C:${fmtMoney(b.paymentDetails.cash||0)} E:${fmtMoney(b.paymentDetails.evc||0)} Z:${fmtMoney(b.paymentDetails.zaad||0)})`
+                : b.paymentMethod.toUpperCase();
+            tr.innerHTML = `<td>${new Date(b.date).toLocaleDateString()}</td><td>#${b.billNo}</td><td>${sanitize(b.patientName)}</td><td>${methodDisplay}</td><td>${fmtMoney(b.paid)}</td>`;
+            tbody.appendChild(tr);
         });
+        tbl.appendChild(tbody);
+        box.appendChild(tbl);
     }
-    
-    if(v.labRequests && v.labRequests.length){
-        html += `<h4 style="margin-top:1rem;">Lab Requests</h4>`;
-        v.labRequests.forEach(l=>{
-            html += `<div style="background:#f8f9fa; padding:8px; border-radius:6px; margin-bottom:6px;">
-                ${sanitize(l.serviceName)} — <span class="badge ${l.status==='completed'?'bg-paid':'bg-pending'}">${l.status}</span>
-            </div>`;
-        });
-    }
-    
-    html += `<div class="mt-3"><button class="btn btn-light" onclick="closeModal()">Close</button></div>`;
-    showModal(html);
 }
 
-function renderDoctorPatients(){
-    const search = $('docPatSearch').value.toLowerCase();
-    const patients = load(KEYS.PATIENTS);
-    const visits = load(KEYS.VISITS);
-    
-    const filtered = patients.filter(p=>{
-        if(search && !p.name.toLowerCase().includes(search) && !p.phone.includes(search)) return false;
-        return true;
+function printMethodReport() {
+    const w = window.open('', '_blank');
+    w.document.write(`
+        <!DOCTYPE html><html><head><meta charset="utf-8"><title>Payment Methods Report</title>
+        <style>body{font-family:Arial;padding:20px} table{width:100%;border-collapse:collapse} th,td{padding:8px;text-align:left;border-bottom:1px solid #ddd} th{background:#f8f9fa} @media print{button{display:none}}</style></head>
+        <body><h1>Payment Methods Report</h1>
+        <p><strong>Cash:</strong> ${$('repCash').textContent} | <strong>EVC Plus:</strong> ${$('repEVC').textContent} | <strong>Zaad:</strong> ${$('repZaad').textContent}</p>
+        <div>${$('methodReportDetails').innerHTML}</div><button onclick="window.print()">Print</button></body></html>
+    `);
+    w.document.close();
+}
+
+// ── SYSTEM RESET ──
+function resetAllData() {
+    Swal.fire({
+        title: 'Reset ALL Data?',
+        text: 'This will delete every patient, bill, service, and doctor. Cannot be undone!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc3545',
+        confirmButtonText: 'Yes, Reset Everything'
+    }).then(r => {
+        if (!r.isConfirmed) return;
+        Object.values(CONFIG.KEYS).forEach(k => localStorage.removeItem(k));
+        initData();
+        Swal.fire({icon:'success', title:'System Reset', text:'All data cleared. Default services restored.', timer:2000});
+        renderDashboard();
     });
-    
-    const tbody = $('doctorPatientsTable');
-    tbody.innerHTML = '';
-    filtered.forEach(p=>{
-        const pVisits = visits.filter(v=>v.patientId===p.id).length;
-        const last = visits.filter(v=>v.patientId===p.id).sort((a,b)=>new Date(b.date)-new Date(a.date))[0];
-        tbody.innerHTML += `<tr>
-            <td><strong>${sanitize(p.name)}</strong></td>
-            <td>${sanitize(p.phone)}</td>
-            <td>${p.age||'-'}</td>
-            <td>${p.gender||'-'}</td>
-            <td>${pVisits}</td>
-            <td>${last?new Date(last.date).toLocaleDateString():'-'}</td>
-            <td style="text-align:right;">
-                <button class="btn btn-sm btn-primary" onclick="viewPatientHistory('${p.id}')">History</button>
-            </td>
-        </tr>`;
-    });
-    if(filtered.length===0) tbody.innerHTML = '<tr><td colspan="7" class="text-muted" style="text-align:center;">No patients found</td></tr>';
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  MODAL UTILS
-// ═══════════════════════════════════════════════════════════════
-
-function showModal(html){
-    $('modalContent').innerHTML = html;
-    $('modalOverlay').style.display = 'flex';
-}
-
-function closeModal(){
-    $('modalOverlay').style.display = 'none';
-}
-
-$('modalOverlay').addEventListener('click', e=>{
-    if(e.target === $('modalOverlay')) closeModal();
-});
-
-// ═══════════════════════════════════════════════════════════════
-//  EVENT LISTENERS & INIT
-// ═══════════════════════════════════════════════════════════════
-
-document.addEventListener('DOMContentLoaded', ()=>{
+// ── EVENT LISTENERS ──
+document.addEventListener('DOMContentLoaded', () => {
     initData();
+    
+    $('loginBtn').addEventListener('click', handleLogin);
+    $('loginUsername').addEventListener('keypress', e => { if (e.key === 'Enter') $('loginPassword').focus(); });
+    $('loginPassword').addEventListener('keypress', e => { if (e.key === 'Enter') handleLogin(); });
+    
+    $('logoutBtn').addEventListener('click', () => {
+        Swal.fire({title:'Logout?', icon:'question', showCancelButton:true}).then(r => {
+            if (!r.isConfirmed) return;
+            localStorage.removeItem(CONFIG.KEYS.SESSION);
+            currentUser = null; showLogin();
+        });
+    });
+    
+    $('serviceForm')?.addEventListener('submit', handleServiceSubmit);
+    $('doctorForm')?.addEventListener('submit', handleDoctorSubmit);
+    
+    // Patient search
+    $('patientSearch')?.addEventListener('input', debounce(() => {
+        const q = $('patientSearch').value;
+        if (q.length >= 2) { showPatientResults(searchPatients(q)); }
+        else { $('patientSearchResults').classList.add('d-none'); }
+    }, 300));
+    
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-wrapper')) {
+            $('patientSearchResults')?.classList.add('d-none');
+        }
+    });
+    
+    // Billing
+    $('billDiscount')?.addEventListener('input', calculateBill);
+    $('paidAmount')?.addEventListener('input', updateBalance);
+    
+    $('paymentMethod')?.addEventListener('change', function() {
+        $('mixedPaymentBox').classList.toggle('d-none', this.value !== 'mixed');
+    });
+    
+    ['mixedCash','mixedEVC','mixedZaad'].forEach(id => {
+        $(id)?.addEventListener('input', () => {
+            const total = (parseFloat($('mixedCash').value)||0) + (parseFloat($('mixedEVC').value)||0) + (parseFloat($('mixedZaad').value)||0);
+            $('paidAmount').value = total.toFixed(2);
+            updateBalance();
+        });
+    });
+    
+    // Modals
+    $('serviceModal')?.addEventListener('click', (e) => { if (e.target === $('serviceModal')) closeServiceModal(); });
+    $('modalSvcPrice')?.addEventListener('keypress', e => { if (e.key === 'Enter') saveModalService(); });
+    $('doctorModal')?.addEventListener('click', (e) => { if (e.target === $('doctorModal')) closeDoctorModal(); });
+    $('modalDocSpecialty')?.addEventListener('keypress', e => { if (e.key === 'Enter') saveModalDoctor(); });
+    
+    // Filters
+    $('billsDateFilter')?.addEventListener('change', renderBills);
+    $('billsSearch')?.addEventListener('input', debounce(() => renderBills(), 300));
+    $('reportDate')?.addEventListener('change', renderDailyReport);
+    $('methodReportFrom')?.addEventListener('change', renderMethodReport);
+    $('methodReportTo')?.addEventListener('change', renderMethodReport);
+    
+    document.querySelectorAll('.service-row').forEach(row => attachServiceListeners(row));
+    
     checkSession();
-    
-    // Enter key on login
-    $('loginPass').addEventListener('keypress', e=>{ if(e.key==='Enter') doLogin(); });
-    
-    // Patient search debounce
-    $('cbPatSearch')?.addEventListener('input', debounce((e)=>onPatientSearch(e.target.value), 300));
 });
 
-// Expose globals for inline onclick handlers
-window.doLogin = doLogin;
-window.doLogout = doLogout;
-window.showView = showView;
-window.openDoctorModal = openDoctorModal;
-window.saveDoctor = saveDoctor;
-window.editDoctor = editDoctor;
-window.toggleDoctor = toggleDoctor;
-window.openServiceModal = openServiceModal;
-window.saveService = saveService;
+// Expose globals
 window.editService = editService;
 window.deleteService = deleteService;
-window.viewPatientHistory = viewPatientHistory;
-window.renderAllBills = renderAllBills;
-window.setAdminReport = setAdminReport;
-window.renderAdminReports = renderAdminReports;
-window.printAdminReport = printAdminReport;
-window.onPatientSearch = onPatientSearch;
-window.onPhoneInput = onPhoneInput;
-window.selectCbPatient = selectCbPatient;
-window.toggleCbService = toggleCbService;
-window.changeCbQty = changeCbQty;
-window.removeCbService = removeCbService;
-window.setCbPay = setCbPay;
-window.calcCbMixed = calcCbMixed;
-window.saveCashierBill = saveCashierBill;
-window.resetCashierBill = resetCashierBill;
-window.printReceiptById = printReceiptById;
-window.renderCashierBills = renderCashierBills;
-window.startConsultation = startConsultation;
-window.continueConsultation = continueConsultation;
-window.backToQueue = backToQueue;
-window.viewPatFromQueue = viewPatFromQueue;
-window.viewVisit = viewVisit;
-window.saveConsultation = saveConsultation;
-window.printPrescription = printPrescription;
-window.closeModal = closeModal;
-window.renderDoctorQueue = renderDoctorQueue;
-window.renderDoctorPatients = renderDoctorPatients;
-window.addRxRow = addRxRow;
+window.addServiceRow = addServiceRow;
+window.removeServiceRow = removeServiceRow;
+window.selectPatient = selectPatient;
+window.viewPatientBills = viewPatientBills;
+window.clearBill = clearBill;
+window.payAndPrint = payAndPrint;
+window.reprintBill = reprintBill;
+window.deleteBill = deleteBill;
+window.payBalancePrompt = payBalancePrompt;
+window.renderDailyReport = renderDailyReport;
+window.printDailyReport = printDailyReport;
+window.renderMethodReport = renderMethodReport;
+window.printMethodReport = printMethodReport;
+window.openServiceModal = openServiceModal;
+window.closeServiceModal = closeServiceModal;
+window.saveModalService = saveModalService;
+window.openDoctorModal = openDoctorModal;
+window.closeDoctorModal = closeDoctorModal;
+window.saveModalDoctor = saveModalDoctor;
+window.editDoctor = editDoctor;
+window.deleteDoctor = deleteDoctor;
+window.resetAllData = resetAllData;
 </script>
 </body>
 </html>
