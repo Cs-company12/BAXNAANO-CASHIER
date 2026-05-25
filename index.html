@@ -981,35 +981,56 @@ const HOSPITAL = {
 
     printReceipt(p) {
         const age = p.birthDate ? Math.floor((new Date() - new Date(p.birthDate)) / 31557600000) + ' years' : 'N/A';
-       const content = `
-            <div class="receipt-header">
-                <img src="https://github.com/Cs-company12/CABASHO-BAXNAANO/blob/main/images.png?raw=true" width="200" height="90" style="display:block; margin:0 auto 10px;">
-                <h1>BAXNAANO HOSPITAL</h1>
-                <p>Patient Queue & Cashier System</p>
-                <p>${p.time}</p>
-            </div>
-            <p style="font-size: 28px; color: #0f2027; font-weight: bold; text-align: center; margin: 15px 0;">NUMBER #${p.queueNumber}</p>
-            <hr style="border:1px dashed #333; margin:10px 0;">
-            <h1><strong>Patient:</strong> ${p.name}</h1>
-            <h3><strong>Age:</strong> ${age}</h3>
-            <h3><strong>Phone:</strong> ${p.phone}</h3>
-            <h2><strong>Doctor:</strong> ${p.doctor}</h2>
-            <h3><strong>Doctor ID:</strong> ${p.doctorId}</h3>
-            <hr style="border:1px dashed #333; margin:10px 0;">
-            <h3><strong>Amount Paid:</strong> ${this.fmtMoney(p.paid)}</h3>
-            <h3><strong>Method:</strong> ${p.paymentMethod}</h3>
-            <h3><strong>Cashier:</strong> ${p.cashier || this.currentUser.username}</h3>
-            <hr style="border:1px dashed #333; margin:10px 0;">
-            <div class="receipt-footer">
-                <p>Thank you for choosing Baxnaano Hospital!</p>
-                <p>Please wait for your turn.</p>
-            </div>
-        `;
-        document.getElementById('hospitalReceiptContent').innerHTML = content;
-        document.getElementById('hospitalPrintArea').style.display = 'block';
+    const content = `
+<div class="receipt-box">
+    <div class="receipt-header" style="text-align:center;">
+        <img src="https://github.com/Cs-company12/CABASHO-BAXNAANO/blob/main/images.png?raw=true" 
+             width="160" height="70" style="margin-bottom:10px;">
+        
+        <h2 style="margin:0;">BAXNAANO HOSPITAL</h2>
+        <p style="margin:2px 0;">Patient Queue & Cashier System</p>
+        <p style="margin:2px 0;">${p.time}</p>
+    </div>
+
+    <hr style="border:1px dashed #333;">
+
+    <h1 style="text-align:center; font-size:32px; color:#0f2027;">
+        NUMBER #${p.queueNumber}
+    </h1>
+
+    <hr style="border:1px dashed #333;">
+
+    <p><strong>Patient:</strong> ${p.name}</p>
+    <p><strong>Age:</strong> ${age}</p>
+    <p><strong>Phone:</strong> ${p.phone}</p>
+    <p><strong>Doctor:</strong> ${p.doctor}</p>
+    <p><strong>Doctor ID:</strong> ${p.doctorId}</p>
+
+    <hr style="border:1px dashed #333;">
+
+    <p><strong>Amount Paid:</strong> ${this.fmtMoney(p.paid)}</p>
+    <p><strong>Method:</strong> ${p.paymentMethod}</p>
+    <p><strong>Cashier:</strong> ${p.cashier || this.currentUser.username}</p>
+
+    <hr style="border:1px dashed #333;">
+
+    <div style="text-align:center;">
+        <p>Thank you for choosing Baxnaano Hospital</p>
+        <p>Please wait for your turn</p>
+    </div>
+</div>
+`;
+      const printReceipt = () => {
+    const printArea = document.getElementById('hospitalPrintArea');
+
+    printArea.innerHTML = content;
+    printArea.style.display = 'block';
+
+    setTimeout(() => {
         window.print();
-        document.getElementById('hospitalPrintArea').style.display = 'none';
-    },
+        printArea.style.display = 'none';
+    }, 300);
+};
     renderPayments() {
         const patients = this.load(this.KEYS.PATIENTS);
         const pending = patients.filter(p => p.balance > 0).sort((a, b) => b.balance - a.balance);
@@ -1680,12 +1701,3 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 </body>
 </html>
-'''
-
-# Write to output file
-output_path = '/mnt/agents/output/baxnaano_integrated_system.html'
-with open(output_path, 'w', encoding='utf-8') as f:
-    f.write(html_content)
-
-print(f"File written successfully to {output_path}")
-print(f"File size: {len(html_content)} characters")
