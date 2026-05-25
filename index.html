@@ -173,26 +173,39 @@
         .receipt-footer { text-align: center; margin-top: 15px; border-top: 1px dashed #333; padding-top: 10px; font-size: 11px; }
         .receipt-barcode { text-align: center; font-family: monospace; letter-spacing: 3px; margin: 10px 0; }
         
-        @media print {
-            body * { visibility: hidden; }
-            #hospitalPrintArea, #hospitalPrintArea *, #labPrintArea, #labPrintArea * { visibility: visible; }
-            #hospitalPrintArea, #labPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
-            .no-print { display: none !important; }
-        }
-        
-        @media (max-width: 900px) {
-            .landing-buttons { grid-template-columns: 1fr; }
-            .pos-grid { grid-template-columns: 1fr; }
-            .cart-panel { position: static; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .form-row { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 600px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .navbar { padding: 0.5rem; }
-            .nav-btn { padding: 6px 10px; font-size: 12px; }
-            .unified-section { padding: 1rem 0.75rem; }
-            .landing-box { padding: 1.5rem; }
+       @media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #hospitalPrintArea, #hospitalPrintArea * {
+        visibility: visible;
+    }
+
+    #hospitalPrintArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    .receipt-box {
+        width: 80mm; /* receipt size (thermal printer) */
+        margin: auto;
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    h1, h2, h3, p {
+        margin: 5px 0;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+    }
+
         }
     </style>
 </head>
