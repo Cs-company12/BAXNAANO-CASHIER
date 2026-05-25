@@ -1,5 +1,4 @@
-
-html_content = '''<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -971,25 +970,22 @@ const HOSPITAL = {
         const age = p.birthDate ? Math.floor((new Date() - new Date(p.birthDate)) / 31557600000) + ' years' : 'N/A';
         const content = `
             <div class="receipt-header">
-                <img src="https://github.com/Cs-company12/CABASHO-BAXNAANO/blob/main/images.png?raw=true" width="180" height="80" style="display:block; margin:0 auto 10px;">
-                <h3>BAXNAANO HOSPITAL</h3>
+                <img src="https://github.com/Cs-company12/CABASHO-BAXNAANO/blob/main/images.png?raw=true" width="200" height="90" style="display:block; margin:0 auto 10px;">
+                <h1>BAXNAANO HOSPITAL</h1>
                 <p>Patient Queue & Cashier System</p>
                 <p>${p.time}</p>
             </div>
             <p style="font-size: 28px; color: #0f2027; font-weight: bold; text-align: center; margin: 15px 0;">JAWAAB #${p.queueNumber}</p>
             <hr style="border:1px dashed #333; margin:10px 0;">
-            <p><strong>Patient:</strong> ${p.name}</p>
-            <p><strong>Age:</strong> ${age}</p>
-            <p><strong>District:</strong> ${p.district}</p>
-            <p><strong>Phone:</strong> ${p.phone}</p>
-            <p><strong>Doctor:</strong> ${p.doctor}</p>
-            <p><strong>Doctor ID:</strong> ${p.doctorId}</p>
+            <h1><strong>Patient:</strong> ${p.name}</h1>
+            <h3><strong>Age:</strong> ${age}</h3>
+            <h3><strong>Phone:</strong> ${p.phone}</h3>
+            <h2><strong>Doctor:</strong> ${p.doctor}</h2>
+            <h3><strong>Doctor ID:</strong> ${p.doctorId}</h3>
             <hr style="border:1px dashed #333; margin:10px 0;">
-            <p><strong>Service Fee:</strong> ${this.fmtMoney(p.fee)}</p>
-            <p><strong>Amount Paid:</strong> ${this.fmtMoney(p.paid)}</p>
-            <p><strong>Balance:</strong> ${this.fmtMoney(p.balance)}</p>
-            <p><strong>Method:</strong> ${p.paymentMethod}</p>
-            <p><strong>Cashier:</strong> ${p.cashier || this.currentUser.username}</p>
+            <h3><strong>Amount Paid:</strong> ${this.fmtMoney(p.paid)}</h3>
+            <h3><strong>Method:</strong> ${p.paymentMethod}</h3>
+            <h3><strong>Cashier:</strong> ${p.cashier || this.currentUser.username}</h3>
             <hr style="border:1px dashed #333; margin:10px 0;">
             <div class="receipt-footer">
                 <p>Thank you for choosing Baxnaano Hospital!</p>
