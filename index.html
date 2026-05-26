@@ -971,22 +971,19 @@ const HOSPITAL = {
         const content = `
             <div class="receipt-header">
                 <img src="https://github.com/Cs-company12/CABASHO-BAXNAANO/blob/main/images.png?raw=true" width="180" height="80" style="display:block; margin:0 auto 10px;">
-                <h3>BAXNAANO HOSPITAL</h3>
+                <h1>BAXNAANO HOSPITAL</h1>
                 <p>Patient Queue & Cashier System</p>
                 <p>${p.time}</p>
             </div>
-            <p style="font-size: 28px; color: #0f2027; font-weight: bold; text-align: center; margin: 15px 0;">JAWAAB #${p.queueNumber}</p>
+            <p style="font-size: 28px; color: #0f2027; font-weight: bold; text-align: center; margin: 15px 0;">NUMBER ${p.queueNumber}</p>
             <hr style="border:1px dashed #333; margin:10px 0;">
-            <p><strong>Patient:</strong> ${p.name}</p>
+            <H1><strong>Patient:</strong> ${p.name}</H1>
             <p><strong>Age:</strong> ${age}</p>
-            <p><strong>District:</strong> ${p.district}</p>
-            <p><strong>Phone:</strong> ${p.phone}</p>
-            <p><strong>Doctor:</strong> ${p.doctor}</p>
+            <H2><strong>Doctor:</strong> ${p.doctor}</H2>
             <p><strong>Doctor ID:</strong> ${p.doctorId}</p>
             <hr style="border:1px dashed #333; margin:10px 0;">
             <p><strong>Service Fee:</strong> ${this.fmtMoney(p.fee)}</p>
             <p><strong>Amount Paid:</strong> ${this.fmtMoney(p.paid)}</p>
-            <p><strong>Balance:</strong> ${this.fmtMoney(p.balance)}</p>
             <p><strong>Method:</strong> ${p.paymentMethod}</p>
             <p><strong>Cashier:</strong> ${p.cashier || this.currentUser.username}</p>
             <hr style="border:1px dashed #333; margin:10px 0;">
