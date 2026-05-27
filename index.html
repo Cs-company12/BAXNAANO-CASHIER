@@ -91,6 +91,24 @@
         .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
         .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
         .form-group label { font-size: 0.85rem; font-weight: 600; color: #555; }
+        .doctor-panel-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+        .doctor-panel-section { background: white; padding: 1rem; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); margin-bottom: 1rem; }
+        .doctor-panel-section h4 { margin-bottom: 0.85rem; font-size: 1rem; color: #333; }
+        .doctor-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .doctor-actions .btn-sm { flex: 1 1 calc(50% - 0.5rem); }
+        .prescription-list, .appointment-list, .notification-list { max-height: 220px; overflow: auto; }
+        .prescription-list table, .appointment-list table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .prescription-list th, .prescription-list td, .appointment-list th, .appointment-list td { padding: 8px; border-bottom: 1px solid #f0f0f0; text-align: left; }
+        .prescription-list th, .appointment-list th { background: #f8f9fa; }
+        .small-card { background: #fff; padding: 0.85rem; border-radius: 10px; border: 1px solid #edf2f7; }
+        .small-card strong { display: block; margin-bottom: 0.35rem; color: #333; }
+        .small-card p { margin: 0; font-size: 0.92rem; color: #555; }
+        .form-grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+        .form-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+        .doctor-summary { background: #f8f9fa; padding: 0.85rem; border-radius: 10px; border: 1px solid #e9ecef; }
+        .doctor-summary h5 { margin: 0 0 0.5rem; font-size: 0.95rem; }
+        .doctor-summary p { margin: 0 0 0.5rem; font-size: 0.88rem; color: #555; }
+        .text-right { text-align: right !important; }
         
         /* BADGES & ALERTS */
         .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
@@ -172,12 +190,77 @@
         .receipt-total-row { display: flex; justify-content: space-between; margin: 3px 0; }
         .receipt-footer { text-align: center; margin-top: 15px; border-top: 1px dashed #333; padding-top: 10px; font-size: 11px; }
         .receipt-barcode { text-align: center; font-family: monospace; letter-spacing: 3px; margin: 10px 0; }
-        
+        .report-shell { background: white; border-radius: 16px; box-shadow: 0 14px 40px rgba(0,0,0,0.1); padding: 30px; max-width: 900px; margin: 0 auto; }
+        .report-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .report-shell { text-align: left; }
+        .report-header { align-items: flex-start; }
+        /* Lab Results view: force left-aligned form and tables */
+        #labResultsView { text-align: left; }
+        #labResultsView .card-modern { padding-left: 12px; padding-right: 12px; }
+        #labResultsView .form-row { align-items: start; grid-auto-rows: minmax(40px, auto); }
+        #labResultsView .form-group { align-items: flex-start; }
+        #labResultsView label { text-align: left; display: block; }
+        #labResultsView .form-control, #labResultsView .form-select, #labResultsView textarea { text-align: left; }
+        #labResultPreview, #labResultTableContainer { margin-left: 0; margin-right: 0; text-align: left; }
+        /* history table left alignment */
+        #labResultHistoryTable th, #labResultHistoryTable td { text-align: left; }
+        /* ensure report table spans full width and starts at left */
+        .report-shell { margin-left: 0; margin-right: 0; }
+        .report-table { margin: 0; }
+        .report-brand { display: flex; align-items: center; gap: 1rem; }
+        .report-brand img { width: 80px; height: 80px; border-radius: 16px; object-fit: cover; border: 1px solid #e2e8f0; padding: 8px; background: #fff; }
+        .report-title { font-size: 1.6rem; color: #0f3d73; letter-spacing: 0.5px; }
+        .report-subtitle { color: #4a5568; font-size: 0.95rem; margin-top: 0.25rem; }
+        .report-grid { display: grid; grid-template-columns: repeat(2, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .report-grid .info-card { background: #f8fbff; border: 1px solid #e2efff; border-radius: 12px; padding: 16px; }
+        .report-grid .info-card h4 { margin-bottom: 0.5rem; font-size: 0.9rem; color: #2a4365; }
+        .report-grid .info-card p { color: #2d3748; font-size: 0.95rem; margin: 0.2rem 0; }
+        .report-table { width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; }
+        .report-table th, .report-table td { padding: 12px 14px; border: 1px solid #d1d5db; }
+        .report-table th { background: #edf2ff; color: #1d3557; text-align: left; font-weight: 700; }
+        .report-table td { background: white; color: #2d3748; }
+        .report-status { display: inline-flex; align-items: center; gap: 0.5rem; padding: 6px 12px; border-radius: 999px; font-size: 0.85rem; font-weight: 700; }
+        .status-pending { background: #fffbeb; color: #92400e; border: 1px solid #fcd34d; }
+        .status-completed { background: #ecfdf5; color: #166534; border: 1px solid #34d399; }
+        .status-printed { background: #eff6ff; color: #1d4ed8; border: 1px solid #93c5fd; }
+        .report-note { padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8fafc; color: #334155; margin-bottom: 1.5rem; }
+        .signature-row { display: grid; grid-template-columns: repeat(3, minmax(160px, 1fr)); gap: 1rem; margin-top: 2rem; }
+        .signature-box { border-top: 1px solid #cbd5e1; padding-top: 1rem; color: #4a5568; font-size: 0.95rem; text-align: center; }
+        .stamp-area { border: 2px dashed #cbd5e1; border-radius: 12px; min-height: 100px; padding: 1rem; display: flex; justify-content: center; align-items: center; color: #6b7280; font-size: 0.95rem; background: #f8fafc; }
+        @page { size: A4; margin: 10mm; }
         @media print {
+            /* ensure only print areas are visible */
             body * { visibility: hidden; }
             #hospitalPrintArea, #hospitalPrintArea *, #labPrintArea, #labPrintArea * { visibility: visible; }
-            #hospitalPrintArea, #labPrintArea { position: absolute; left: 0; top: 0; width: 100%; }
+            #hospitalPrintArea, #labPrintArea { position: absolute; left: 0; top: 0; width: 100%; display: flex; justify-content: center; }
             .no-print { display: none !important; }
+
+            /* Make the report fill A4 cleanly, remove shadows and rounded corners */
+            .report-shell { box-shadow: none !important; border-radius: 0 !important; background: #fff !important; margin: 0 auto !important; text-align: left !important; direction: ltr !important; }
+            /* set explicit A4 width and sensible padding for printing */
+            .report-shell { width: 180mm !important; max-width: 180mm !important; padding: 8mm !important; font-size: 12px !important; }
+            .report-table th, .report-table td { padding: 8px !important; font-size: 12px !important; text-align: left !important; }
+            .report-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+            .report-grid .info-card { text-align: left !important; }
+            .signature-row { grid-template-columns: repeat(3, 1fr) !important; gap: 12px !important; }
+            .signature-box { text-align: center !important; }
+            /* avoid splitting rows/tables across pages when possible */
+            table, tr, td, th { page-break-inside: avoid; }
+            .report-shell * { visibility: visible !important; }
+            .report-note, .receipt-footer { font-size: 11px !important; }
+
+            /* Center hospital registration print output */
+            #hospitalPrintArea { direction: ltr !important; text-align: center !important; }
+            #hospitalReceiptContent { width: 100% !important; margin: 0 auto !important; padding: 0 !important; text-align: center !important; }
+            #hospitalReceiptContent .report-shell { margin: 0 auto !important; text-align: center !important; }
+            #hospitalReceiptContent .report-grid, #hospitalReceiptContent .report-table { margin: 0 auto !important; }
+            #hospitalReceiptContent .report-grid .info-card { text-align: center !important; }
+            #hospitalReceiptContent .report-table th, #hospitalReceiptContent .report-table td { text-align: center !important; }
+            #hospitalReceiptContent .report-note { text-align: center !important; }
+            #hospitalReceiptContent .receipt, #hospitalReceiptContent .receipt * { text-align: center !important; }
+            
+            #labPrintArea { direction: ltr !important; text-align: left !important; }
+            #labReceiptContent { width: 100% !important; margin: 0 !important; padding: 0 !important; text-align: left !important; }
         }
         
         @media (max-width: 900px) {
@@ -246,10 +329,13 @@
                 Hospital Cashier
             </div>
             <div class="nav-menu">
-                <button class="nav-btn active" onclick="HOSPITAL.showView('hospDashboard')">📊 Dashboard</button>
-                <button class="nav-btn" onclick="HOSPITAL.showView('hospRegister')">📝 Register Patient</button>
-                <button class="nav-btn" onclick="HOSPITAL.showView('hospPatients')">👥 Patients</button>
-                <button class="nav-btn" onclick="HOSPITAL.showView('hospPayments')">💰 Payments</button>
+                <button class="nav-btn active" id="hospDashboardNavBtn" onclick="HOSPITAL.showView('hospDashboard')">📊 Dashboard</button>
+                <button class="nav-btn" id="hospRegisterNavBtn" onclick="HOSPITAL.showView('hospRegister')">📝 Register Patient</button>
+                <button class="nav-btn" id="hospPatientsNavBtn" onclick="HOSPITAL.showView('hospPatients')">👥 Patients</button>
+                <button class="nav-btn" id="hospPaymentsNavBtn" onclick="HOSPITAL.showView('hospPayments')">💰 Payments</button>
+                <button class="nav-btn" id="hospPrintCenterNavBtn" onclick="HOSPITAL.showView('hospPrintCenter')">🖨️ Print Center</button>
+                <button class="nav-btn" id="hospDoctorPanelNavBtn" onclick="HOSPITAL.showView('hospDoctorPanel')">👨‍⚕️ Doctor Panel</button>
+                <button class="nav-btn" id="hospUsersNavBtn" onclick="HOSPITAL.showView('hospUsers')">👥 Users</button>
             </div>
             <div class="nav-right">
                 <span class="user-info" id="hospUserDisplay"></span>
@@ -412,6 +498,135 @@
                 </div>
             </div>
         </div>
+
+        <!-- Doctor Panel -->
+        <div id="hospDoctorPanel" class="unified-section">
+            <div class="hospital-container">
+                <div class="stats-grid">
+                    <div class="stat-card"><small>Total Patients Today</small><div id="hospDocTodayPatients">0</div></div>
+                    <div class="stat-card"><small>Pending Patients</small><div id="hospDocPendingPatients">0</div></div>
+                    <div class="stat-card"><small>Lab Requests</small><div id="hospDocLabRequests">0</div></div>
+                    <div class="stat-card"><small>Pharmacy Requests</small><div id="hospDocPharmacyRequests">0</div></div>
+                    <div class="stat-card"><small>Recent Patients</small><div id="hospDocRecentCount">0</div></div>
+                </div>
+                <div class="card-modern">
+                    <div class="card-header">
+                        <div class="card-title"><i class="bi bi-person-badge-fill"></i> Doctor Panel Overview</div>
+                    </div>
+                    <div class="doctor-panel-grid">
+                        <div>
+                            <div class="doctor-panel-section">
+                                <h4>Quick Actions</h4>
+                                <div class="doctor-actions">
+                                    <button class="btn-accent btn-sm" onclick="HOSPITAL.showView('hospRegister')">Patient Registration</button>
+                                    <button class="btn-success btn-sm" onclick="HOSPITAL.scrollToSection('docPatientSection')">New Appointment</button>
+                                    <button class="btn-info btn-sm" onclick="HOSPITAL.scrollToSection('docLabSection')">Send to Lab</button>
+                                    <button class="btn-warning btn-sm" onclick="HOSPITAL.scrollToSection('docPrescriptionSection')">Prescribe Medicine</button>
+                                </div>
+                            </div>
+                            <div id="docPatientSection" class="doctor-panel-section">
+                                <h4>Patient Registration</h4>
+                                <div class="form-grid-4">
+                                    <div class="form-group"><label>Patient Name</label><input id="docPatientName" class="form-control" placeholder="Name"></div>
+                                    <div class="form-group"><label>Age</label><input id="docPatientAge" class="form-control" placeholder="Age"></div>
+                                    <div class="form-group"><label>Gender</label><select id="docPatientGender" class="form-select"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+                                    <div class="form-group"><label>Phone Number</label><input id="docPatientPhone" class="form-control" placeholder="Phone"></div>
+                                    <div class="form-group"><label>Address</label><input id="docPatientAddress" class="form-control" placeholder="Address"></div>
+                                    <div class="form-group"><label>Visit Date</label><input id="docPatientVisitDate" type="date" class="form-control"></div>
+                                    <div class="form-group"><label>Blood Group</label><input id="docPatientBloodGroup" class="form-control" placeholder="A+, O-, B+..."></div>
+                                    <div class="form-group"><label>Emergency Contact</label><input id="docPatientEmergency" class="form-control" placeholder="Emergency contact"></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group" style="grid-column: span 2;"><label>Patient History</label><textarea id="docPatientHistory" class="form-control" rows="3" placeholder="Previous visits, diagnoses..."></textarea></div>
+                                    <div class="form-group" style="grid-column: span 2;"><label>Chronic Diseases / Allergies</label><textarea id="docPatientChronic" class="form-control" rows="3" placeholder="Asthma, diabetes, allergies..."></textarea></div>
+                                </div>
+                                <button class="btn-success" onclick="HOSPITAL.saveDoctorPatient()">💾 Save Doctor Patient</button>
+                            </div>
+                            <div id="docLabSection" class="doctor-panel-section">
+                                <h4>Lab Request</h4>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Patient Name</label><input id="docLabPatientName" class="form-control" placeholder="Patient Name"></div>
+                                    <div class="form-group"><label>Requested Test</label><select id="docLabTestType" class="form-select"><option value="">Select Test</option><option>CBC</option><option>Blood Sugar</option><option>Urine Test</option><option>Stool Test</option><option>X-Ray</option><option>Ultrasound</option><option>Other</option></select></div>
+                                </div>
+                                <div class="form-group"><label>Doctor Notes</label><textarea id="docLabNotes" class="form-control" rows="3" placeholder="Clinical notes for the lab"></textarea></div>
+                                <button class="btn-info" onclick="HOSPITAL.sendDoctorLabRequest()">📤 Send to Lab</button>
+                            </div>
+                            <div id="docPrescriptionSection" class="doctor-panel-section">
+                                <h4>Pharmacy Prescription</h4>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Patient Name</label><input id="docPrescriptionPatient" class="form-control" placeholder="Patient Name"></div>
+                                    <div class="form-group"><label>Medication</label><input id="docPrescriptionMedication" class="form-control" placeholder="e.g. Paracetamol"></div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group"><label>Dosage</label><input id="docPrescriptionDosage" class="form-control" placeholder="2 times daily"></div>
+                                    <div class="form-group"><label>Duration</label><input id="docPrescriptionDuration" class="form-control" placeholder="5 days"></div>
+                                </div>
+                                <div class="form-group"><label>Instructions</label><textarea id="docPrescriptionInstructions" class="form-control" rows="3" placeholder="After food, complete full dose..."></textarea></div>
+                                <button class="btn-warning" onclick="HOSPITAL.saveDoctorPrescription()">🖨️ Save & Print Prescription</button>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="doctor-panel-section doctor-summary">
+                                <h4>Search Patients</h4>
+                                <input id="docSearch" class="form-control" placeholder="Search by name, phone, patient ID or visit date" oninput="HOSPITAL.filterDoctorPatients()">
+                            </div>
+                            <div class="doctor-panel-section">
+                                <h4>Recent Patients</h4>
+                                <div id="docRecentPatients" class="appointment-list"></div>
+                            </div>
+                            <div class="doctor-panel-section">
+                                <h4>Notifications</h4>
+                                <div id="docNotifications" class="notification-list"></div>
+                            </div>
+                            <div class="doctor-panel-section">
+                                <h4>Patient Summary</h4>
+                                <div id="docPatientSummary" class="doctor-summary"><p>Select a patient from recent list or search to view history.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-modern">
+                    <div class="card-header">
+                        <div class="card-title"><i class="bi bi-calendar-event"></i> Appointment Management</div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Appointment Patient</label><input id="docAppointmentPatient" class="form-control" placeholder="Patient Name"></div>
+                        <div class="form-group"><label>Visit Date</label><input id="docAppointmentDate" type="date" class="form-control"></div>
+                        <div class="form-group"><label>Follow-up</label><input id="docAppointmentFollowUp" type="date" class="form-control"></div>
+                        <div class="form-group"><label>Purpose</label><input id="docAppointmentPurpose" class="form-control" placeholder="Consultation / Lab / Pharmacy"></div>
+                    </div>
+                    <div class="d-flex gap-1 mt-2">
+                        <button class="btn-accent" onclick="HOSPITAL.saveDoctorAppointment()">📅 Save Appointment</button>
+                        <button class="btn-warning" onclick="HOSPITAL.clearDoctorAppointment()">Clear</button>
+                    </div>
+                    <div id="docAppointmentList" class="appointment-list" style="margin-top:1rem;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management -->
+        <div id="hospUsers" class="unified-section">
+            <div class="hospital-container">
+                <div class="card-modern">
+                    <div class="card-header">
+                        <div class="card-title"><i class="bi bi-people-fill"></i> User Management</div>
+                    </div>
+                    <form id="hospUserForm" class="form-row" onsubmit="HOSPITAL.saveHospitalUser(event)">
+                        <input type="hidden" id="hospUserId">
+                        <div class="form-group"><label>Username</label><input id="hospUserName" class="form-control" placeholder="Username"></div>
+                        <div class="form-group"><label>Password</label><input id="hospUserPassword" type="password" class="form-control" placeholder="Password"></div>
+                        <div class="form-group"><label>Role</label><select id="hospUserRole" class="form-select"><option value="cashier">Cashier</option><option value="doctor">Doctor</option><option value="reception">Reception</option><option value="pharmacy">Pharmacy</option><option value="admin">Admin</option></select></div>
+                        <div class="form-group" style="align-self:flex-end;"><button class="btn-success" type="submit">Save User</button></div>
+                    </form>
+                    <div style="max-height: 55vh; overflow:auto; margin-top:1rem;">
+                        <table class="table">
+                            <thead><tr><th>User</th><th>Role</th><th style="text-align:right;">Action</th></tr></thead>
+                            <tbody id="hospUsersTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Hospital Print Area -->
@@ -558,6 +773,95 @@
             </div>
         </div>
 
+        <!-- Lab Results & Report Generator -->
+        <div id="labResultsView" class="unified-section">
+            <div class="card-modern">
+                <div class="card-header"><div class="card-title"><i class="bi bi-journal-medical"></i> Laboratory Result Generator</div></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Patient Name</label>
+                        <input id="labResultPatientName" class="form-control" placeholder="Enter patient name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Patient ID</label>
+                            <input id="labResultPatientId" class="form-control" placeholder="Auto generated or enter ID">
+                            <input type="hidden" id="labResultRecordId">
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input id="labResultPatientAge" class="form-control" placeholder="Patient age" type="number" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="labResultPatientGender" class="form-select">
+                            <option value="">Select gender</option>
+                            <option>Male</option>
+                            <option>Female</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Doctor Name</label>
+                        <input id="labResultDoctorName" class="form-control" placeholder="Attending doctor">
+                    </div>
+                    <div class="form-group">
+                        <label>Technician</label>
+                        <input id="labResultTechnician" class="form-control" placeholder="Lab technician">
+                    </div>
+                    <div class="form-group">
+                        <label>Test Type</label>
+                        <select id="labResultTestType" class="form-select" onchange="LAB.renderResultTemplate()">
+                            <option value="">Select test type</option>
+                            <option value="CBC">Complete Blood Count (CBC)</option>
+                            <option value="Urine">Urine Test</option>
+                            <option value="Stool">Stool Test</option>
+                            <option value="BloodChemistry">Blood Chemistry</option>
+                            <option value="LipidProfile">Lipid Profile</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="labResultStatus" class="form-select">
+                            <option value="Pending">Pending</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Printed">Printed</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="labResultTableContainer" style="display:none; margin-bottom:1.5rem;"></div>
+                <div class="form-group">
+                    <label>Doctor Comment</label>
+                    <textarea id="labResultComment" class="form-control" rows="4" placeholder="Enter doctor comment or clinical notes"></textarea>
+                </div>
+                <div class="d-flex gap-1 mt-2 flex-wrap">
+                    <button class="btn-accent btn-lg" onclick="LAB.saveLabResult()">💾 Save Result</button>
+                    <button class="btn-success btn-lg" onclick="LAB.generateLabPreview()">🧾 Preview Report</button>
+                    <button class="btn-info btn-lg" onclick="LAB.printLabReport()">🖨️ Print Result</button>
+                    <button class="btn-warning btn-lg" onclick="LAB.clearLabResultForm()">🔄 Clear</button>
+                </div>
+                <div id="labResultPreview" class="mt-3"></div>
+            </div>
+            <div class="card-modern mt-3">
+                <div class="card-header"><div class="card-title"><i class="bi bi-clock-history"></i> Result History</div></div>
+                <div class="d-flex gap-1 align-center mb-3 flex-wrap">
+                    <input id="labResultHistorySearch" class="form-control" placeholder="Search by patient, report #, doctor..." oninput="LAB.renderLabHistory()">
+                    <select id="labResultHistoryFilter" class="form-select w-auto" onchange="LAB.renderLabHistory()">
+                        <option value="all">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Printed">Printed</option>
+                    </select>
+                </div>
+                <div style="max-height: 55vh; overflow:auto;">
+                    <table class="table">
+                        <thead><tr><th>Report #</th><th>Date</th><th>Patient</th><th>Test Type</th><th>Status</th><th style="text-align:right;">Action</th></tr></thead>
+                        <tbody id="labResultHistoryTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- Lab Reports -->
         <div id="labReportsView" class="unified-section">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
@@ -602,7 +906,7 @@
 
     <!-- Lab Print Area -->
     <div id="labPrintArea" style="display:none;">
-        <div class="receipt" id="labReceiptContent"></div>
+        <div id="labReceiptContent"></div>
     </div>
 </div>
 
@@ -642,15 +946,35 @@ const HOSPITAL = {
     KEYS: {
         USERS: 'hospital_users_v3',
         PATIENTS: 'hospital_patients_v3',
-        SESSION: 'hospital_session_v3'
+        SESSION: 'hospital_session_v3',
+        APPOINTMENTS: 'hospital_appointments_v3',
+        PRESCRIPTIONS: 'hospital_prescriptions_v3',
+        MEDICINES: 'hospital_medicines_v3'
     },
     currentUser: null,
+    selectedPrescriptionItems: [],
+    currentPatientId: null,
 
     async initData() {
         const users = this.load(this.KEYS.USERS);
         if (!users || users.length === 0) {
-            const defaultPass = await this.hashPw('cashier123');
-            this.save(this.KEYS.USERS, [{ username: 'cashier', password: defaultPass, role: 'cashier' }]);
+            this.save(this.KEYS.USERS, [
+                { id: this.gid(), username: 'cashier', password: await this.hashPw('cashier123'), role: 'cashier' },
+                { id: this.gid(), username: 'doctor', password: await this.hashPw('doctor123'), role: 'doctor' },
+                { id: this.gid(), username: 'reception', password: await this.hashPw('reception123'), role: 'reception' },
+                { id: this.gid(), username: 'admin', password: await this.hashPw('admin123'), role: 'admin' },
+                { id: this.gid(), username: 'pharmacy', password: await this.hashPw('pharmacy123'), role: 'pharmacy' }
+            ]);
+        }
+        // ensure appointment and prescription stores exist
+        if (!Array.isArray(this.load(this.KEYS.APPOINTMENTS))) this.save(this.KEYS.APPOINTMENTS, []);
+        if (!Array.isArray(this.load(this.KEYS.PRESCRIPTIONS))) this.save(this.KEYS.PRESCRIPTIONS, []);
+        if (!Array.isArray(this.load(this.KEYS.MEDICINES)) || this.load(this.KEYS.MEDICINES).length === 0) {
+            this.save(this.KEYS.MEDICINES, [
+                { id: this.gid(), name: 'Paracetamol', dosage: '500mg', duration: '5 days' },
+                { id: this.gid(), name: 'Amoxicillin', dosage: '500mg', duration: '7 days' },
+                { id: this.gid(), name: 'Cetirizine', dosage: '10mg', duration: '5 days' }
+            ]);
         }
     },
 
@@ -688,7 +1012,9 @@ const HOSPITAL = {
         document.getElementById('hospitalLogin').style.display = 'none';
         document.getElementById('hospitalApp').style.display = 'block';
         document.getElementById('hospUserDisplay').textContent = `👤 ${this.currentUser.username}`;
-        this.showView('hospDashboard');
+        this.configureNavByRole();
+        if (this.currentUser.role === 'doctor') this.showView('hospDoctorPanel');
+        else this.showView('hospDashboard');
     },
 
     async login() {
@@ -729,6 +1055,576 @@ const HOSPITAL = {
         if (viewId === 'hospDashboard') this.renderDashboard();
         if (viewId === 'hospPatients') this.renderPatients();
         if (viewId === 'hospPayments') this.renderPayments();
+        if (viewId === 'hospPrintCenter') this.renderPrintCenter();
+        if (viewId === 'hospDoctorPanel') this.renderDoctorPanel();
+        if (viewId === 'hospUsers') this.renderUsers();
+    },
+
+    configureNavByRole() {
+        const role = this.currentUser?.role || 'cashier';
+        const allButtons = ['hospDashboardNavBtn','hospRegisterNavBtn','hospPatientsNavBtn','hospPaymentsNavBtn','hospDoctorPanelNavBtn','hospUsersNavBtn'];
+        const visible = {
+            admin: allButtons,
+            cashier: ['hospDashboardNavBtn','hospRegisterNavBtn','hospPatientsNavBtn','hospPaymentsNavBtn','hospPrintCenterNavBtn'],
+            doctor: ['hospDoctorPanelNavBtn','hospPatientsNavBtn','hospPrintCenterNavBtn'],
+            reception: ['hospDashboardNavBtn','hospRegisterNavBtn','hospPatientsNavBtn','hospPrintCenterNavBtn'],
+            pharmacy: ['hospDashboardNavBtn','hospPatientsNavBtn','hospPrintCenterNavBtn']
+        }[role] || ['hospDashboardNavBtn'];
+        allButtons.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = visible.includes(id) ? 'inline-flex' : 'none';
+        });
+    },
+
+    renderDoctorPanel() {
+        const patients = this.load(this.KEYS.PATIENTS);
+        const today = this.todayStr();
+        const todayPatients = patients.filter(p => p.timestamp && p.timestamp.startsWith(today));
+        const pendingPatients = patients.filter(p => p.balance > 0);
+        const prescriptions = this.load(this.KEYS.PRESCRIPTIONS);
+        const labHistory = window.LAB ? LAB.load(LAB.RESULTS_KEY) : [];
+        const pendingLabRequests = labHistory.filter(r => r.status === 'Pending' || r.paymentStatus === 'Pending');
+        const completedLabCount = labHistory.filter(r => r.status === 'Completed' || r.status === 'Printed').length;
+
+        document.getElementById('hospDocTodayPatients').textContent = todayPatients.length;
+        document.getElementById('hospDocPendingPatients').textContent = pendingPatients.length;
+        document.getElementById('hospDocLabRequests').textContent = pendingLabRequests.length;
+        document.getElementById('hospDocPharmacyRequests').textContent = prescriptions.length;
+        document.getElementById('hospDocRecentCount').textContent = Math.min(5, patients.length);
+
+        const recentPatients = patients.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
+        document.getElementById('docRecentPatients').innerHTML = recentPatients.length ? recentPatients.map(p => `
+            <div class="small-card" style="margin-bottom:0.75rem;">
+                <strong>${p.name}</strong>
+                <p>${p.phone || 'No phone'} • ${p.doctor || 'Doctor'}</p>
+                <p class="text-muted" style="font-size:0.8rem; margin:0.25rem 0;">${new Date(p.timestamp).toLocaleString()}</p>
+                <div class="doctor-actions">
+                    <button class="btn-accent btn-sm" onclick="HOSPITAL.selectDoctorPatient('${p.id}')">Select</button>
+                </div>
+            </div>
+        `).join('') : '<p class="text-muted">No recent patients yet.</p>';
+
+        document.getElementById('docNotifications').innerHTML = `
+            <div class="alert alert-info">${pendingLabRequests.length} pending lab requests</div>
+            <div class="alert alert-success">${completedLabCount} completed lab results</div>
+            <div class="alert alert-warning">${pendingPatients.length} patients with balance due</div>
+        `;
+
+        this.renderDoctorAppointments();
+        if (this.currentPatientId) {
+            const current = patients.find(p => p.id === this.currentPatientId);
+            if (current) this.renderDoctorPatientSummary(current);
+        } else {
+            document.getElementById('docPatientSummary').innerHTML = '<p>Select a patient from the recent list or search to view history, lab results and prescriptions.</p>';
+        }
+    },
+
+    selectDoctorPatient(patientId) {
+        const patient = this.load(this.KEYS.PATIENTS).find(p => p.id === patientId);
+        if (!patient) return;
+        this.currentPatientId = patientId;
+        this.fillDoctorPatientForm(patient);
+        this.fillDoctorExtras(patient);
+        this.renderDoctorPatientSummary(patient);
+    },
+
+    fillDoctorPatientForm(patient) {
+        document.getElementById('docPatientName').value = patient.name || '';
+        document.getElementById('docPatientAge').value = patient.age || (patient.birthDate ? Math.floor((new Date() - new Date(patient.birthDate)) / 31557600000) : '');
+        document.getElementById('docPatientGender').value = patient.gender || '';
+        document.getElementById('docPatientPhone').value = patient.phone || '';
+        document.getElementById('docPatientAddress').value = patient.address || patient.district || '';
+        document.getElementById('docPatientVisitDate').value = patient.visitDate || '';
+        document.getElementById('docPatientBloodGroup').value = patient.bloodGroup || '';
+        document.getElementById('docPatientEmergency').value = patient.emergencyContact || '';
+        document.getElementById('docPatientHistory').value = patient.history || '';
+        document.getElementById('docPatientChronic').value = patient.chronic || '';
+        document.getElementById('docLabPatientName').value = patient.name || '';
+        document.getElementById('docPrescriptionPatient').value = patient.name || '';
+    },
+
+    fillDoctorExtras(patient) {
+        const relatedLabs = window.LAB ? LAB.load(LAB.RESULTS_KEY).filter(r => (r.patientName || '').toLowerCase() === (patient.name || '').toLowerCase() || r.patientId === patient.id) : [];
+        const relatedPrescriptions = this.load(this.KEYS.PRESCRIPTIONS).filter(p => (p.patientName || '').toLowerCase() === (patient.name || '').toLowerCase());
+        const summary = document.getElementById('docPatientSummary');
+        summary.innerHTML = `
+            <div class="small-card"><strong>${patient.name}</strong><p>${patient.phone || 'No phone'}</p><p>${patient.address || ''}</p><p><strong>Doctor:</strong> ${patient.doctor || this.currentUser.username}</p></div>
+            <div class="small-card"><strong>Lab Results</strong><p>${relatedLabs.length} result(s) found</p>${relatedLabs.slice(0,3).map(r => `<p style="margin:0.15rem 0; font-size:0.85rem;">${r.reportNumber || r.requestedTest || r.testType} — ${r.status}</p>`).join('')}</div>
+            <div class="small-card"><strong>Prescriptions</strong><p>${relatedPrescriptions.length} saved</p></div>
+        `;
+    },
+
+    renderDoctorPatientSummary(patient) {
+        const relatedLabs = window.LAB ? LAB.load(LAB.RESULTS_KEY).filter(r => (r.patientName || '').toLowerCase() === (patient.name || '').toLowerCase() || r.patientId === patient.id) : [];
+        const relatedPrescriptions = this.load(this.KEYS.PRESCRIPTIONS).filter(p => (p.patientName || '').toLowerCase() === (patient.name || '').toLowerCase());
+        const lines = relatedLabs.slice(0, 4).map(r => `<li>${r.reportNumber || r.requestedTest || r.testType} — <strong>${r.status}</strong> ${r.technician ? '• ' + r.technician : ''}</li>`).join('') || '<li class="text-muted">No lab results yet</li>';
+        document.getElementById('docPatientSummary').innerHTML = `
+            <div class="small-card"><strong>${patient.name}</strong><p>Phone: ${patient.phone || 'N/A'}</p><p>Age: ${patient.age || 'N/A'}</p><p>Gender: ${patient.gender || 'N/A'}</p></div>
+            <div class="small-card"><strong>Latest Lab Results</strong><ul style="margin:0.5rem 0 0; padding-left:1.2rem;">${lines}</ul></div>
+            <div class="small-card"><strong>Prescriptions</strong><p>${relatedPrescriptions.length} saved prescription(s)</p></div>
+        `;
+    },
+
+    filterDoctorPatients() {
+        const query = document.getElementById('docSearch').value.trim().toLowerCase();
+        if (!query) { this.renderDoctorPanel(); return; }
+        const patients = this.load(this.KEYS.PATIENTS);
+        const filtered = patients.filter(p => {
+            const combined = `${p.name} ${p.phone} ${p.id} ${p.doctor}`.toLowerCase();
+            return combined.includes(query);
+        });
+        if (filtered.length === 1) this.selectDoctorPatient(filtered[0].id);
+        document.getElementById('docRecentPatients').innerHTML = filtered.length ? filtered.map(p => `
+            <div class="small-card" style="margin-bottom:0.75rem;">
+                <strong>${p.name}</strong>
+                <p>${p.phone || 'No phone'} • ${p.doctor || 'Doctor'}</p>
+                <div class="doctor-actions">
+                    <button class="btn-accent btn-sm" onclick="HOSPITAL.selectDoctorPatient('${p.id}')">Select</button>
+                </div>
+            </div>
+        `).join('') : '<p class="text-muted">No patients found.</p>';
+    },
+
+    saveDoctorPatient() {
+        const name = document.getElementById('docPatientName').value.trim();
+        const age = document.getElementById('docPatientAge').value.trim();
+        const gender = document.getElementById('docPatientGender').value;
+        const phone = document.getElementById('docPatientPhone').value.trim();
+        const address = document.getElementById('docPatientAddress').value.trim();
+        const visitDate = document.getElementById('docPatientVisitDate').value;
+        const bloodGroup = document.getElementById('docPatientBloodGroup').value.trim();
+        const emergencyContact = document.getElementById('docPatientEmergency').value.trim();
+        const history = document.getElementById('docPatientHistory').value.trim();
+        const chronic = document.getElementById('docPatientChronic').value.trim();
+        if (!name || !phone) {
+            Swal.fire({ icon: 'warning', title: 'Missing information', text: 'Patient name and phone are required.' });
+            return;
+        }
+        const patients = this.load(this.KEYS.PATIENTS);
+        const existingIndex = this.currentPatientId ? patients.findIndex(p => p.id === this.currentPatientId) : patients.findIndex(p => p.phone === phone);
+        const payload = {
+            id: existingIndex !== -1 ? patients[existingIndex].id : this.gid(),
+            name,
+            age,
+            gender,
+            phone,
+            address,
+            visitDate,
+            bloodGroup,
+            emergencyContact,
+            history,
+            chronic,
+            doctor: this.currentUser.username,
+            timestamp: new Date().toISOString(),
+            queueNumber: existingIndex !== -1 ? patients[existingIndex].queueNumber || 0 : patients.length + 1,
+            balance: patients[existingIndex]?.balance || 0,
+            fee: patients[existingIndex]?.fee || 0,
+            paid: patients[existingIndex]?.paid || 0,
+            paymentMethod: patients[existingIndex]?.paymentMethod || 'Cash'
+        };
+        if (existingIndex !== -1) patients[existingIndex] = payload;
+        else patients.unshift(payload);
+        this.save(this.KEYS.PATIENTS, patients);
+        this.currentPatientId = payload.id;
+        Swal.fire({ icon: 'success', title: 'Patient saved', timer: 1400 });
+        this.renderDoctorPanel();
+        this.fillDoctorPatientForm(payload);
+    },
+
+    sendDoctorLabRequest() {
+        const patientName = document.getElementById('docLabPatientName').value.trim();
+        const requestedTest = document.getElementById('docLabTestType').value;
+        const notes = document.getElementById('docLabNotes').value.trim();
+        if (!patientName || !requestedTest) {
+            Swal.fire({ icon: 'warning', title: 'Missing information', text: 'Enter patient name and select a test.' });
+            return;
+        }
+        if (!window.LAB) {
+            Swal.fire({ icon: 'error', title: 'Lab module unavailable', text: 'Cannot send request to lab right now.' });
+            return;
+        }
+        const history = LAB.load(LAB.RESULTS_KEY);
+        const labRequest = {
+            id: LAB.gid(),
+            reportNumber: typeof LAB.generateLabReportNumber === 'function' ? LAB.generateLabReportNumber() : `LR-${Date.now()}`,
+            reportDate: new Date().toISOString(),
+            patientName,
+            patientId: this.currentPatientId || `PID-${Date.now().toString().slice(-6)}`,
+            requestedTest,
+            doctorName: this.currentUser.username,
+            technician: '',
+            testType: requestedTest,
+            comment: notes,
+            status: 'Pending',
+            paymentStatus: 'Pending',
+            results: []
+        };
+        history.unshift(labRequest);
+        LAB.save(LAB.RESULTS_KEY, history);
+        window.dispatchEvent(new Event('lab-data-updated'));
+        this.printDoctorLabRequest(labRequest);
+        Swal.fire({ icon: 'success', title: 'Lab request sent', text: `Request #${labRequest.reportNumber}`, timer: 1600 });
+        document.getElementById('docLabPatientName').value = '';
+        document.getElementById('docLabTestType').value = '';
+        document.getElementById('docLabNotes').value = '';
+        this.renderDoctorPanel();
+    },
+
+    printDoctorLabRequest(request) {
+        const html = `
+            <div class="report-shell">
+                <div class="report-header">
+                    <div class="report-brand">
+                        <img src="https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png" alt="Hospital Logo">
+                        <div>
+                            <div class="report-title">BAXNAANO LAB REQUEST</div>
+                            <div class="report-subtitle">Doctor to Laboratory Communication</div>
+                        </div>
+                    </div>
+                    <div class="report-status status-pending">Pending</div>
+                </div>
+                <div class="report-grid">
+                    <div class="info-card"><h4>Patient</h4><p><strong>Name:</strong> ${request.patientName}</p><p><strong>ID:</strong> ${request.patientId}</p></div>
+                    <div class="info-card"><h4>Request</h4><p><strong>Test:</strong> ${request.requestedTest}</p><p><strong>Doctor:</strong> ${request.doctorName}</p></div>
+                    <div class="info-card"><h4>Details</h4><p><strong>Request #:</strong> ${request.reportNumber}</p><p><strong>Date:</strong> ${new Date(request.reportDate).toLocaleDateString()}</p></div>
+                    <div class="info-card"><h4>Notes</h4><p>${request.comment || 'No additional notes.'}</p></div>
+                </div>
+                <div class="report-note">Please process this laboratory request and update the result status once available.</div>
+                <div class="signature-row">
+                    <div class="signature-box">Doctor Signature</div>
+                    <div class="signature-box">Lab Receipt</div>
+                    <div class="signature-box">Date / Time</div>
+                </div>
+            </div>
+        `;
+        document.getElementById('labReceiptContent').innerHTML = html;
+        document.getElementById('labPrintArea').style.display = 'block';
+        window.print();
+        document.getElementById('labPrintArea').style.display = 'none';
+    },
+
+    saveDoctorPrescription() {
+        const patientName = document.getElementById('docPrescriptionPatient').value.trim();
+        const medication = document.getElementById('docPrescriptionMedication').value.trim();
+        const dosage = document.getElementById('docPrescriptionDosage').value.trim();
+        const duration = document.getElementById('docPrescriptionDuration').value.trim();
+        const instructions = document.getElementById('docPrescriptionInstructions').value.trim();
+        if (!patientName || !medication) {
+            Swal.fire({ icon: 'warning', title: 'Missing prescription data', text: 'Enter patient name and medication.' });
+            return;
+        }
+        const prescriptions = this.load(this.KEYS.PRESCRIPTIONS);
+        const entry = {
+            id: this.gid(),
+            patientName,
+            medication,
+            dosage,
+            duration,
+            instructions,
+            doctor: this.currentUser.username,
+            date: new Date().toISOString()
+        };
+        prescriptions.unshift(entry);
+        this.save(this.KEYS.PRESCRIPTIONS, prescriptions);
+        Swal.fire({ icon: 'success', title: 'Prescription saved', timer: 1400 });
+        this.printDoctorPrescription(entry);
+        document.getElementById('docPrescriptionMedication').value = '';
+        document.getElementById('docPrescriptionDosage').value = '';
+        document.getElementById('docPrescriptionDuration').value = '';
+        document.getElementById('docPrescriptionInstructions').value = '';
+    },
+
+    printDoctorPrescription(entry) {
+        const html = `
+            <div class="report-shell">
+                <div class="report-header">
+                    <div class="report-brand">
+                        <img src="https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png" alt="Logo">
+                        <div>
+                            <div class="report-title">BAXNAANO PRESCRIPTION</div>
+                            <div class="report-subtitle">Medical Prescription Slip</div>
+                        </div>
+                    </div>
+                    <div class="report-status status-printed">Prescription</div>
+                </div>
+                <div class="report-grid">
+                    <div class="info-card"><h4>Patient</h4><p><strong>Name:</strong> ${entry.patientName}</p><p><strong>Date:</strong> ${new Date(entry.date).toLocaleDateString()}</p></div>
+                    <div class="info-card"><h4>Doctor</h4><p>${entry.doctor}</p></div>
+                </div>
+                <table class="report-table">
+                    <thead><tr><th>Medication</th><th>Dosage</th><th>Duration</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>${entry.medication}</td>
+                            <td>${entry.dosage}</td>
+                            <td>${entry.duration}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="report-note">Instructions: ${entry.instructions || 'Follow physician directions.'}</div>
+                <div class="signature-row">
+                    <div class="signature-box">Doctor Signature</div>
+                    <div class="signature-box">Pharmacy Receipt</div>
+                    <div class="signature-box">Date</div>
+                </div>
+            </div>
+        `;
+        document.getElementById('hospitalReceiptContent').innerHTML = html;
+        document.getElementById('hospitalPrintArea').style.display = 'block';
+        window.print();
+        document.getElementById('hospitalPrintArea').style.display = 'none';
+    },
+
+    saveDoctorAppointment() {
+        const patient = document.getElementById('docAppointmentPatient').value.trim();
+        const date = document.getElementById('docAppointmentDate').value;
+        const followUp = document.getElementById('docAppointmentFollowUp').value;
+        const purpose = document.getElementById('docAppointmentPurpose').value.trim();
+        if (!patient || !date) {
+            Swal.fire({ icon: 'warning', title: 'Missing appointment data', text: 'Enter patient name and appointment date.' });
+            return;
+        }
+        const appts = this.load(this.KEYS.APPOINTMENTS);
+        appts.unshift({ id: this.gid(), patient, date, followUp, purpose, doctor: this.currentUser.username, createdAt: new Date().toISOString() });
+        this.save(this.KEYS.APPOINTMENTS, appts);
+        Swal.fire({ icon: 'success', title: 'Appointment saved', timer: 1400 });
+        this.clearDoctorAppointment();
+        this.renderDoctorAppointments();
+    },
+
+    clearDoctorAppointment() {
+        ['docAppointmentPatient','docAppointmentDate','docAppointmentFollowUp','docAppointmentPurpose'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+    },
+
+    renderDoctorAppointments() {
+        const list = this.load(this.KEYS.APPOINTMENTS).slice(0, 8);
+        const container = document.getElementById('docAppointmentList');
+        if (!list.length) {
+            container.innerHTML = '<p class="text-muted">No appointments scheduled.</p>';
+            return;
+        }
+        container.innerHTML = list.map(app => `
+            <div class="small-card" style="margin-bottom:0.75rem;">
+                <strong>${app.patient}</strong><p>${app.date}${app.followUp ? ` • Follow-up ${app.followUp}` : ''}</p>
+                <p>${app.purpose || 'General consultation'}</p>
+                <div class="doctor-actions">
+                    <button class="btn-danger btn-sm" onclick="HOSPITAL.deleteDoctorAppointment('${app.id}')">Cancel</button>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    deleteDoctorAppointment(id) {
+        const items = this.load(this.KEYS.APPOINTMENTS).filter(a => a.id !== id);
+        this.save(this.KEYS.APPOINTMENTS, items);
+        this.renderDoctorAppointments();
+    },
+
+    renderUsers() {
+        const users = this.load(this.KEYS.USERS);
+        document.getElementById('hospUserId').value = '';
+        document.getElementById('hospUserName').value = '';
+        document.getElementById('hospUserPassword').value = '';
+        document.getElementById('hospUserRole').value = 'cashier';
+        const tbody = document.getElementById('hospUsersTable');
+        tbody.innerHTML = users.map(user => `
+            <tr>
+                <td>${user.username}</td>
+                <td>${user.role}</td>
+                <td style="text-align:right;">
+                    <button class="btn-accent btn-sm" onclick="HOSPITAL.editHospitalUser('${user.id}')">Edit</button>
+                    <button class="btn-danger btn-sm" onclick="HOSPITAL.deleteHospitalUser('${user.id}')">Delete</button>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    renderPrintCenter() {
+        const patients = this.load(this.KEYS.PATIENTS).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const query = document.getElementById('hospPrintSearch').value.trim().toLowerCase();
+        const rows = patients.filter(p => {
+            if (!query) return true;
+            const combined = `${p.queueNumber} ${p.name} ${p.phone} ${p.doctor} ${p.id}`.toLowerCase();
+            return combined.includes(query);
+        }).map(p => `
+            <tr>
+                <td>${p.queueNumber}</td>
+                <td>${p.name}</td>
+                <td>${p.phone}</td>
+                <td>${p.doctor}</td>
+                <td style="color:${p.balance > 0 ? '#dc3545' : '#28a745'};"><strong>${this.fmtMoney(p.balance)}</strong></td>
+                <td>${new Date(p.timestamp).toLocaleString()}</td>
+                <td style="text-align:right;">
+                    <button class="btn-accent btn-sm" onclick="HOSPITAL.printRegistrationSlip('${p.id}')">Print</button>
+                </td>
+            </tr>
+        `).join('');
+        document.getElementById('hospPrintCenterTable').innerHTML = rows || '<tr><td colspan="7" class="text-muted">No registrations found.</td></tr>';
+    },
+
+    filterPrintCenter() {
+        this.renderPrintCenter();
+    },
+
+    printRegistrationSlip(id) {
+        const p = this.load(this.KEYS.PATIENTS).find(x => x.id === id);
+        if (!p) return;
+        const age = p.birthDate ? Math.floor((new Date() - new Date(p.birthDate)) / 31557600000) + ' years' : p.age || 'N/A';
+        const content = `
+            <div class="report-shell">
+                <div class="report-header">
+                    <div class="report-brand">
+                        <img src="https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png" alt="Logo">
+                        <div>
+                            <div class="report-title">BAXNAANO REGISTRATION SLIP</div>
+                            <div class="report-subtitle">Patient Registration Center</div>
+                        </div>
+                    </div>
+                    <div class="report-status ${p.balance > 0 ? 'status-warning' : 'status-success'}">${p.balance > 0 ? 'Pending Payment' : 'Paid'}</div>
+                </div>
+                <div class="report-grid">
+                    <div class="info-card"><h4>Patient</h4><p><strong>Name:</strong> ${p.name}</p><p><strong>Phone:</strong> ${p.phone}</p><p><strong>Age:</strong> ${age}</p><p><strong>District:</strong> ${p.district || 'N/A'}</p></div>
+                    <div class="info-card"><h4>Visit</h4><p><strong>Doctor:</strong> ${p.doctor}</p><p><strong>Doctor ID:</strong> ${p.doctorId || 'N/A'}</p><p><strong>Queue #:</strong> ${p.queueNumber}</p><p><strong>Time:</strong> ${p.time}</p></div>
+                    <div class="info-card"><h4>Payment</h4><p><strong>Fee:</strong> ${this.fmtMoney(p.fee)}</p><p><strong>Paid:</strong> ${this.fmtMoney(p.paid)}</p><p><strong>Balance:</strong> ${this.fmtMoney(p.balance)}</p><p><strong>Method:</strong> ${p.paymentMethod || 'N/A'}</p></div>
+                    <div class="info-card"><h4>Administrative</h4><p><strong>Cashier:</strong> ${p.cashier || 'N/A'}</p><p><strong>Patient ID:</strong> ${p.id}</p></div>
+                </div>
+                <div class="report-note">Please keep this registration slip for follow-up and pharmacy/lab collection.</div>
+                <div class="signature-row">
+                    <div class="signature-box">Reception Signature</div>
+                    <div class="signature-box">Patient Signature</div>
+                    <div class="signature-box">Date</div>
+                </div>
+            </div>
+        `;
+        document.getElementById('hospitalReceiptContent').innerHTML = content;
+        document.getElementById('hospitalPrintArea').style.display = 'block';
+        window.print();
+        document.getElementById('hospitalPrintArea').style.display = 'none';
+    },
+
+    async saveHospitalUser(evt) {
+        evt.preventDefault();
+        const id = document.getElementById('hospUserId').value.trim();
+        const username = document.getElementById('hospUserName').value.trim();
+        const password = document.getElementById('hospUserPassword').value;
+        const role = document.getElementById('hospUserRole').value;
+        if (!username || (!id && !password)) {
+            Swal.fire({ icon: 'warning', title: 'Enter username and password' });
+            return;
+        }
+        const users = this.load(this.KEYS.USERS);
+        const existing = users.find(u => u.username === username && u.id !== id);
+        if (existing) {
+            Swal.fire({ icon: 'error', title: 'Username already exists' });
+            return;
+        }
+        if (id) {
+            const idx = users.findIndex(u => u.id === id);
+            if (idx !== -1) {
+                users[idx].username = username;
+                users[idx].role = role;
+                if (password) users[idx].password = await this.hashPw(password);
+            }
+        } else {
+            users.push({ id: this.gid(), username, password: await this.hashPw(password), role });
+        }
+        this.save(this.KEYS.USERS, users);
+        Swal.fire({ icon: 'success', title: 'User saved', timer: 1200 });
+        this.renderUsers();
+    },
+
+    renderPrintCenter() {
+        const patients = this.load(this.KEYS.PATIENTS).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const query = document.getElementById('hospPrintSearch').value.trim().toLowerCase();
+        const rows = patients.filter(p => {
+            if (!query) return true;
+            const combined = `${p.queueNumber} ${p.name} ${p.phone} ${p.doctor} ${p.id}`.toLowerCase();
+            return combined.includes(query);
+        }).map(p => `
+            <tr>
+                <td>${p.queueNumber}</td>
+                <td>${p.name}</td>
+                <td>${p.phone}</td>
+                <td>${p.doctor}</td>
+                <td style="color:${p.balance > 0 ? '#dc3545' : '#28a745'};"><strong>${this.fmtMoney(p.balance)}</strong></td>
+                <td>${new Date(p.timestamp).toLocaleString()}</td>
+                <td style="text-align:right;">
+                    <button class="btn-accent btn-sm" onclick="HOSPITAL.printRegistrationSlip('${p.id}')">Print</button>
+                </td>
+            </tr>
+        `).join('');
+        document.getElementById('hospPrintCenterTable').innerHTML = rows || '<tr><td colspan="7" class="text-muted">No registrations found.</td></tr>';
+    },
+
+    filterPrintCenter() {
+        this.renderPrintCenter();
+    },
+
+    printRegistrationSlip(id) {
+        const p = this.load(this.KEYS.PATIENTS).find(x => x.id === id);
+        if (!p) return;
+        const age = p.birthDate ? Math.floor((new Date() - new Date(p.birthDate)) / 31557600000) + ' years' : p.age || 'N/A';
+        const content = `
+            <div class="report-shell">
+                <div class="report-header">
+                    <div class="report-brand">
+                        <img src="https://raw.githubusercontent.com/Cs-company2/baxnaano-ogansho/main/images.png" alt="Logo">
+                        <div>
+                            <div class="report-title">BAXNAANO REGISTRATION SLIP</div>
+                            <div class="report-subtitle">Patient Registration Center</div>
+                        </div>
+                    </div>
+                    <div class="report-status ${p.balance > 0 ? 'status-warning' : 'status-success'}">${p.balance > 0 ? 'Pending Payment' : 'Paid'}</div>
+                </div>
+                <div class="report-grid">
+                    <div class="info-card"><h4>Patient</h4><p><strong>Name:</strong> ${p.name}</p><p><strong>Phone:</strong> ${p.phone}</p><p><strong>Age:</strong> ${age}</p><p><strong>District:</strong> ${p.district || 'N/A'}</p></div>
+                    <div class="info-card"><h4>Visit</h4><p><strong>Doctor:</strong> ${p.doctor}</p><p><strong>Doctor ID:</strong> ${p.doctorId || 'N/A'}</p><p><strong>Queue #:</strong> ${p.queueNumber}</p><p><strong>Time:</strong> ${p.time}</p></div>
+                    <div class="info-card"><h4>Payment</h4><p><strong>Fee:</strong> ${this.fmtMoney(p.fee)}</p><p><strong>Paid:</strong> ${this.fmtMoney(p.paid)}</p><p><strong>Balance:</strong> ${this.fmtMoney(p.balance)}</p><p><strong>Method:</strong> ${p.paymentMethod || 'N/A'}</p></div>
+                    <div class="info-card"><h4>Administrative</h4><p><strong>Cashier:</strong> ${p.cashier || 'N/A'}</p><p><strong>Patient ID:</strong> ${p.id}</p></div>
+                </div>
+                <div class="report-note">Please keep this registration slip for follow-up and pharmacy/lab collection.</div>
+                <div class="signature-row">
+                    <div class="signature-box">Reception Signature</div>
+                    <div class="signature-box">Patient Signature</div>
+                    <div class="signature-box">Date</div>
+                </div>
+            </div>
+        `;
+        document.getElementById('hospitalReceiptContent').innerHTML = content;
+        document.getElementById('hospitalPrintArea').style.display = 'block';
+        window.print();
+        document.getElementById('hospitalPrintArea').style.display = 'none';
+    },
+    editHospitalUser(id) {
+        const user = this.load(this.KEYS.USERS).find(u => u.id === id);
+        if (!user) return;
+        document.getElementById('hospUserId').value = user.id;
+        document.getElementById('hospUserName').value = user.username;
+        document.getElementById('hospUserPassword').value = '';
+        document.getElementById('hospUserRole').value = user.role;
+        this.showView('hospUsers');
+    },
+
+    deleteHospitalUser(id) {
+        const users = this.load(this.KEYS.USERS);
+        if (this.currentUser && this.currentUser.id === id) {
+            Swal.fire({ icon: 'warning', title: 'Cannot delete logged in user' });
+            return;
+        }
+        Swal.fire({ title: 'Delete user?', icon: 'warning', showCancelButton: true }).then(res => {
+            if (!res.isConfirmed) return;
+            this.save(this.KEYS.USERS, users.filter(u => u.id !== id));
+            this.renderUsers();
+        });
+    },
+
+    scrollToSection(id) {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
 
     calcAge() {
@@ -752,10 +1648,12 @@ const HOSPITAL = {
     },
 
     autoFill() {
-        const phone = document.getElementById('hospPhone').value.trim();
+        // normalize phone by removing non-digit characters for more flexible matching
+        const phoneRaw = document.getElementById('hospPhone').value || '';
+        const phone = phoneRaw.replace(/\D/g, '').trim();
         if (!phone) return;
         const patients = this.load(this.KEYS.PATIENTS);
-        const p = patients.find(x => x.phone === phone);
+        const p = patients.find(x => (x.phone || '').replace(/\D/g, '').includes(phone) || (x.phone || '') === phone);
         if (p) {
             document.getElementById('hospName').value = p.name;
             document.getElementById('hospBirthDate').value = p.birthDate || '';
@@ -809,7 +1707,7 @@ const HOSPITAL = {
             paymentMethod: payMethod,
             time,
             timestamp,
-            cashier: this.currentUser.username
+            cashier: (this.currentUser && this.currentUser.username) ? this.currentUser.username : 'Unknown'
         };
 
         if (existingIndex !== -1) {
@@ -985,7 +1883,7 @@ const HOSPITAL = {
             <p><strong>Service Fee:</strong> ${this.fmtMoney(p.fee)}</p>
             <p><strong>Amount Paid:</strong> ${this.fmtMoney(p.paid)}</p>
             <p><strong>Method:</strong> ${p.paymentMethod}</p>
-            <p><strong>Cashier:</strong> ${p.cashier || this.currentUser.username}</p>
+            <p><strong>Cashier:</strong> ${p.cashier || (this.currentUser && this.currentUser.username) || 'Unknown'}</p>
             <hr style="border:1px dashed #333; margin:10px 0;">
             <div class="receipt-footer">
                 <p>Thank you for choosing Baxnaano Hospital!</p>
@@ -1035,6 +1933,52 @@ const LAB = {
     },
     currentUser: null,
     cart: [],
+    RESULTS_KEY: 'lab_results_v3',
+    TEST_TEMPLATES: {
+        CBC: [
+            { name: 'White Blood Cells (WBC)', unit: 'x10^9/L', range: '4.0 - 11.0' },
+            { name: 'Red Blood Cells (RBC)', unit: 'x10^12/L', range: '4.5 - 5.9' },
+            { name: 'Hemoglobin', unit: 'g/dL', range: '13.5 - 17.5' },
+            { name: 'Hematocrit', unit: '%', range: '41 - 53' },
+            { name: 'Platelets', unit: 'x10^9/L', range: '150 - 450' },
+            { name: 'MCV', unit: 'fL', range: '80 - 100' },
+            { name: 'MCH', unit: 'pg', range: '27 - 31' },
+            { name: 'MCHC', unit: 'g/dL', range: '33 - 36' }
+        ],
+        Urine: [
+            { name: 'Color', unit: '', range: 'Yellow' },
+            { name: 'Appearance', unit: '', range: 'Clear' },
+            { name: 'pH', unit: '', range: '4.5 - 8.0' },
+            { name: 'Specific Gravity', unit: '', range: '1.005 - 1.030' },
+            { name: 'Protein', unit: 'mg/dL', range: 'Negative' },
+            { name: 'Glucose', unit: 'mg/dL', range: 'Negative' },
+            { name: 'Ketones', unit: 'mg/dL', range: 'Negative' },
+            { name: 'Nitrites', unit: '', range: 'Negative' },
+            { name: 'Leukocyte Esterase', unit: '', range: 'Negative' }
+        ],
+        Stool: [
+            { name: 'Color', unit: '', range: 'Brown' },
+            { name: 'Consistency', unit: '', range: 'Formed' },
+            { name: 'Occult Blood', unit: '', range: 'Negative' },
+            { name: 'Parasites', unit: '', range: 'Negative' },
+            { name: 'Ova', unit: '', range: 'Negative' },
+            { name: 'Mucus', unit: '', range: 'Negative' }
+        ],
+        BloodChemistry: [
+            { name: 'Glucose (Fasting)', unit: 'mg/dL', range: '70 - 100' },
+            { name: 'Urea', unit: 'mg/dL', range: '7 - 20' },
+            { name: 'Creatinine', unit: 'mg/dL', range: '0.6 - 1.3' },
+            { name: 'Uric Acid', unit: 'mg/dL', range: '3.5 - 7.2' },
+            { name: 'ALT', unit: 'U/L', range: '7 - 56' },
+            { name: 'AST', unit: 'U/L', range: '10 - 40' }
+        ],
+        LipidProfile: [
+            { name: 'Total Cholesterol', unit: 'mg/dL', range: '<200' },
+            { name: 'HDL Cholesterol', unit: 'mg/dL', range: '>=40' },
+            { name: 'LDL Cholesterol', unit: 'mg/dL', range: '<100' },
+            { name: 'Triglycerides', unit: 'mg/dL', range: '<150' }
+        ]
+    },
 
     $ (id) { return document.getElementById(id); },
     load(key, def = []) { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : def; } catch { return def; } },
@@ -1093,13 +2037,15 @@ const LAB = {
                 { v: 'labDashboard', l: '📊 Dashboard' },
                 { v: 'labPos', l: '💰 POS' },
                 { v: 'labProducts', l: '🧪 Products' },
+                { v: 'labResults', l: '🧾 Results' },
                 { v: 'labSales', l: '🧾 Sales' },
                 { v: 'labReports', l: '📋 Reports' }
               ]
             : [
+                { v: 'labDashboard', l: '📊 Dashboard' },
                 { v: 'labPos', l: '💰 POS' },
-                { v: 'labSales', l: '🧾 Sales' },
-                { v: 'labReports', l: '📋 Reports' }
+                { v: 'labResults', l: '🧾 Results' },
+                { v: 'labSales', l: '🧾 Sales' }
               ];
         items.forEach(it => {
             const b = document.createElement('button');
@@ -1119,6 +2065,7 @@ const LAB = {
         if (name === 'labDashboard') this.renderDashboard();
         if (name === 'labProducts') this.renderProducts();
         if (name === 'labPos') this.renderPOS();
+        if (name === 'labResults') { this.renderLabHistory(); this.clearLabResultForm(false); }
         if (name === 'labSales') this.renderSales();
         if (name === 'labReports') { this.renderExpiryReport(); this.renderSalesReport(); }
     },
@@ -1420,6 +2367,33 @@ const LAB = {
         sales.unshift(sale);
         this.save(this.CONFIG.KEYS.SALES, sales);
 
+        // Create lab request(s) for this paid sale so Laboratory auto-sees paid orders
+        try {
+            const history = this.load(this.RESULTS_KEY);
+            const saleDate = sale.date.split('T')[0];
+            sale.items.forEach(it => {
+                // prevent duplicates for same sale and item
+                const exists = history.find(h => h.saleRef === sale.id && h.requestedTest === it.name && h.paymentStatus === 'Paid');
+                if (exists) return;
+                const req = {
+                    id: this.gid(),
+                    reportNumber: this.generateLabReportNumber(),
+                    reportDate: sale.date,
+                    patientName: sale.customer,
+                    patientId: `PID-${Date.now().toString().slice(-6)}`,
+                    requestedTest: it.name,
+                    paymentStatus: 'Paid',
+                    status: 'Pending',
+                    saleRef: sale.id,
+                    results: []
+                };
+                history.unshift(req);
+            });
+            this.save(this.RESULTS_KEY, history);
+            // notify lab UI in same window and other tabs
+            window.dispatchEvent(new Event('lab-data-updated'));
+            try { localStorage.setItem(this.RESULTS_KEY, JSON.stringify(history)); } catch(e){/* ignore */}
+        } catch(e) { console.warn('Failed to create lab requests', e); }
         this.printReceipt(sale);
         Swal.fire({ icon: 'success', title: 'Payment Successful', text: `Receipt #${sale.receiptNo}`, timer: 2000 });
         this.clearCart();
@@ -1431,44 +2405,337 @@ const LAB = {
             <tr><td>${item.qty}x ${this.sanitize(item.name)}</td><td class="text-right">${this.fmtMoney(item.unitPrice)}</td><td class="text-right">${this.fmtMoney(item.total)}</td></tr>
         `).join('');
 
+        // try to include structured lab result table if available in results history
         let resultsHtml = '';
-        if (sale.results && sale.results.trim()) {
-            resultsHtml = `
-                <hr style="border:1px dashed #333; margin:10px 0;">
-                <p style="font-weight:bold; text-align:center; font-size:13px;">🧪 TEST RESULTS</p>
-                <div style="white-space:pre-wrap; font-size:11px; background:#f8f9fa; padding:8px; border-radius:4px; border:1px solid #ddd;">${this.sanitize(sale.results, 1000)}</div>
-            `;
+        try {
+            const labHistory = this.load(this.RESULTS_KEY);
+            const match = labHistory.find(r => r.patientName && sale.customer && r.patientName.toLowerCase() === sale.customer.toLowerCase() && new Date(r.reportDate).toDateString() === new Date(sale.date).toDateString());
+            if (match) {
+                // include only the result table portion for compact receipt
+                resultsHtml = `<hr style="border:1px dashed #333; margin:10px 0;"><p style="font-weight:bold; text-align:left; font-size:13px; margin:0 0 6px 0;">🧪 TEST RESULTS</p>${this.formatLabResultTable(match)}`;
+            } else if (sale.results && sale.results.trim()) {
+                resultsHtml = `
+                    <hr style="border:1px dashed #333; margin:10px 0;">
+                    <p style="font-weight:bold; text-align:right; font-size:13px; margin:0 0 6px 0;">🧪 TEST RESULTS</p>
+                    <div style="white-space:pre-wrap; font-size:11px; background:#f8f9fa; padding:8px; border-radius:4px; border:1px solid #ddd;">${this.sanitize(sale.results, 1000)}</div>
+                `;
+            }
+        } catch (e) {
+            if (sale.results && sale.results.trim()) {
+                resultsHtml = `
+                    <hr style="border:1px dashed #333; margin:10px 0;">
+                    <p style="font-weight:bold; text-align:left; font-size:13px; margin:0 0 6px 0;">🧪 TEST RESULTS</p>
+                    <div style="white-space:pre-wrap; font-size:11px; background:#f8f9fa; padding:8px; border-radius:4px; border:1px solid #ddd;">${this.sanitize(sale.results, 1000)}</div>
+                `;
+            }
         }
 
         this.$('labReceiptContent').innerHTML = `
-            <div class="receipt-header">
-                <h3>🧪 BAXNAANO LAB</h3>
-                <p>Lab Management System</p>
-                <p>${new Date(sale.date).toLocaleString()}</p>
-            </div>
-            <p><strong>Receipt:</strong> ${sale.receiptNo}</p>
-            <p><strong>Customer:</strong> ${this.sanitize(sale.customer)}</p>
-            <p><strong>Cashier:</strong> ${sale.cashier}</p>
-            <table class="receipt-items">
-                <tr><th>Item</th><th class="text-right">Price</th><th class="text-right">Total</th></tr>
-                ${itemsHtml}
-            </table>
-            <div class="receipt-total">
-                <div class="receipt-total-row"><span>Subtotal:</span><span>${this.fmtMoney(sale.subtotal)}</span></div>
-                ${sale.discount > 0 ? `<div class="receipt-total-row"><span>Discount:</span><span>-${this.fmtMoney(sale.discount)}</span></div>` : ''}
-                <div class="receipt-total-row" style="font-weight:bold; font-size:14px; margin-top:5px;"><span>TOTAL:</span><span>${this.fmtMoney(sale.total)}</span></div>
-                <div class="receipt-total-row"><span>Method:</span><span>${sale.paymentMethod.toUpperCase()}</span></div>
-            </div>
-            ${resultsHtml}
-            <div class="receipt-barcode">**** ${sale.receiptNo} ****</div>
-            <div class="receipt-footer">
-                <p>Thank you for choosing us!</p>
-                <p>For inquiries, please contact the lab</p>
+            <div class="receipt">
+                <div class="receipt-header">
+                    <h3>🧪 BAXNAANO LAB</h3>
+                    <p>Lab Management System</p>
+                    <p>${new Date(sale.date).toLocaleString()}</p>
+                </div>
+                <p style="text-align:right"><strong>Receipt:</strong> ${sale.receiptNo}</p>
+                <p style="text-align:right"><strong>Customer:</strong> ${this.sanitize(sale.customer)}</p>
+                <p style="text-align:right"><strong>Cashier:</strong> ${sale.cashier}</p>
+                <table class="receipt-items">
+                    <tr><th style="text-align:right">Item</th><th class="text-right">Price</th><th class="text-right">Total</th></tr>
+                    ${itemsHtml}
+                </table>
+                <div class="receipt-total">
+                    <div class="receipt-total-row"><span>Subtotal:</span><span>${this.fmtMoney(sale.subtotal)}</span></div>
+                    ${sale.discount > 0 ? `<div class="receipt-total-row"><span>Discount:</span><span>-${this.fmtMoney(sale.discount)}</span></div>` : ''}
+                    <div class="receipt-total-row" style="font-weight:bold; font-size:14px; margin-top:5px;"><span>TOTAL:</span><span>${this.fmtMoney(sale.total)}</span></div>
+                    <div class="receipt-total-row"><span>Method:</span><span>${sale.paymentMethod.toUpperCase()}</span></div>
+                </div>
+                ${resultsHtml}
+                <div class="receipt-barcode">**** ${sale.receiptNo} ****</div>
+                <div class="receipt-footer">
+                    <p style="text-align:right">Thank you for choosing us!</p>
+                    <p style="text-align:right">For inquiries, please contact the lab</p>
+                </div>
             </div>
         `;
         this.$('labPrintArea').style.display = 'block';
         window.print();
         this.$('labPrintArea').style.display = 'none';
+    },
+
+    generateLabReportNumber() {
+        const now = new Date();
+        const stamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+        const suffix = Math.floor(1000 + Math.random() * 9000);
+        return `LR-${stamp}-${suffix}`;
+    },
+
+    renderResultTemplate() {
+        const type = this.$('labResultTestType').value;
+        const container = this.$('labResultTableContainer');
+        container.innerHTML = '';
+        if (!type || !this.TEST_TEMPLATES[type]) { container.style.display = 'none'; return; }
+        const rows = this.TEST_TEMPLATES[type].map((item, index) => `
+            <tr>
+                <td>${item.name}</td>
+                <td><input type="text" class="form-control" data-result-index="${index}" placeholder="Enter result"></td>
+                <td>${item.unit}</td>
+                <td>${item.range}</td>
+            </tr>
+        `).join('');
+        container.innerHTML = `
+            <div class="report-note">Enter values for the selected test template. Each test type has a custom table format for professional reporting.</div>
+            <table class="report-table">
+                <thead><tr><th>Test</th><th>Result</th><th>Unit</th><th>Normal Range</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        `;
+        container.style.display = 'block';
+    },
+
+    assembleLabResult() {
+        const type = this.$('labResultTestType').value;
+        const template = this.TEST_TEMPLATES[type] || [];
+        const values = Array.from(this.$('labResultTableContainer').querySelectorAll('input[data-result-index]')).map(input => input.value.trim() || '---');
+        const rows = template.map((item, idx) => ({
+            test: item.name,
+            result: values[idx] || '---',
+            unit: item.unit,
+            range: item.range
+        }));
+        return {
+            reportNumber: this.$('labResultPatientId').value.trim() || this.generateLabReportNumber(),
+            recordId: this.$('labResultRecordId').value.trim() || '',
+            reportDate: new Date().toISOString(),
+            patientName: this.$('labResultPatientName').value.trim(),
+            patientId: this.$('labResultPatientId').value.trim() || `PID-${Date.now().toString().slice(-6)}`,
+            patientAge: this.$('labResultPatientAge').value.trim(),
+            patientGender: this.$('labResultPatientGender').value,
+            doctorName: this.$('labResultDoctorName').value.trim(),
+            technician: this.$('labResultTechnician').value.trim(),
+            testType: type,
+            status: this.$('labResultStatus').value,
+            comment: this.$('labResultComment').value.trim(),
+            results: rows,
+            printedAt: null
+        };
+    },
+
+    saveLabResult() {
+        const data = this.assembleLabResult();
+        if (!data.patientName || !data.testType) {
+            Swal.fire({ icon: 'warning', title: 'Missing fields', text: 'Enter patient name and select a test type.' });
+            return;
+        }
+        const history = this.load(this.RESULTS_KEY);
+        // use stable record id if present
+        let recId = data.recordId || this.gid();
+        const existingIndex = history.findIndex(h => h.id === recId);
+        // If results have values, mark as Completed automatically
+        const hasValues = (data.results || []).some(r => r.result && r.result !== '---');
+        data.status = hasValues ? 'Completed' : data.status;
+        const record = { id: recId, ...data };
+        if (existingIndex !== -1) history[existingIndex] = record; else history.unshift(record);
+        this.save(this.RESULTS_KEY, history);
+        // write back stable ids to the form so subsequent prints use same record
+        this.$('labResultRecordId').value = recId;
+        this.$('labResultPatientId').value = data.reportNumber;
+        Swal.fire({ icon: 'success', title: 'Result saved', timer: 1200 });
+        this.clearLabResultForm(false);
+        this.renderLabHistory();
+        // notify other parts of app
+        window.dispatchEvent(new Event('lab-data-updated'));
+        try { localStorage.setItem(this.RESULTS_KEY, JSON.stringify(history)); } catch(e){}
+    },
+
+    generateLabPreview() {
+        const data = this.assembleLabResult();
+        if (!data.patientName || !data.testType) {
+            Swal.fire({ icon: 'warning', title: 'Missing fields', text: 'Enter patient name and select a test type.' });
+            return;
+        }
+        const html = this.formatLabReportHtml(data);
+        this.$('labResultPreview').innerHTML = html;
+        if (data.status === 'Printed') this.$('labResultStatus').value = 'Printed';
+    },
+
+    formatLabReportHtml(data) {
+        const rows = data.results.map(item => `
+            <tr>
+                <td>${item.test}</td>
+                <td>${item.result}</td>
+                <td>${item.unit}</td>
+                <td>${item.range}</td>
+            </tr>
+        `).join('');
+        return `
+            <div class="report-shell">
+                <div class="report-header">
+                    <div class="report-brand">
+                        <img src="https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png" alt="Hospital Logo">
+                        <div>
+                            <div class="report-title">BAXNAANO LABORATORY</div>
+                            <div class="report-subtitle">Laboratory Result Report</div>
+                        </div>
+                    </div>
+                    <div class="report-status ${data.status === 'Pending' ? 'status-pending' : data.status === 'Completed' ? 'status-completed' : 'status-printed'}">${data.status}</div>
+                </div>
+                <div class="report-grid">
+                    <div class="info-card"><h4>Patient</h4><p><strong>Name:</strong> ${data.patientName}</p><p><strong>ID:</strong> ${data.patientId}</p><p><strong>Age:</strong> ${data.patientAge || 'N/A'}</p><p><strong>Gender:</strong> ${data.patientGender || 'N/A'}</p></div>
+                    <div class="info-card"><h4>Report</h4><p><strong>Report #:</strong> ${data.reportNumber}</p><p><strong>Date:</strong> ${new Date(data.reportDate).toLocaleDateString()}</p><p><strong>Test:</strong> ${data.testType}</p><p><strong>Doctor:</strong> ${data.doctorName || 'N/A'}</p></div>
+                    <div class="info-card"><h4>Laboratory</h4><p><strong>Technician:</strong> ${data.technician || 'N/A'}</p><p><strong>Location:</strong> Baxnaano Integrated Lab</p><p><strong>Phone:</strong> +000 0000 000</p></div>
+                    <div class="info-card"><h4>Notes</h4><p>${data.comment || 'No additional comments.'}</p></div>
+                </div>
+                <table class="report-table">
+                    <thead><tr><th>Laboratory Test</th><th>Result</th><th>Unit</th><th>Normal Range</th></tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                <div class="report-note">The above results are generated automatically and are suitable for A4 printing. Please review values and ensure signatures are completed before filing.</div>
+                <div class="signature-row">
+                    <div class="signature-box">Technician Signature</div>
+                    <div class="signature-box">Doctor Signature</div>
+                    <div class="stamp-area">Hospital Stamp Area</div>
+                </div>
+            </div>
+        `;
+    },
+
+    formatLabResultTable(data) {
+        // produce only the table section for embedding in receipts
+        const rows = (data.results || []).map(item => `
+            <tr>
+                <td style="padding:6px 8px; border:1px solid #e5e7eb; text-align:left;">${item.test}</td>
+                <td style="padding:6px 8px; border:1px solid #e5e7eb; text-align:left;">${item.result}</td>
+                <td style="padding:6px 8px; border:1px solid #e5e7eb; text-align:left;">${item.unit}</td>
+                <td style="padding:6px 8px; border:1px solid #e5e7eb; text-align:left;">${item.range}</td>
+            </tr>
+        `).join('');
+        return `
+            <div style="font-size:12px; margin:8px 0; text-align:left;">
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr><th style="background:#f1f5f9; padding:6px 8px; border:1px solid #e5e7eb; text-align:left;">Test</th><th style="background:#f1f5f9; padding:6px 8px; border:1px solid #e5e7eb; text-align:left;">Result</th><th style="background:#f1f5f9; padding:6px 8px; border:1px solid #e5e7eb; text-align:left;">Unit</th><th style="background:#f1f5f9; padding:6px 8px; border:1px solid #e5e7eb; text-align:left;">Normal Range</th></tr>
+                    </thead>
+                    <tbody>
+                        ${rows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    },
+
+    printLabReport() {
+        const data = this.assembleLabResult();
+        if (!data.patientName || !data.testType) {
+            Swal.fire({ icon: 'warning', title: 'Missing fields', text: 'Enter patient name and select a test type before printing.' });
+            return;
+        }
+        const history = this.load(this.RESULTS_KEY);
+        // If record id exists update that record, otherwise create one
+        let recId = data.recordId || this.$('labResultRecordId').value.trim() || this.gid();
+        const idx = history.findIndex(h => h.id === recId);
+        const record = { id: recId, ...data, status: 'Printed', printedAt: new Date().toISOString() };
+        if (idx !== -1) history[idx] = record; else history.unshift(record);
+        this.save(this.RESULTS_KEY, history);
+        // persist ids to form
+        this.$('labResultRecordId').value = recId;
+        this.$('labResultPatientId').value = data.reportNumber;
+        this.$('labResultPreview').innerHTML = this.formatLabReportHtml(record);
+        this.$('labResultHistoryFilter').value = 'all';
+        this.renderLabHistory();
+        this.$('labPrintArea').style.display = 'block';
+        this.$('labReceiptContent').innerHTML = this.formatLabReportHtml(record);
+        window.print();
+        this.$('labPrintArea').style.display = 'none';
+    },
+
+    clearLabResultForm(resetPreview = true) {
+        ['labResultPatientName','labResultPatientId','labResultPatientAge','labResultPatientGender','labResultDoctorName','labResultTechnician','labResultTestType','labResultStatus','labResultComment'].forEach(id => {
+            const el = this.$(id);
+            if (!el) return;
+            if (el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = '';
+        });
+        this.$('labResultStatus').value = 'Pending';
+        this.$('labResultTableContainer').style.display = 'none';
+        this.$('labResultTableContainer').innerHTML = '';
+        if (resetPreview) this.$('labResultPreview').innerHTML = '';
+    },
+
+    renderLabHistory() {
+        const query = this.$('labResultHistorySearch').value.trim().toLowerCase();
+        const filter = this.$('labResultHistoryFilter').value;
+        const history = this.load(this.RESULTS_KEY);
+        const list = history.filter(item => {
+            if (filter !== 'all' && item.status !== filter) return false;
+            const combined = `${item.patientName} ${item.reportNumber} ${item.doctorName} ${item.testType}`.toLowerCase();
+            return !query || combined.includes(query);
+        });
+        const tbody = this.$('labResultHistoryTable');
+        tbody.innerHTML = list.map(item => {
+            const displayTest = item.requestedTest || item.testType || (item.results && item.results.length ? item.testType : '-');
+            const statusClass = item.status === 'Pending' ? 'status-pending' : item.status === 'Sample Taken' ? 'status-completed' : item.status === 'Processing' ? 'status-printed' : item.status === 'Completed' ? 'status-completed' : '';
+            return `
+            <tr>
+                <td><strong>${item.reportNumber || '-'}</strong></td>
+                <td>${new Date(item.reportDate || item.reportDate || Date.now()).toLocaleDateString()}</td>
+                <td style="text-align:right;">${this.sanitize(item.patientName)}</td>
+                <td style="text-align:right;">${this.sanitize(displayTest)}</td>
+                <td><span class="report-status ${statusClass}">${item.status}</span></td>
+                <td style="text-align:right;">
+                    <button class="btn-accent btn-sm" onclick="LAB.openLabResult('${item.id}')">View</button>
+                    <button class="btn-info btn-sm" onclick="LAB.reprintLabResult('${item.id}')">Print</button>
+                    <button class="btn-success btn-sm" onclick="LAB.updateLabStatus('${item.id}','Sample Taken')">Sample Taken</button>
+                    <button class="btn-warning btn-sm" onclick="LAB.updateLabStatus('${item.id}','Processing')">Processing</button>
+                    <button class="btn-danger btn-sm" onclick="LAB.updateLabStatus('${item.id}','Completed')">Complete</button>
+                </td>
+            </tr>
+            `;
+        }).join('');
+    },
+
+    updateLabStatus(recordId, status) {
+        const history = this.load(this.RESULTS_KEY);
+        const idx = history.findIndex(h => h.id === recordId);
+        if (idx === -1) return;
+        history[idx].status = status;
+        this.save(this.RESULTS_KEY, history);
+        this.renderLabHistory();
+        window.dispatchEvent(new Event('lab-data-updated'));
+        try { localStorage.setItem(this.RESULTS_KEY, JSON.stringify(history)); } catch(e){}
+    },
+
+    openLabResult(recordId) {
+        const history = this.load(this.RESULTS_KEY);
+        const item = history.find(r => r.id === recordId);
+        if (!item) return;
+        this.$('labResultPatientName').value = item.patientName;
+        this.$('labResultPatientId').value = item.patientId;
+        this.$('labResultPatientAge').value = item.patientAge;
+        this.$('labResultPatientGender').value = item.patientGender;
+        this.$('labResultDoctorName').value = item.doctorName;
+        this.$('labResultTechnician').value = item.technician;
+        this.$('labResultTestType').value = item.testType;
+        this.$('labResultStatus').value = item.status;
+        this.$('labResultComment').value = item.comment;
+        this.renderResultTemplate();
+        const inputs = this.$('labResultTableContainer').querySelectorAll('input[data-result-index]');
+        item.results.forEach((row, idx) => { if (inputs[idx]) inputs[idx].value = row.result || ''; });
+        this.$('labResultPreview').innerHTML = this.formatLabReportHtml(item);
+        this.showView('labResults');
+    },
+
+    reprintLabResult(recordId) {
+        const history = this.load(this.RESULTS_KEY);
+        const item = history.find(r => r.id === recordId);
+        if (!item) return;
+        item.status = 'Printed';
+        item.printedAt = new Date().toISOString();
+        this.save(this.RESULTS_KEY, history);
+        this.$('labReceiptContent').innerHTML = this.formatLabReportHtml(item);
+        this.$('labPrintArea').style.display = 'block';
+        window.print();
+        this.$('labPrintArea').style.display = 'none';
+        this.renderLabHistory();
     },
 
     // ── SALES & RESULTS ──
@@ -1664,6 +2931,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Lab login enter key
     document.getElementById('labLoginUsername')?.addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('labLoginPassword').focus(); });
     document.getElementById('labLoginPassword')?.addEventListener('keypress', e => { if (e.key === 'Enter') LAB.handleLogin(); });
+
+    // Real-time update listener for lab data across pages/tabs
+    window.addEventListener('storage', (e) => {
+        if (!e.key) return;
+        if (e.key === LAB.RESULTS_KEY) {
+            LAB.renderLabHistory();
+        }
+    });
+    window.addEventListener('lab-data-updated', () => {
+        LAB.renderLabHistory();
+        if (HOSPITAL.currentUser?.role === 'doctor') HOSPITAL.renderDoctorPanel();
+    });
+    // Custom event for same-window updates
 });
 </script>
 </body>
