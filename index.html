@@ -9,8 +9,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <style>
 :root {
-  --primary: #7c3e52;
-  --primary-dark: #5a2d3e;
+  --primary: #714B67;
+  --primary-dark: #714B67;
   --primary-light: #a85470;
   --accent: #17a2b8;
   --accent2: #28a745;
@@ -496,13 +496,9 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
                   </div>
                 </div>
 
-                <!-- Patient History - clinical required field -->
-                <div class="form-section">
-                  <div class="form-section-title">Patient History <span class="req" style="color:var(--danger);font-size:.75rem;">* Required</span></div>
-                  <div class="form-group">
-                    <label>Chief Complaint / History of Present Illness</label>
-                    <textarea id="hPatientHistory" class="form-control history-field" rows="4" placeholder="Describe symptoms, duration, relevant medical history, allergies, current medications, past surgeries, chronic conditions..."></textarea>
-                  </div>
+                <div class="form-group" style="margin-top:1rem;">
+                  <label>Additional Notes</label>
+                  <textarea id="hPatientNotes" class="form-control" rows="3" placeholder="Optional notes, referrals, allergies, or special instructions."></textarea>
                 </div>
               </div>
 
@@ -876,10 +872,11 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
             <div class="form-grid-4" style="gap:.6rem;margin-bottom:.75rem;">
               <div class="form-group"><label>Patient Name*</label><input id="lrPatient" class="form-control" placeholder="Patient name"></div>
               <div class="form-group"><label>Report #</label><input id="lrPatientId" class="form-control" placeholder="Auto generated"><input type="hidden" id="lrRecordId"></div>
+              <div class="form-group"><label>Phone Number</label><input id="lrPhone" class="form-control" placeholder="e.g. 0612345678" type="tel"></div>
               <div class="form-group"><label>Age</label><input id="lrAge" class="form-control" type="number" min="0" max="120" placeholder="Age"></div>
-              <div class="form-group"><label>Gender</label><select id="lrGender" class="form-select"><option value="">Select</option><option>Male</option><option>Female</option></select></div>
+              <div class="form-group"><label>Gender</label><select id="lrGender" class="form-select"><option value="">Select gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
             </div>
-            <div class="form-grid-4" style="gap:.6rem;margin-bottom:.75rem;">
+            <div class="form-grid-3" style="gap:.6rem;margin-bottom:.75rem;">
               <div class="form-group"><label>Doctor Name</label><input id="lrDoctor" class="form-control" placeholder="Attending doctor"></div>
               <div class="form-group"><label>Technician</label><input id="lrTech" class="form-control" placeholder="Lab technician"></div>
               <div class="form-group"><label>Test Type*</label>
@@ -1258,8 +1255,8 @@ const HOSP = {
     $('hPatientAge').value=a.patientAge||'';
     // Sex - dropdown
     $('hPatientSex').value=a.sex||'';
-    // Patient history
-    $('hPatientHistory').value=a.patientHistory||'';
+    // Patient notes
+    $('hPatientNotes').value=a.patientNotes||a.patientHistory||'';
     // Appointment fields
     $('hApptDate').value=a.apptDate?a.apptDate.slice(0,16):'';
     $('hApptType').value=a.apptType||'New';
@@ -1303,7 +1300,7 @@ const HOSP = {
     $('hPatientMobile').value='';
     $('hPatientAge').value='';
     $('hPatientSex').value='';
-    $('hPatientHistory').value='';
+    $('hPatientNotes').value='';
     $('hApptDate').value='';
     $('hApptType').value='New';
     $('hBranch').value='HQ';
@@ -1366,7 +1363,7 @@ const HOSP = {
       mobile:$('hPatientMobile').value.trim(),
       patientAge:age,
       sex:$('hPatientSex').value,
-      patientHistory:$('hPatientHistory').value.trim(),
+      patientNotes:$('hPatientNotes').value.trim(),
       apptDate:$('hApptDate').value,
       apptType:$('hApptType').value,
       branch:$('hBranch').value,
@@ -1383,7 +1380,6 @@ const HOSP = {
     if(!fd.patientName) errs.push('Patient Name is required');
     if(fd.patientAge===''||fd.patientAge<0||fd.patientAge>120) errs.push('Age must be between 0 and 120');
     if(!fd.sex) errs.push('Sex is required');
-    if(!fd.patientHistory) errs.push('Patient History is required');
     if(!fd.doctor) errs.push('Doctor is required');
     if(!fd.chargeType) errs.push('Charge Type is required');
     return errs;
@@ -1445,7 +1441,7 @@ const HOSP = {
       patients.unshift({
         id:gid('P'),name:fd.patientName,mobile:fd.mobile,
         sex:fd.sex,age:fd.patientAge,
-        history:fd.patientHistory,
+        history:fd.patientNotes,notes:fd.patientNotes,
         createdAt:new Date().toISOString()
       });
       ls_set(this.K.PATIENTS,patients);
@@ -1506,8 +1502,8 @@ const HOSP = {
     $('hPatientAge').value=p.age!==undefined&&p.age!==null&&p.age!==''?p.age:'';
     // Sex - set dropdown value
     $('hPatientSex').value=p.sex||'';
-    // History if exists
-    if(p.history) $('hPatientHistory').value=p.history;
+    // Notes if exists
+    if(p.notes||p.history) $('hPatientNotes').value=p.notes||p.history;
     $('hPatientDrop').style.display='none';
     // Fill last visit from appointments
     const appts=ls_get(this.K.APPTS)
@@ -1613,55 +1609,50 @@ const HOSP = {
   printAppt(id){
     const a=ls_get(this.K.APPTS).find(x=>x.id===id);if(!a)return;
     doPrint(`
-      <div style="max-width:640px;margin:0 auto;font-family:Arial,sans-serif;padding:20px;">
-        <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #5a2d3e;">
-          <img src="https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png" style="width:60px;">
-          <div>
-            <div style="font-size:1.3rem;font-weight:700;color:#0f3d73;">BAXNAANO HOSPITAL</div>
-            <div style="color:#666;font-size:.85rem;">Appointment Receipt — ${new Date().toLocaleDateString()}</div>
+      <div style="max-width:320px;margin:0 auto;font-family:'Courier New',monospace;font-size:13px;padding:20px 0;line-height:1.4;">
+        <div style="text-align:center;margin-bottom:10px;">
+          <div style="font-size:16px;font-weight:700;letter-spacing:1px;">BAXNAANO HOSPITAL</div>
+        </div>
+        <div style="border-top:2px dashed #333;border-bottom:2px dashed #333;padding:8px 0;margin-bottom:10px;font-size:12px;text-align:center;">
+          Date: ${new Date().toLocaleDateString()}
+        </div>
+        <div style="text-align:center;margin-bottom:15px;">
+          <div style="font-size:14px;font-weight:700;color:#000;">NUMBER KA </div>
+          <div style="font-size:48px;font-weight:700;color:#c41e3a;line-height:1;margin:5px 0;">${a.queueNum||0}</div>
+        </div>
+        <div style="border-top:1px dashed #333;border-bottom:1px dashed #333;padding:8px 0;margin-bottom:10px;font-size:11px;">
+          <div style="margin-bottom:4px;"><span style="font-weight:750;">Patient Name:</span></div>
+          <div style="margin-bottom:20px;">${a.patientName||'—'}</div>
+          <div style="margin-bottom:4px;"><span style="font-weight:700;">Phone Number:</span></div>
+          <div style="margin-bottom:8px;">${a.mobile||'—'}</div>
+          <div style="margin-bottom:4px;"><span style="font-weight:700;">Appointment Type:</span></div>
+          <div style="margin-bottom:0;">${a.apptType||'New'} (${a.patientType||'OPD'})</div>
+        </div>
+        <div style="border-top:1px dashed #333;border-bottom:1px dashed #333;padding:8px 0;margin-bottom:10px;font-size:11px;">
+          <div style="margin-bottom:4px;"><span style="font-weight:750;">Doctor:</span></div>
+          <div style="margin-bottom:20px;">${a.doctor||'—'}</div>
+          <div style="margin-bottom:4px;"><span style="font-weight:700;">Department:</span></div>
+          <div style="margin-bottom:0;">${a.department||'—'}</div>
+        </div>
+        <div style="border-top:1px dashed #333;border-bottom:1px dashed #333;padding:8px 0;margin-bottom:10px;font-size:11px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-weight:700;">Amount:</span>
+            <span style="font-weight:700;color:#28a745;">${fmtMoney(a.amount||0)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-weight:700;">Payment Method:</span>
+            <span>${a.paymentMethod||'Cash'}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="font-weight:700;">Cashier:</span>
+            <span>${a.cashier||'—'}</span>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-          <div style="background:#f8fbff;border:1px solid #e2efff;border-radius:6px;padding:12px;">
-            <h4 style="font-size:.75rem;color:#2a4365;margin-bottom:6px;text-transform:uppercase;">Patient</h4>
-            <p><strong>Name:</strong> ${a.patientName||'—'}</p>
-            <p><strong>Age:</strong> ${a.patientAge||'—'}</p>
-            <p><strong>Sex:</strong> ${a.sex||'—'}</p>
-            <p><strong>Phone:</strong> ${a.mobile||'—'}</p>
-            <p><strong>Type:</strong> ${a.patientType||'OPD'}</p>
-          </div>
-          <div style="background:#f8fbff;border:1px solid #e2efff;border-radius:6px;padding:12px;">
-            <h4 style="font-size:.75rem;color:#2a4365;margin-bottom:6px;text-transform:uppercase;">Appointment</h4>
-            <p><strong>Appt #:</strong> ${a.apptNum||'—'}</p>
-            <p><strong>Queue #:</strong> <span style="font-size:1.5rem;font-weight:700;color:red;">${a.queueNum||0}</span></p>
-            <p><strong>Visit Date:</strong> ${a.apptDate?fmtDT(a.apptDate):'—'}</p>
-            <p><strong>Appt Type:</strong> ${a.apptType||'New'}</p>
-          </div>
-          <div style="background:#f8fbff;border:1px solid #e2efff;border-radius:6px;padding:12px;">
-            <h4 style="font-size:.75rem;color:#2a4365;margin-bottom:6px;text-transform:uppercase;">Doctor</h4>
-            <p><strong>Department:</strong> ${a.department||'—'}</p>
-            <p><strong>Doctor:</strong> ${a.doctor||'—'}</p>
-            <p><strong>Branch:</strong> ${a.branch||'HQ'}</p>
-          </div>
-          <div style="background:#f8fbff;border:1px solid #e2efff;border-radius:6px;padding:12px;">
-            <h4 style="font-size:.75rem;color:#2a4365;margin-bottom:6px;text-transform:uppercase;">Payment</h4>
-            <p><strong>Charge Type:</strong> ${a.chargeType||'—'}</p>
-            <p><strong>Amount:</strong> <strong style="color:green;">${fmtMoney(a.amount||0)}</strong></p>
-            <p><strong>Paid:</strong> ${fmtMoney(a.paid||0)}</p>
-            <p><strong>Method:</strong> ${a.paymentMethod||'Cash'}</p>
-          </div>
+        <div style="text-align:center;padding:10px 0;margin-bottom:8px;border-top:2px dashed #333;border-bottom:2px dashed #333;font-size:12px;font-weight:700;">
+          WAKU MAAHSAN TAHAY DORASHADADA NUMBER KA WAXAA OO KUU SHAQEENAYA MUDO 1 BIL AH .
         </div>
-        ${a.patientHistory?`<div style="padding:10px;border:1px solid #ddd;border-radius:4px;background:#fff8f0;margin-bottom:12px;">
-          <strong style="font-size:.75rem;text-transform:uppercase;color:#5a2d3e;">Patient History / Chief Complaint</strong><br>
-          <span style="font-size:.9rem;">${a.patientHistory}</span>
-        </div>`:''}
-        <div style="text-align:center;padding:10px;border:1px solid #ddd;border-radius:6px;background:#f9fafb;margin-bottom:12px;">
-          Please wait for your queue number to be called. Queue #<strong style="font-size:1.2rem;color:red;">${a.queueNum||0}</strong>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:20px;">
-          <div style="border-top:1px solid #ddd;padding-top:6px;text-align:center;font-size:.8rem;color:#666;">Cashier Signature</div>
-          <div style="border-top:1px solid #ddd;padding-top:6px;text-align:center;font-size:.8rem;color:#666;">Patient Signature</div>
-          <div style="border-top:1px solid #ddd;padding-top:6px;text-align:center;font-size:.8rem;color:#666;">Date: ${new Date().toLocaleDateString()}</div>
+        <div style="text-align:center;font-size:14px;font-weight:700;margin-top:15px;">
+          Thank You
         </div>
       </div>
     `);
@@ -1754,7 +1745,7 @@ const HOSP = {
       <div style="padding:.4rem 0;border-bottom:1px solid #f5f5f5;">
         <strong>${a.patientName||'—'}</strong> <span class="badge badge-secondary" style="font-size:10px;">${a.sex||'—'}</span>
         <div style="font-size:11px;color:var(--text-muted);">Age: ${a.patientAge||'—'} · ${a.mobile||''} · ${a.doctor||''}</div>
-        ${a.patientHistory?`<div style="font-size:11px;color:#5a2d3e;font-style:italic;margin-top:2px;">${a.patientHistory.slice(0,80)}${a.patientHistory.length>80?'...':''}</div>`:''}
+        ${a.patientNotes||a.patientHistory?`<div style="font-size:11px;color:#5a2d3e;font-style:italic;margin-top:2px;">${(a.patientNotes||a.patientHistory).slice(0,80)}${(a.patientNotes||a.patientHistory).length>80?'...':''}</div>`:''}
       </div>`).join(''):'<p style="color:var(--text-muted)">No patients yet.</p>';
   },
 
@@ -1766,7 +1757,7 @@ const HOSP = {
       <div style="padding:.4rem 0;border-bottom:1px solid #f5f5f5;">
         <strong>${a.patientName||'—'}</strong> <span class="badge badge-secondary" style="font-size:10px;">${a.sex||'—'}</span>
         <div style="font-size:11px;color:var(--text-muted);">Age: ${a.patientAge||'—'} · ${a.mobile||''} · ${a.doctor||''}</div>
-        ${a.patientHistory?`<div style="font-size:11px;color:#5a2d3e;font-style:italic;margin-top:2px;">${a.patientHistory.slice(0,80)}${a.patientHistory.length>80?'...':''}</div>`:''}
+        ${a.patientNotes||a.patientHistory?`<div style="font-size:11px;color:#5a2d3e;font-style:italic;margin-top:2px;">${(a.patientNotes||a.patientHistory).slice(0,80)}${(a.patientNotes||a.patientHistory).length>80?'...':''}</div>`:''}
       </div>`).join('')||'<p style="color:var(--text-muted)">No results.</p>';
   },
 
@@ -1835,7 +1826,7 @@ const HOSP = {
 // ═══════════════════════════════════════════
 // LAB MODULE
 // ═══════════════════════════════════════════
-const LAB = {
+const LAB = window.LAB = {
   K:{USERS:'bax_lab_users',PRODUCTS:'bax_lab_products',SALES:'bax_lab_sales',SESSION:'bax_lab_sess'},
   RESULTS_KEY:'bax_lab_results',
   TEMPLATES:{
@@ -2160,10 +2151,15 @@ const LAB = {
       id:$('lrRecordId').value.trim()||gid('LR'),
       reportNumber:$('lrPatientId').value.trim()||('LR-'+Date.now().toString().slice(-8)),
       reportDate:new Date().toISOString(),
-      patientName:$('lrPatient').value.trim(),patientId:$('lrPatientId').value.trim()||'',
-      patientAge:$('lrAge').value,patientGender:$('lrGender').value,
-      doctorName:$('lrDoctor').value.trim(),technician:$('lrTech').value.trim(),
-      testType:type,status:$('lrStatus').value,comment:$('lrComment').value.trim(),
+      patientName:$('lrPatient').value.trim(),
+      patientPhone:$('lrPhone').value.trim()||'',
+      patientAge:$('lrAge').value,
+      patientGender:$('lrGender').value,
+      doctorName:$('lrDoctor').value.trim(),
+      technician:$('lrTech').value.trim(),
+      testType:type,
+      status:$('lrStatus').value,
+      comment:$('lrComment').value.trim(),
       results:template.map((item,i)=>({test:item.name,result:vals[i]||'—',unit:item.unit,range:item.range}))
     };
   },
@@ -2211,7 +2207,7 @@ const LAB = {
         <span class="badge ${sc}" style="margin-left:auto;">${data.status}</span>
       </div>
       <div class="report-grid">
-        <div class="report-card"><h4>Patient</h4><p><strong>Name:</strong> ${data.patientName||'—'}</p><p><strong>ID:</strong> ${data.patientId||'—'}</p><p><strong>Age:</strong> ${data.patientAge||'—'}</p><p><strong>Gender:</strong> ${data.patientGender||'—'}</p></div>
+        <div class="report-card"><h4>Patient</h4><p><strong>Name:</strong> ${data.patientName||'—'}</p><p><strong>Phone Number:</strong> ${data.patientPhone||data.patientId||'—'}</p><p><strong>Age:</strong> ${data.patientAge||'—'}</p><p><strong>Gender:</strong> ${data.patientGender||'—'}</p></div>
         <div class="report-card"><h4>Report</h4><p><strong>Report #:</strong> ${data.reportNumber}</p><p><strong>Date:</strong> ${fmtDate(data.reportDate)}</p><p><strong>Test:</strong> ${data.testType}</p><p><strong>Doctor:</strong> ${data.doctorName||'—'}</p></div>
         <div class="report-card"><h4>Laboratory</h4><p><strong>Technician:</strong> ${data.technician||'—'}</p><p><strong>Location:</strong> Baxnaano Lab</p></div>
         <div class="report-card"><h4>Notes</h4><p>${data.comment||'No additional comments.'}</p></div>
@@ -2228,7 +2224,7 @@ const LAB = {
   },
 
   clearResultForm(){
-    ['lrPatient','lrPatientId','lrAge','lrDoctor','lrTech','lrComment'].forEach(id=>{const el=$(id);if(el)el.value='';});
+    ['lrPatient','lrPhone','lrPatientId','lrAge','lrDoctor','lrTech','lrComment'].forEach(id=>{const el=$(id);if(el)el.value='';});
     ['lrGender','lrTestType','lrStatus'].forEach(id=>{const el=$(id);if(el)el.value=id==='lrStatus'?'Pending':'';});
     $('lrRecordId').value='';$('lrTable').innerHTML='';$('lrPreview').innerHTML='';
   },
@@ -2239,7 +2235,7 @@ const LAB = {
     const hist=this.load(this.RESULTS_KEY);
     const filtered=hist.filter(item=>{
       if(f!=='all'&&item.status!==f)return false;
-      if(q){const h=`${item.patientName||''} ${item.reportNumber||''} ${item.doctorName||''} ${item.testType||item.requestedTest||''}`.toLowerCase();if(!h.includes(q))return false;}
+      if(q){const h=`${item.patientName||''} ${item.reportNumber||''} ${item.doctorName||''} ${item.testType||item.requestedTest||''} ${item.patientPhone||item.patientId||''}`.toLowerCase();if(!h.includes(q))return false;}
       return true;
     });
     const sc=s=>s==='Pending'?'badge-warning':s==='Completed'?'badge-success':'badge-info';
@@ -2265,7 +2261,9 @@ const LAB = {
 
   openResult(id){
     const item=this.load(this.RESULTS_KEY).find(r=>r.id===id);if(!item)return;
-    $('lrPatient').value=item.patientName||'';$('lrPatientId').value=item.patientId||item.reportNumber||'';
+    $('lrPatient').value=item.patientName||'';
+    $('lrPhone').value=item.patientPhone||item.patientId||'';
+    $('lrPatientId').value=item.reportNumber||'';
     $('lrRecordId').value=item.id;$('lrAge').value=item.patientAge||'';
     $('lrGender').value=item.patientGender||'';$('lrDoctor').value=item.doctorName||'';
     $('lrTech').value=item.technician||'';$('lrTestType').value=item.testType||'';
