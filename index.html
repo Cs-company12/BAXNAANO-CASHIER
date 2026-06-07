@@ -1410,13 +1410,16 @@ const HOSP = {
     const phone = this.formatPhoneForWA(appt.mobile);
     const msg = encodeURIComponent(
       `*BAXNAANO HOSPITAL*\n\n` +
-      `Waa ku soo dhawoow *${appt.patientName || 'Patient'}*\n\n` +
-      `*Numberkaaga Daryeelka:* ${appt.queueNum}\n` +
-      `*Doctor:* ${appt.doctor || '—'}\n` +
-      `*Department:* ${appt.department || '—'}\n` +
-      `*Taariikhda:* ${appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date())}\n` +
-      `*Qiimaha:* ${fmtMoney(appt.amount || 0)}\n\n` +
-      `Fadlan sug numberkaaga ilaa laugu yeedho.`
+      `+----------------------+----------------------------+\n` +
+      `| *Patient*           | ${appt.patientName || 'Patient'}\n` +
+      `| *Queue*             | ${appt.queueNum}\n` +
+      `| *Doctor*            | ${appt.doctor || '—'}\n` +
+      `| *Department*        | ${appt.department || '—'}\n` +
+      `| *Taariikhda*        | ${appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date())}\n` +
+      `| *Qiimaha*           | ${fmtMoney(appt.amount || 0)}\n` +
+      `+----------------------+----------------------------+\n\n` +
+      `NUMBER KA WAXA OO KUSHAQENAYA ILAA MUDO Q BIL AH\n` +
+      `Fadlan sug numberkaaga ilaa laagu yeedho.`
     );
     const url = `https://wa.me/${phone}?text=${msg}`;
     window.open(url, '_blank');
