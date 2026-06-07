@@ -1188,7 +1188,12 @@ const HOSP = {
         if(!hay.includes(q))return false;
       }
       return true;
-    }).sort((a,b)=>a.queueNum-b.queueNum||(new Date(b.createdAt)-new Date(a.createdAt)));
+    }).sort((a,b)=>{
+      // Sort by doctor first, then by queue number (per-doctor), then by creation time
+      if(a.doctor !== b.doctor) return (a.doctor||'').localeCompare(b.doctor||'');
+      const qDiff = a.queueNum - b.queueNum;
+      return qDiff !== 0 ? qDiff : new Date(b.createdAt) - new Date(a.createdAt);
+    });
 
     const tbody=$('hApptBody');tbody.innerHTML='';
     filtered.forEach(a=>{
@@ -1222,10 +1227,10 @@ const HOSP = {
 
   checkAll(cb){document.querySelectorAll('.hApptCheck').forEach(c=>c.checked=cb.checked);},
 
-  // ── DAILY QUEUE: get next number for today only ──
-  getNextQueueNum(){
+  // ── DAILY QUEUE: get next number for today per doctor ──
+  getNextQueueNum(doctor){
     const today = todayStr();
-    const appts = ls_get(this.K.APPTS).filter(a => (a.createdAt || '').startsWith(today));
+    const appts = ls_get(this.K.APPTS).filter(a => (a.createdAt || '').startsWith(today) && a.doctor === doctor);
     return appts.length ? Math.max(...appts.map(a => a.queueNum || 0)) + 1 : 1;
   },
 
@@ -1234,8 +1239,8 @@ const HOSP = {
     this.resetForm();
     $('hFormTitle').textContent='New Appointment';
     $('hApptNumDisp').textContent='/';
-    // Show the next queue number for today as a preview
-    $('hQueueDisp').textContent = this.getNextQueueNum();
+    // Show next queue as 1 (will update when doctor is selected)
+    $('hQueueDisp').textContent = '1';
     const now=new Date();
     $('hApptDate').value=now.toISOString().slice(0,16);
     $('hBtnConfirm').style.display='';
@@ -1347,6 +1352,12 @@ const HOSP = {
     $('hChargeType').innerHTML='<option value="">Select Charge Type</option>'+
       Object.keys(charges).map(c=>`<option value="${c}">${c} — $${charges[c].toFixed(2)}</option>`).join('');
     if(keepCharge) $('hChargeType').value=keepCharge;
+    // Update queue preview based on selected doctor
+    if(doc) {
+      $('hQueueDisp').textContent = this.getNextQueueNum(doc);
+    } else {
+      $('hQueueDisp').textContent = '1';
+    }
     this.updateCharges();
   },
 
@@ -1388,6 +1399,7 @@ const HOSP = {
     if(!fd.patientName) errs.push('Patient Name is required');
     if(fd.patientAge===''||fd.patientAge<0||fd.patientAge>120) errs.push('Age must be between 0 and 120');
     if(!fd.sex) errs.push('Sex is required');
+    if(!fd.department) errs.push('Department is required');
     if(!fd.doctor) errs.push('Doctor is required');
     if(!fd.chargeType) errs.push('Charge Type is required');
     return errs;
@@ -1410,15 +1422,20 @@ const HOSP = {
     const phone = this.formatPhoneForWA(appt.mobile);
     const msg = encodeURIComponent(
       `*BAXNAANO HOSPITAL*\n\n` +
-      `+----------------------+----------------------------+\n` +
-      `| *Patient*           | ${appt.patientName || 'Patient'}\n` +
-      `| *Queue*             | ${appt.queueNum}\n` +
-      `| *Doctor*            | ${appt.doctor || '—'}\n` +
-      `| *Department*        | ${appt.department || '—'}\n` +
-      `| *Taariikhda*        | ${appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date())}\n` +
-      `| *Qiimaha*           | ${fmtMoney(appt.amount || 0)}\n` +
-      `+----------------------+----------------------------+\n\n` +
-      `NUMBER KA WAXA OO KUSHAQENAYA ILAA MUDO Q BIL AH\n` +
+      `__________________________________________________________\n` +
+      `| *Patient*              | ${appt.patientName || 'Patient'}\n` +
+
+      `| *NUMBER KAGA*          | ${appt.queueNum}\n` +
+
+      `| *Doctor*               | ${appt.doctor || '—'}\n` +
+
+      `| *Department*           | ${appt.department || '—'}\n` +
+
+      `| *Taariikhda*           | ${appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date())}\n` +
+
+      `| *Qiimaha*              | ${fmtMoney(appt.amount || 0)}\n` +
+      `____________________________________________________________\n\n` +
+      `NUMBER KA WAXA OO KUSHAQENAYA ILAA MUDO 1 BIL AH\n` +
       `Fadlan sug numberkaaga ilaa laagu yeedho.`
     );
     const url = `https://wa.me/${phone}?text=${msg}`;
@@ -1440,8 +1457,8 @@ const HOSP = {
       ls_set(this.K.APPTS,appts);
       Swal.fire({icon:'success',title:'Saved',timer:1200,showConfirmButton:false});
     } else {
-      // Queue: daily counter (resets every calendar day)
-      const queueNum = this.getNextQueueNum();
+      // Queue: per-doctor daily counter (resets every calendar day)
+      const queueNum = this.getNextQueueNum(fd.doctor);
       const apptNum='AP'+String(40000+appts.length+1).padStart(6,'0');
       const newAppt={
         id:gid('A'),apptNum,queueNum,...fd,
