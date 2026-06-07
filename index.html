@@ -1222,12 +1222,20 @@ const HOSP = {
 
   checkAll(cb){document.querySelectorAll('.hApptCheck').forEach(c=>c.checked=cb.checked);},
 
+  // ── DAILY QUEUE: get next number for today only ──
+  getNextQueueNum(){
+    const today = todayStr();
+    const appts = ls_get(this.K.APPTS).filter(a => (a.createdAt || '').startsWith(today));
+    return appts.length ? Math.max(...appts.map(a => a.queueNum || 0)) + 1 : 1;
+  },
+
   newAppointment(){
     this.editId=null;
     this.resetForm();
     $('hFormTitle').textContent='New Appointment';
     $('hApptNumDisp').textContent='/';
-    $('hQueueDisp').textContent='0';
+    // Show the next queue number for today as a preview
+    $('hQueueDisp').textContent = this.getNextQueueNum();
     const now=new Date();
     $('hApptDate').value=now.toISOString().slice(0,16);
     $('hBtnConfirm').style.display='';
@@ -1385,6 +1393,35 @@ const HOSP = {
     return errs;
   },
 
+  // ── WHATSAPP HELPERS ──
+  formatPhoneForWA(num){
+    if(!num) return null;
+    let digits = num.replace(/\D/g, '');
+    // Convert Somali local format 061... to international 252...
+    if(digits.startsWith('0')) digits = '252' + digits.slice(1);
+    return digits;
+  },
+
+  sendQueueToWhatsApp(appt){
+    if(!appt.mobile){
+      Swal.fire({icon:'info', title:'No phone number', text:'Queue assigned but no WhatsApp sent (no phone number).', timer:2000, showConfirmButton:false});
+      return;
+    }
+    const phone = this.formatPhoneForWA(appt.mobile);
+    const msg = encodeURIComponent(
+      `*BAXNAANO HOSPITAL*\n\n` +
+      `Waa ku soo dhawoow *${appt.patientName || 'Patient'}*\n\n` +
+      `*Numberkaaga Daryeelka:* ${appt.queueNum}\n` +
+      `*Doctor:* ${appt.doctor || '—'}\n` +
+      `*Department:* ${appt.department || '—'}\n` +
+      `*Taariikhda:* ${appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date())}\n` +
+      `*Qiimaha:* ${fmtMoney(appt.amount || 0)}\n\n` +
+      `Fadlan sug numberkaaga ilaa laugu yeedho.`
+    );
+    const url = `https://wa.me/${phone}?text=${msg}`;
+    window.open(url, '_blank');
+  },
+
   saveAppt(){
     const fd=this.getFormData();
     const errs=this.validateForm(fd);
@@ -1400,10 +1437,9 @@ const HOSP = {
       ls_set(this.K.APPTS,appts);
       Swal.fire({icon:'success',title:'Saved',timer:1200,showConfirmButton:false});
     } else {
-      // Queue: global counter
-      const allAppts=appts;
-      const queueNum=allAppts.length?Math.max(...allAppts.map(a=>a.queueNum||0))+1:1;
-      const apptNum='AP'+String(40000+allAppts.length+1).padStart(6,'0');
+      // Queue: daily counter (resets every calendar day)
+      const queueNum = this.getNextQueueNum();
+      const apptNum='AP'+String(40000+appts.length+1).padStart(6,'0');
       const newAppt={
         id:gid('A'),apptNum,queueNum,...fd,
         patientId:'ID'+String(30000+ls_get(this.K.PATIENTS).length+1).padStart(7,'0'),
@@ -1429,6 +1465,8 @@ const HOSP = {
       $('hLastVisitDoctor').value=newAppt.lastVisitDoctor;
       $('hBtnPrint').style.display='';
       Swal.fire({icon:'success',title:'Appointment Created',text:'Queue #'+queueNum,timer:1500,showConfirmButton:false});
+      // ── AUTO SEND WHATSAPP ──
+      this.sendQueueToWhatsApp(newAppt);
     }
     this.ensurePatient(fd);
   },
@@ -1666,8 +1704,8 @@ const HOSP = {
     const rev=todayA.filter(a=>a.state==='paid').reduce((s,a)=>s+(a.paid||0),0);
     const pending=appts.filter(a=>a.state==='scheduled');
     $('hDashStats').innerHTML=`
-      <div class="stat-box"><small>Today's Patients</small><div class="val">${todayA.length}</div></div>
-      <div class="stat-box"><small>Today's Revenue</small><div class="val green">${fmtMoney(rev)}</div></div>
+      <div class="stat-box"><small>Today\'s Patients</small><div class="val">${todayA.length}</div></div>
+      <div class="stat-box"><small>Today\'s Revenue</small><div class="val green">${fmtMoney(rev)}</div></div>
       <div class="stat-box"><small>Confirmed/Pending Pay</small><div class="val red">${pending.length}</div></div>
       <div class="stat-box"><small>Total Appointments</small><div class="val">${appts.length}</div></div>
     `;
@@ -1737,7 +1775,7 @@ const HOSP = {
     const today=todayStr();
     const todayA=appts.filter(a=>(a.createdAt||'').startsWith(today));
     $('hDocStats').innerHTML=`
-      <div class="stat-box"><small>Today's Patients</small><div class="val">${todayA.length}</div></div>
+      <div class="stat-box"><small>Today\'s Patients</small><div class="val">${todayA.length}</div></div>
       <div class="stat-box"><small>Waiting/Confirmed</small><div class="val red">${appts.filter(a=>a.state==='scheduled').length}</div></div>
     `;
     const recent=appts.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)).slice(0,8);
@@ -1950,8 +1988,8 @@ const LAB = window.LAB = {
     const rev=ts.reduce((s,x)=>s+x.total,0);
     const profit=ts.reduce((s,x)=>s+x.profit,0);
     $('lDashStats').innerHTML=`
-      <div class="stat-box"><small>Today's Sales</small><div class="val">${fmtMoney(rev)}</div></div>
-      <div class="stat-box"><small>Today's Profit</small><div class="val green">${fmtMoney(profit)}</div></div>
+      <div class="stat-box"><small>Today\'s Sales</small><div class="val">${fmtMoney(rev)}</div></div>
+      <div class="stat-box"><small>Today\'s Profit</small><div class="val green">${fmtMoney(profit)}</div></div>
       <div class="stat-box"><small>Total Products</small><div class="val">${prods.length}</div></div>
       <div class="stat-box"><small>Today Transactions</small><div class="val">${ts.length}</div></div>
       <div class="stat-box"><small>Expired/Expiring</small><div class="val red">${prods.filter(p=>this.isExpired(p.expiry)||this.isExpiring(p.expiry)).length}</div></div>
