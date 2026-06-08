@@ -1456,27 +1456,175 @@ const HOSP = {
       Swal.fire({icon:'info', title:'No phone number', text:'Queue assigned but no WhatsApp sent (no phone number).', timer:2000, showConfirmButton:false});
       return;
     }
-    const phone = this.formatPhoneForWA(appt.mobile);
-    const msg = encodeURIComponent(
-      `*BAXNAANO HOSPITAL*\n\n` +
-      `__________________________________________________________\n` +
-      `| *Patient*               ${appt.patientName || 'Patient'}\n` +
 
-      `| *NUMBER KAGA*           {   *${appt.queueNum}* }  \n` +
+    // Build canvas image
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 520;
+    const ctx = canvas.getContext('2d');
 
-      `| *Doctor*                ${appt.doctor || '—'}\n` +
+    // Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 800, 520);
 
-      `| *Department*            ${appt.department || '—'}\n` +
+    // Top header bar
+    ctx.fillStyle = '#1a3a6b';
+    ctx.fillRect(0, 0, 800, 8);
+    ctx.fillStyle = '#4caf50';
+    ctx.fillRect(0, 8, 800, 4);
 
-      `| *Taariikhda*            ${appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date())}\n` +
+    // Logo text area
+    const logoImg = new Image();
+    logoImg.crossOrigin = 'anonymous';
+    logoImg.src = 'https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png';
 
-      `| *Qiimaha*               ${fmtMoney(appt.amount || 0)}\n` +
-      `____________________________________________________________\n\n` +
-      `NUMBER KA WAXA OO KUSHAQENAYA ILAA MUDO 1 BIL AH\n` +
-      `Fadlan sug numberkaaga ilaa laagu yeedho.`
-    );
-    const url = `https://wa.me/${phone}?text=${msg}`;
-    window.open(url, '_blank');
+    const drawCard = () => {
+      // Logo
+      ctx.drawImage(logoImg, 30, 20, 80, 80);
+
+      // Hospital name
+      ctx.fillStyle = '#1a3a6b';
+      ctx.font = 'bold 32px Arial';
+      ctx.fillText('BAXNAANO', 125, 50);
+      ctx.fillStyle = '#4caf50';
+      ctx.font = 'bold 32px Arial';
+      ctx.fillText('HOSPITAL', 125, 85);
+
+      // Main card box
+      ctx.strokeStyle = '#1a3a6b';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.roundRect(30, 120, 740, 300, 12);
+      ctx.stroke();
+
+      // Table rows
+      const rows = [
+        ['Patient',    (appt.patientName || 'Patient').toUpperCase()],
+        ['NUMBER KAGA','{ ' + (appt.queueNum || '0') + ' }'],
+        ['Doctor',      appt.doctor || '—'],
+        ['Department',  appt.department || '—'],
+        ['Taariikhda',  appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date())],
+        ['Qiimaha',     fmtMoney(appt.amount || 0)],
+      ];
+
+      rows.forEach((row, i) => {
+        const y = 120 + i * 50;
+        // Divider line
+        if(i > 0){
+          ctx.strokeStyle = '#dde3ef';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(30, y);
+          ctx.lineTo(770, y);
+          ctx.stroke();
+        }
+        // Vertical divider
+        ctx.strokeStyle = '#1a3a6b';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(38, y + 8);
+        ctx.lineTo(38, y + 42);
+        ctx.stroke();
+
+        // Label
+        ctx.fillStyle = '#1a3a6b';
+        ctx.font = row[0] === 'NUMBER KAGA' ? 'bold 18px Arial' : 'bold 17px Arial';
+        ctx.fillText(row[0], 55, y + 32);
+
+        // Vertical center divider
+        ctx.strokeStyle = '#1a3a6b';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(290, y + 5);
+        ctx.lineTo(290, y + 45);
+        ctx.stroke();
+
+        // Value
+        if(row[0] === 'NUMBER KAGA'){
+          ctx.fillStyle = '#1a3a6b';
+          ctx.font = 'bold 26px Arial';
+        } else {
+          ctx.fillStyle = '#222';
+          ctx.font = '17px Arial';
+        }
+        ctx.fillText(row[1], 310, y + 32);
+      });
+
+      // Bottom green divider
+      ctx.strokeStyle = '#4caf50';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(30, 435);
+      ctx.lineTo(770, 435);
+      ctx.stroke();
+
+      // Green dot center
+      ctx.fillStyle = '#4caf50';
+      ctx.beginPath();
+      ctx.arc(400, 435, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Footer text
+      ctx.fillStyle = '#1a3a6b';
+      ctx.font = 'bold 17px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('NUMBER KA WAXA OO KUSHAQENAYA ILAA MUDO 1 BIL AH', 400, 468);
+
+      ctx.fillStyle = '#1a3a6b';
+      ctx.font = '16px Arial';
+      ctx.fillText('Fadlan sug numberkaaga ilaa laagu yeedho.', 400, 500);
+
+      ctx.textAlign = 'left';
+
+      // Convert to image and open WhatsApp share
+      canvas.toBlob(blob => {
+        const file = new File([blob], 'baxnaano-queue.png', { type: 'image/png' });
+
+        // Try Web Share API first (mobile)
+        if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
+          navigator.share({
+            files: [file],
+            title: 'Baxnaano Hospital Queue',
+          }).catch(err => {
+            // Fallback: download image + open WhatsApp
+            HOSP._fallbackWhatsApp(canvas, appt);
+          });
+        } else {
+          HOSP._fallbackWhatsApp(canvas, appt);
+        }
+      }, 'image/png');
+    };
+
+    logoImg.onload = drawCard;
+    logoImg.onerror = () => {
+      // Draw without logo if image fails
+      drawCard();
+    };
+  },
+
+  _fallbackWhatsApp(canvas, appt){
+    // Download the image
+    const link = document.createElement('a');
+    link.download = 'baxnaano-queue-' + (appt.queueNum || '0') + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    // Open WhatsApp after short delay
+    setTimeout(() => {
+      const phone = this.formatPhoneForWA(appt.mobile);
+      if(phone){
+        const msg = encodeURIComponent('Queue Number: ' + (appt.queueNum || '0') + ' - ' + (appt.patientName || ''));
+        window.open('https://wa.me/' + phone + '?text=' + msg, '_blank');
+      }
+    }, 800);
+
+    Swal.fire({
+      icon: 'info',
+      title: 'Sawirka La Dejiyay',
+      text: 'Sawirka waa la dejiyay. WhatsApp ayaa la furayaa — ku dir sawirka bukaanka.',
+      timer: 3500,
+      showConfirmButton: false
+    });
   },
 
   saveAppt(){
