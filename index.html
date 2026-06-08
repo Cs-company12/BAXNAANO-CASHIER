@@ -1457,6 +1457,10 @@ const HOSP = {
       return;
     }
 
+    const phone = this.formatPhoneForWA(appt.mobile);
+    const directMsg = encodeURIComponent('Queue Number: ' + (appt.queueNum || '0') + ' - ' + (appt.patientName || 'Patient'));
+    window.open(`https://wa.me/${phone}?text=${directMsg}`, '_blank');
+
     // Build canvas image
     const canvas = document.createElement('canvas');
     canvas.width = 800;
@@ -1576,22 +1580,9 @@ const HOSP = {
 
       ctx.textAlign = 'left';
 
-      // Convert to image and open WhatsApp share
-      canvas.toBlob(blob => {
-        const file = new File([blob], 'baxnaano-queue.png', { type: 'image/png' });
-
-        // Try Web Share API first (mobile)
-        if(navigator.share && navigator.canShare && navigator.canShare({ files: [file] })){
-          navigator.share({
-            files: [file],
-            title: 'Baxnaano Hospital Queue',
-          }).catch(err => {
-            // Fallback: download image + open WhatsApp
-            HOSP._fallbackWhatsApp(canvas, appt);
-          });
-        } else {
-          HOSP._fallbackWhatsApp(canvas, appt);
-        }
+      // Convert to image and keep record while WhatsApp chat has already been opened.
+      canvas.toBlob(() => {
+        HOSP._fallbackWhatsApp(canvas, appt);
       }, 'image/png');
     };
 
@@ -1603,20 +1594,14 @@ const HOSP = {
   },
 
   _fallbackWhatsApp(canvas, appt){
-    // Download the image
-    const link = document.createElement('a');
-    link.download = 'baxnaano-queue-' + (appt.queueNum || '0') + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-
-    // Open WhatsApp after short delay
+    // Image generation is complete; the WhatsApp chat was opened automatically already.
+    // Download the image for record if needed.
     setTimeout(() => {
-      const phone = this.formatPhoneForWA(appt.mobile);
-      if(phone){
-        const msg = encodeURIComponent('Queue Number: ' + (appt.queueNum || '0') + ' - ' + (appt.patientName || ''));
-        window.open('https://wa.me/' + phone + '?text=' + msg, '_blank');
-      }
-    }, 800);
+      const link = document.createElement('a');
+      link.download = 'baxnaano-queue-' + (appt.queueNum || '0') + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }, 200);
 
     Swal.fire({
       icon: 'info',
