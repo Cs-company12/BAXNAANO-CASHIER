@@ -446,7 +446,7 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
                     <div class="form-group">
                       <label>Patient Name <span class="req">*</span></label>
                       <div class="autocomplete-wrap">
-                        <input id="hPatientInput" class="form-control" placeholder="Search or enter patient name..." oninput="HOSP.searchPatient(this.value)" autocomplete="off">
+                        <input id="hPatientInput" class="form-control" placeholder="Search or enter patient name..." oninput="HOSP.searchPatient(this.value)" onblur="HOSP.lookupPatientByName(this.value)" autocomplete="off">
                         <div id="hPatientDrop" class="autocomplete-drop" style="display:none;"></div>
                       </div>
                     </div>
@@ -454,12 +454,12 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
                     <!-- Phone Number -->
                     <div class="form-group">
                       <label>Phone Number</label>
-                      <input id="hPatientMobile" class="form-control" placeholder="e.g. 0612345678" type="tel">
+                      <input id="hPatientMobile" class="form-control" placeholder="e.g. 0612345678" type="tel" onblur="HOSP.lookupPatientByMobile()">
                     </div>
 
                     <!-- Age - numeric, functional -->
                     <div class="form-group">
-                      <label>Age <span class="req">*</span></label>
+                      <label>Age</label>
                       <input id="hPatientAge" class="form-control" type="number" min="0" max="120" step="1" placeholder="0–120">
                     </div>
 
@@ -1397,7 +1397,7 @@ const HOSP = {
   validateForm(fd){
     const errs=[];
     if(!fd.patientName) errs.push('Patient Name is required');
-    if(fd.patientAge===''||fd.patientAge<0||fd.patientAge>120) errs.push('Age must be between 0 and 120');
+    if(fd.patientAge!=='' && (fd.patientAge<0||fd.patientAge>120)) errs.push('Age must be between 0 and 120');
     if(!fd.sex) errs.push('Sex is required');
     if(!fd.department) errs.push('Department is required');
     if(!fd.doctor) errs.push('Doctor is required');
@@ -1406,12 +1406,49 @@ const HOSP = {
   },
 
   // ── WHATSAPP HELPERS ──
+  normalizePhone(num){
+    return (num||'').replace(/\D/g, '');
+  },
+
   formatPhoneForWA(num){
     if(!num) return null;
     let digits = num.replace(/\D/g, '');
     // Convert Somali local format 061... to international 252...
     if(digits.startsWith('0')) digits = '252' + digits.slice(1);
     return digits;
+  },
+
+  getCurrentPatientAge(p){
+    if(p.age===undefined||p.age===null||p.age==='') return '';
+    const baseAge = parseInt(p.age, 10);
+    if(isNaN(baseAge)) return '';
+    if(!p.ageDate) return baseAge;
+    const recorded = new Date(p.ageDate);
+    if(isNaN(recorded.getTime())) return baseAge;
+    const now = new Date();
+    let years = now.getFullYear() - recorded.getFullYear();
+    if(now.getMonth() < recorded.getMonth() || (now.getMonth() === recorded.getMonth() && now.getDate() < recorded.getDate())){
+      years -= 1;
+    }
+    return Math.max(0, baseAge + years);
+  },
+
+  lookupPatientByMobile(){
+    const mobile = $('hPatientMobile').value.trim();
+    if(!mobile) return;
+    const norm = this.normalizePhone(mobile);
+    if(!norm) return;
+    const patients = ls_get(this.K.PATIENTS);
+    const p = patients.find(x => this.normalizePhone(x.mobile) === norm);
+    if(p) this.selectPatient(p.id);
+  },
+
+  lookupPatientByName(name){
+    const q = (name||'').trim();
+    if(!q || q.length < 2) return;
+    const patients = ls_get(this.K.PATIENTS);
+    const p = patients.find(x => (x.name||'').trim().toLowerCase() === q.toLowerCase());
+    if(p) this.selectPatient(p.id);
   },
 
   sendQueueToWhatsApp(appt){
@@ -1423,17 +1460,17 @@ const HOSP = {
     const msg = encodeURIComponent(
       `*BAXNAANO HOSPITAL*\n\n` +
       `__________________________________________________________\n` +
-      `| *Patient*              | ${appt.patientName || 'Patient'}\n` +
+      `| *Patient*               ${appt.patientName || 'Patient'}\n` +
 
-      `| *NUMBER KAGA*          | ${appt.queueNum}\n` +
+      `| *NUMBER KAGA*           ${appt.queueNum}\n` +
 
-      `| *Doctor*               | ${appt.doctor || '—'}\n` +
+      `| *Doctor*                ${appt.doctor || '—'}\n` +
 
-      `| *Department*           | ${appt.department || '—'}\n` +
+      `| *Department*            ${appt.department || '—'}\n` +
 
-      `| *Taariikhda*           | ${appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date())}\n` +
+      `| *Taariikhda*            ${appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date())}\n` +
 
-      `| *Qiimaha*              | ${fmtMoney(appt.amount || 0)}\n` +
+      `| *Qiimaha*               ${fmtMoney(appt.amount || 0)}\n` +
       `____________________________________________________________\n\n` +
       `NUMBER KA WAXA OO KUSHAQENAYA ILAA MUDO 1 BIL AH\n` +
       `Fadlan sug numberkaaga ilaa laagu yeedho.`
@@ -1494,13 +1531,28 @@ const HOSP = {
   ensurePatient(fd){
     if(!fd.patientName) return;
     const patients=ls_get(this.K.PATIENTS);
-    const exists=patients.find(p=>p.mobile===fd.mobile&&fd.mobile)||patients.find(p=>p.name===fd.patientName);
-    if(!exists){
+    const exists=patients.find(p=>this.normalizePhone(p.mobile)===this.normalizePhone(fd.mobile)&&fd.mobile)||patients.find(p=>p.name===fd.patientName);
+    const now = new Date().toISOString();
+    if(exists){
+      exists.name = fd.patientName || exists.name;
+      exists.mobile = fd.mobile || exists.mobile;
+      exists.sex = fd.sex || exists.sex;
+      if(fd.patientAge!==''&&fd.patientAge!==null&&fd.patientAge!==undefined){
+        exists.age = parseInt(fd.patientAge,10) || exists.age || '';
+        exists.ageDate = now;
+      }
+      if(fd.patientNotes) {
+        exists.history = fd.patientNotes;
+        exists.notes = fd.patientNotes;
+      }
+      ls_set(this.K.PATIENTS,patients);
+    } else {
       patients.unshift({
         id:gid('P'),name:fd.patientName,mobile:fd.mobile,
         sex:fd.sex,age:fd.patientAge,
+        ageDate:fd.patientAge!==''&&fd.patientAge!==null&&fd.patientAge!==undefined?now:'',
         history:fd.patientNotes,notes:fd.patientNotes,
-        createdAt:new Date().toISOString()
+        createdAt:now
       });
       ls_set(this.K.PATIENTS,patients);
     }
@@ -1543,10 +1595,13 @@ const HOSP = {
     if(!matches.length){
       drop.innerHTML=`<div class="autocomplete-action" onclick="HOSP.createPatient('${q.replace(/'/g,'\\\'')}')" ><i class="bi bi-plus"></i> Create "${q}"</div>`;
     } else {
-      drop.innerHTML=matches.map(p=>`
+      drop.innerHTML=matches.map(p=>{
+        const age = HOSP.getCurrentPatientAge(p);
+        return `
         <div class="autocomplete-item" onclick="HOSP.selectPatient('${p.id}')">
-          <strong>${p.name}</strong><span class="sub"> — ${p.mobile||''} ${p.sex?'· '+p.sex:''} ${p.age?'· Age '+p.age:''}</span>
-        </div>`).join('')+
+          <strong>${p.name}</strong><span class="sub"> — ${p.mobile||''} ${p.sex?'· '+p.sex:''} ${age!==''?'· Age '+age:''}</span>
+        </div>`;
+      }).join('')+
         `<div class="autocomplete-action" onclick="HOSP.createPatient('${q.replace(/'/g,'\\\'')}')" ><i class="bi bi-plus"></i> Create new: "${q}"</div>`;
     }
     drop.style.display='';
@@ -1556,8 +1611,9 @@ const HOSP = {
     const p=ls_get(this.K.PATIENTS).find(x=>x.id===pid);if(!p)return;
     $('hPatientInput').value=p.name;
     $('hPatientMobile').value=p.mobile||'';
-    // Age - set numeric value
-    $('hPatientAge').value=p.age!==undefined&&p.age!==null&&p.age!==''?p.age:'';
+    // Age - compute updated current age based on stored ageDate
+    const currentAge = this.getCurrentPatientAge(p);
+    $('hPatientAge').value=currentAge !== '' ? currentAge : '';
     // Sex - set dropdown value
     $('hPatientSex').value=p.sex||'';
     // Notes if exists
@@ -1565,7 +1621,7 @@ const HOSP = {
     $('hPatientDrop').style.display='none';
     // Fill last visit from appointments
     const appts=ls_get(this.K.APPTS)
-      .filter(a=>a.mobile===p.mobile||a.patientName===p.name)
+      .filter(a=>this.normalizePhone(a.mobile)===this.normalizePhone(p.mobile)||a.patientName===p.name)
       .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
     if(appts.length){
       const last=appts[0];
