@@ -406,6 +406,7 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
           <button class="btn btn-credit btn-sm" id="hBtnCredit" onclick="HOSP.openPayWizard('credit')" style="display:none;">CREDIT</button>
           <button class="btn btn-cash btn-sm" id="hBtnCash" onclick="HOSP.openPayWizard('cash')" style="display:none;"><i class="bi bi-cash"></i> CASH</button>
           <button class="btn btn-free btn-sm" id="hBtnFree" onclick="HOSP.markFree()" style="display:none;">FREE</button>
+          <button class="btn btn-info btn-sm" onclick="HOSP.sendWhatsAppMessage()"><i class="bi bi-whatsapp"></i> Send WhatsApp Message</button>
           <button class="btn btn-info btn-sm" id="hBtnPrint" onclick="HOSP.printCurrentAppt()" style="display:none;"><i class="bi bi-printer"></i> PRINT</button>
         </div>
 
@@ -1472,14 +1473,7 @@ const HOSP = {
 
     const phone = this.formatPhoneForWA(appt.mobile);
     const appointmentTime = appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date());
-    const directMsg = encodeURIComponent(
-      `Hello ${appt.patientName || 'Patient'},\n` +
-      `Your queue number is ${appt.queueNum || '0'}.\n` +
-      `Doctor: ${appt.doctor || '—'}\n` +
-      `Date/Time: ${appointmentTime}\n` +
-      `Department: ${appt.department || '—'}\n` +
-      `Please arrive 10 minutes early.`
-    );
+    const directMsg = encodeURIComponent(`Queue Number: ${appt.queueNum || '---'}`);
     window.open(`https://wa.me/${phone}?text=${directMsg}`, '_blank');
 
     // Build canvas image
@@ -1619,6 +1613,20 @@ const HOSP = {
       // Draw without logo if image fails
       drawCard();
     };
+  },
+
+  sendWhatsAppMessage(){
+    if(!this.editId){
+      Swal.fire({icon:'warning',title:'Save the appointment first',text:'Please save the appointment to generate a queue number.',timer:2000,showConfirmButton:false});
+      return;
+    }
+    const appts = ls_get(this.K.APPTS);
+    const appt = appts.find(a => a.id === this.editId);
+    if(!appt){
+      Swal.fire({icon:'error',title:'Appointment not found',text:'Unable to load appointment details.',timer:2000,showConfirmButton:false});
+      return;
+    }
+    this.sendQueueToWhatsApp(appt);
   },
 
   _fallbackWhatsApp(canvas, appt){
