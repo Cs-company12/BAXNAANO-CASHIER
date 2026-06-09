@@ -1012,7 +1012,17 @@ function enterSystem(sys){
 function fmtMoney(n){return '$'+(parseFloat(n)||0).toFixed(2);}
 function todayStr(){return new Date().toISOString().split('T')[0];}
 function fmtDate(d){try{return new Date(d).toLocaleDateString();}catch{return d||'';}}
-function fmtDT(d){try{return new Date(d).toLocaleString();}catch{return d||'';}}
+function fmtDT(d){
+  try{
+    const dt = new Date(d);
+    return dt.toLocaleString('en-GB', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }catch{return d||'';}}
 function gid(prefix){return prefix+'_'+Date.now()+'_'+Math.random().toString(36).substr(2,6);}
 function ls_get(k,def=[]){try{const d=localStorage.getItem(k);return d?JSON.parse(d):def;}catch{return def;}}
 function ls_set(k,d){localStorage.setItem(k,JSON.stringify(d));}
@@ -1051,6 +1061,7 @@ const HOSP = {
     'DR. HARITH ABDULKADIR SHEIKH MOHAMUD':{
       'Daryeelka Qalalka': 3,
       'Morning': 10,
+       'Morning ONLINE': 20,
       'Atusiem': 6,
       'Afternoon': 15
     },
@@ -1061,8 +1072,10 @@ const HOSP = {
     'DR. YAHYA SHOOLE':{
       'Family Card': 7,
       'Morning': 10,
+       'Morning ONLINE': 20,
       'Family Morning': 7,
       'Family Afternoon': 15
+      
     },
     // defaults for all other doctors
     '_default':{
@@ -1458,7 +1471,15 @@ const HOSP = {
     }
 
     const phone = this.formatPhoneForWA(appt.mobile);
-    const directMsg = encodeURIComponent('Queue Number: ' + (appt.queueNum || '0') + ' - ' + (appt.patientName || 'Patient'));
+    const appointmentTime = appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date());
+    const directMsg = encodeURIComponent(
+      `Hello ${appt.patientName || 'Patient'},\n` +
+      `Your queue number is ${appt.queueNum || '0'}.\n` +
+      `Doctor: ${appt.doctor || '—'}\n` +
+      `Date/Time: ${appointmentTime}\n` +
+      `Department: ${appt.department || '—'}\n` +
+      `Please arrive 10 minutes early.`
+    );
     window.open(`https://wa.me/${phone}?text=${directMsg}`, '_blank');
 
     // Build canvas image
@@ -1507,7 +1528,7 @@ const HOSP = {
         ['NUMBER KAGA','{ ' + (appt.queueNum || '0') + ' }'],
         ['Doctor',      appt.doctor || '—'],
         ['Department',  appt.department || '—'],
-        ['Taariikhda',  appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date())],
+        ['Taariikhda',  appointmentTime],
         ['Qiimaha',     fmtMoney(appt.amount || 0)],
       ];
 
@@ -1547,11 +1568,18 @@ const HOSP = {
         if(row[0] === 'NUMBER KAGA'){
           ctx.fillStyle = '#1a3a6b';
           ctx.font = 'bold 26px Arial';
+          ctx.fillText(row[1], 310, y + 32);
         } else {
           ctx.fillStyle = '#222';
           ctx.font = '17px Arial';
+          if(row[0] === 'Taariikhda'){
+            ctx.textAlign = 'right';
+            ctx.fillText(row[1], 760, y + 32);
+            ctx.textAlign = 'left';
+          } else {
+            ctx.fillText(row[1], 310, y + 32);
+          }
         }
-        ctx.fillText(row[1], 310, y + 32);
       });
 
       // Bottom green divider
