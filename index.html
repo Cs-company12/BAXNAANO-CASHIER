@@ -458,10 +458,10 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
                       <input id="hPatientMobile" class="form-control" placeholder="e.g. 0612345678" type="tel" onblur="HOSP.lookupPatientByMobile()">
                     </div>
 
-                    <!-- Age - numeric, functional -->
+                    <!-- Age - numeric or exact formatted age -->
                     <div class="form-group">
                       <label>Age</label>
-                      <input id="hPatientAge" class="form-control" type="number" min="0" max="120" step="1" placeholder="0-120">
+                      <input id="hPatientAge" class="form-control" type="text" placeholder="0-120">
                     </div>
 
                     <!-- Sex - dropdown, functional -->
@@ -1449,9 +1449,9 @@ const HOSP = {
   },
 
   getFormData(){
-    // Validate age
-    const ageVal=$('hPatientAge').value;
-    const age=ageVal===''?'':parseInt(ageVal);
+    // Preserve exact DOB-based age labels, but store numeric age when entered as digits.
+    const ageVal=$('hPatientAge').value.trim();
+    const age = ageVal==='' ? '' : (/^\s*\d+\s*$/.test(ageVal) ? parseInt(ageVal, 10) : ageVal);
     return {
       patientName:$('hPatientInput').value.trim(),
       mobile:$('hPatientMobile').value.trim(),
@@ -1474,7 +1474,7 @@ const HOSP = {
   validateForm(fd){
     const errs=[];
     if(!fd.patientName) errs.push('Patient Name is required');
-    if(fd.patientAge!=='' && (fd.patientAge<0||fd.patientAge>120)) errs.push('Age must be between 0 and 120');
+    if(typeof fd.patientAge === 'number' && (fd.patientAge<0||fd.patientAge>120)) errs.push('Age must be between 0 and 120');
     if(!fd.sex) errs.push('Sex is required');
     if(!fd.department) errs.push('Department is required');
     if(!fd.doctor) errs.push('Doctor is required');
@@ -1520,8 +1520,13 @@ const HOSP = {
     const norm = this.normalizePhone(mobile);
     if(!norm) return;
     const patients = ls_get(this.K.PATIENTS);
-    const p = patients.find(x => this.normalizePhone(x.mobile) === norm);
-    if(p) this.selectPatient(p.id);
+    const matches = patients.filter(x => this.normalizePhone(x.mobile) === norm);
+    if(matches.length !== 1) return;
+    const p = matches[0];
+    const currentName = ($('hPatientInput').value||'').trim().toLowerCase();
+    if(!currentName || currentName === (p.name||'').trim().toLowerCase()){
+      this.selectPatient(p.id);
+    }
   },
 
   lookupPatientByName(name){
@@ -1767,7 +1772,7 @@ const HOSP = {
   ensurePatient(fd){
     if(!fd.patientName) return;
     const patients=ls_get(this.K.PATIENTS);
-    const exists=patients.find(p=>this.normalizePhone(p.mobile)===this.normalizePhone(fd.mobile)&&fd.mobile)||patients.find(p=>p.name===fd.patientName);
+    const exists=patients.find(p=>p.name===fd.patientName);
     const now = new Date().toISOString();
     if(exists){
       exists.name = fd.patientName || exists.name;
@@ -1777,8 +1782,11 @@ const HOSP = {
       exists.address = fd.patientAddress || exists.address || '';
       exists.emergencyContactPhone = fd.emergencyContactPhone || exists.emergencyContactPhone || '';
       if(fd.patientAge!==''&&fd.patientAge!==null&&fd.patientAge!==undefined){
-        exists.age = parseInt(fd.patientAge,10) || exists.age || '';
-        exists.ageDate = now;
+        const numericAge = /^\s*\d+\s*$/.test(String(fd.patientAge)) ? parseInt(fd.patientAge,10) : NaN;
+        if(!isNaN(numericAge)){
+          exists.age = numericAge || exists.age || '';
+          exists.ageDate = now;
+        }
       }
       if(fd.patientNotes) {
         exists.history = fd.patientNotes;
@@ -1786,12 +1794,13 @@ const HOSP = {
       }
       ls_set(this.K.PATIENTS,patients);
     } else {
+      const numericAge = /^\s*\d+\s*$/.test(String(fd.patientAge)) ? parseInt(fd.patientAge,10) : '';
       patients.unshift({
         id:gid('P'),name:fd.patientName,mobile:fd.mobile,
-        sex:fd.sex,age:fd.patientAge,
+        sex:fd.sex,age:numericAge,
         dob:fd.patientDob||'',address:fd.patientAddress||'',
         emergencyContactPhone:fd.emergencyContactPhone||'',
-        ageDate:fd.patientAge!==''&&fd.patientAge!==null&&fd.patientAge!==undefined?now:'',
+        ageDate:numericAge!==''?now:'',
         history:fd.patientNotes,notes:fd.patientNotes,
         createdAt:now
       });
@@ -1889,10 +1898,25 @@ const HOSP = {
     if(isNaN(date.getTime())) return '';
     const now = new Date();
     let years = now.getFullYear() - date.getFullYear();
-    if(now.getMonth() < date.getMonth() || (now.getMonth() === date.getMonth() && now.getDate() < date.getDate())){
-      years -= 1;
+    let months = now.getMonth() - date.getMonth();
+    let days = now.getDate() - date.getDate();
+    if(days < 0){
+      months -= 1;
+      const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+      days += prevMonth.getDate();
     }
-    return years < 0 ? 0 : years;
+    if(months < 0){
+      years -= 1;
+      months += 12;
+    }
+    if(years < 0) return '0';
+    if(years === 0 && months === 0){
+      return days + ' Day' + (days !== 1 ? 's' : '');
+    }
+    if(years === 0){
+      return months + ' Month' + (months !== 1 ? 's' : '');
+    }
+    return years + ' Year' + (years !== 1 ? 's' : '') + (months > 0 ? ', ' + months + ' Month' + (months !== 1 ? 's' : '') : '');
   },
 
   getDobFromAge(age){
@@ -1920,14 +1944,15 @@ const HOSP = {
   syncDobWithAge(){
     if(this._syncingDobAge) return;
     this._syncingDobAge=true;
-    const ageVal=$('hPatientAge')?.value;
-    if(ageVal===''){
+    const ageVal=$('hPatientAge')?.value.trim();
+    if(ageVal==='' || !/^\d+$/.test(ageVal)){
       $('hPatientDob').value='';
-    } else {
-      const age=parseInt(ageVal,10);
-      if(!isNaN(age) && age>=0){
-        $('hPatientDob').value=this.getDobFromAge(age);
-      }
+      this._syncingDobAge=false;
+      return;
+    }
+    const age=parseInt(ageVal,10);
+    if(!isNaN(age) && age>=0){
+      $('hPatientDob').value=this.getDobFromAge(age);
     }
     this._syncingDobAge=false;
   },
