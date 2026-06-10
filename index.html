@@ -461,7 +461,7 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
                     <!-- Age - numeric, functional -->
                     <div class="form-group">
                       <label>Age</label>
-                      <input id="hPatientAge" class="form-control" type="number" min="0" max="120" step="1" placeholder="0–120">
+                      <input id="hPatientAge" class="form-control" type="number" min="0" max="120" step="1" placeholder="0-120">
                     </div>
 
                     <!-- Sex - dropdown, functional -->
@@ -472,6 +472,22 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
                       </select>
+                    </div>
+
+                    <!-- Date of Birth -->
+                    <div class="form-group">
+                      <label>Date of Birth (DD/MM/YYYY)</label>
+                      <input id="hPatientDob" class="form-control" type="date" lang="en-GB" aria-describedby="hPatientDobHint">
+                      <small id="hPatientDobHint" style="display:block;margin-top:4px;color:#6c757d;font-size:11px;">Use the full date picker or type the birth date as day/month/year.</small>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="form-group">
+                      <label>Address</label>
+                      <div class="autocomplete-wrap">
+                        <input id="hPatientAddress" class="form-control" placeholder="Patient address" autocomplete="off" oninput="HOSP.searchAddress(this.value)" onfocus="HOSP.searchAddress(this.value)">
+                        <div id="hPatientAddressDrop" class="autocomplete-drop" style="display:none;"></div>
+                      </div>
                     </div>
 
                     <!-- Patient Type -->
@@ -1011,11 +1027,30 @@ function enterSystem(sys){
   else{$('labSystem').style.display='';LAB.init();}
 }
 function fmtMoney(n){return '$'+(parseFloat(n)||0).toFixed(2);}
-function todayStr(){return new Date().toISOString().split('T')[0];}
+function todayStr(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function localDateTimeLocal(){
+  const d=new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}T${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function parseLocalDateTime(value){
+  if(!value) return null;
+  const m=value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+  if(!m) return new Date(value);
+  const year=parseInt(m[1],10);
+  const month=parseInt(m[2],10)-1;
+  const day=parseInt(m[3],10);
+  const hour=parseInt(m[4],10);
+  const minute=parseInt(m[5],10);
+  const second=parseInt(m[6]||'0',10);
+  return new Date(year,month,day,hour,minute,second);
+}
 function fmtDate(d){try{return new Date(d).toLocaleDateString();}catch{return d||'';}}
 function fmtDT(d){
   try{
-    const dt = new Date(d);
+    const dt = parseLocalDateTime(d) || new Date(d);
     return dt.toLocaleString('en-GB', {
       year: 'numeric',
       month: 'short',
@@ -1034,6 +1069,29 @@ async function hashPw(pw,salt){
   }catch{return btoa(pw+'::'+salt);}
 }
 function doPrint(html){$('printZone').innerHTML=html;$('printZone').style.display='block';window.print();$('printZone').style.display='none';}
+
+const MOGADISHU_DISTRICTS = [
+  { name: 'Cabdi Casiis', address: 'Cabdi Casiis, Mogadishu, Banaadir, Somalia' },
+  { name: 'Boondheere', address: 'Boondheere, Mogadishu, Banaadir, Somalia' },
+  { name: 'Dayniile', address: 'Dayniile, Mogadishu, Banaadir, Somalia' },
+  { name: 'Dharkenley', address: 'Dharkenley, Mogadishu, Banaadir, Somalia' },
+  { name: 'Heliwaa', address: 'Heliwaa, Mogadishu, Banaadir, Somalia' },
+  { name: 'Hodan', address: 'Hodan, Mogadishu, Banaadir, Somalia' },
+  { name: 'Howlwadaag', address: 'Howlwadaag, Mogadishu, Banaadir, Somalia' },
+  { name: 'Huriwaa', address: 'Huriwaa, Mogadishu, Banaadir, Somalia' },
+  { name: 'Kaxda', address: 'Kaxda, Mogadishu, Banaadir, Somalia' },
+  { name: 'Kaaraan', address: 'Kaaraan, Mogadishu, Banaadir, Somalia' },
+  { name: 'Shangaani', address: 'Shangaani, Mogadishu, Banaadir, Somalia' },
+  { name: 'Shibis', address: 'Shibis, Mogadishu, Banaadir, Somalia' },
+  { name: 'Waberi', address: 'Waberi, Mogadishu, Banaadir, Somalia' },
+  { name: 'Wadajir', address: 'Wadajir, Mogadishu, Banaadir, Somalia' },
+  { name: 'Wardhiigley', address: 'Wardhiigley, Mogadishu, Banaadir, Somalia' },
+  { name: 'Xamar Jajab', address: 'Xamar Jajab, Mogadishu, Banaadir, Somalia' },
+  { name: 'Xamar Weyne', address: 'Xamar Weyne, Mogadishu, Banaadir, Somalia' },
+  { name: 'Yaaqshiid', address: 'Yaaqshiid, Mogadishu, Banaadir, Somalia' },
+  { name: 'Garasbaaley', address: 'Garasbaaley, Mogadishu, Banaadir, Somalia' },
+  { name: 'Daarusalaam', address: 'Daarusalaam, Mogadishu, Banaadir, Somalia' }
+];
 
 // ═══════════════════════════════════════════
 // HOSPITAL MODULE
@@ -1255,8 +1313,7 @@ const HOSP = {
     $('hApptNumDisp').textContent='/';
     // Show next queue as 1 (will update when doctor is selected)
     $('hQueueDisp').textContent = '1';
-    const now=new Date();
-    $('hApptDate').value=now.toISOString().slice(0,16);
+    $('hApptDate').value=localDateTimeLocal();
     $('hBtnConfirm').style.display='';
     $('hBtnCredit').style.display='none';
     $('hBtnCash').style.display='none';
@@ -1282,6 +1339,8 @@ const HOSP = {
     $('hPatientAge').value=a.patientAge||'';
     // Sex - dropdown
     $('hPatientSex').value=a.sex||'';
+    $('hPatientDob').value=a.patientDob||'';
+    $('hPatientAddress').value=a.patientAddress||'';
     // Patient notes
     $('hPatientNotes').value=a.patientNotes||a.patientHistory||'';
     // Appointment fields
@@ -1327,6 +1386,8 @@ const HOSP = {
     $('hPatientMobile').value='';
     $('hPatientAge').value='';
     $('hPatientSex').value='';
+    $('hPatientDob').value='';
+    $('hPatientAddress').value='';
     $('hPatientNotes').value='';
     $('hApptDate').value='';
     $('hApptType').value='New';
@@ -1396,6 +1457,8 @@ const HOSP = {
       mobile:$('hPatientMobile').value.trim(),
       patientAge:age,
       sex:$('hPatientSex').value,
+      patientDob:$('hPatientDob').value,
+      patientAddress:$('hPatientAddress').value.trim(),
       patientNotes:$('hPatientNotes').value.trim(),
       apptDate:$('hApptDate').value,
       apptType:$('hApptType').value,
@@ -1433,6 +1496,10 @@ const HOSP = {
   },
 
   getCurrentPatientAge(p){
+    if(p.dob){
+      const ageFromDob = this.getAgeFromDob(p.dob);
+      if(ageFromDob!=='' && !isNaN(ageFromDob)) return ageFromDob;
+    }
     if(p.age===undefined||p.age===null||p.age==='') return '';
     const baseAge = parseInt(p.age, 10);
     if(isNaN(baseAge)) return '';
@@ -1706,6 +1773,9 @@ const HOSP = {
       exists.name = fd.patientName || exists.name;
       exists.mobile = fd.mobile || exists.mobile;
       exists.sex = fd.sex || exists.sex;
+      exists.dob = fd.patientDob || exists.dob || '';
+      exists.address = fd.patientAddress || exists.address || '';
+      exists.emergencyContactPhone = fd.emergencyContactPhone || exists.emergencyContactPhone || '';
       if(fd.patientAge!==''&&fd.patientAge!==null&&fd.patientAge!==undefined){
         exists.age = parseInt(fd.patientAge,10) || exists.age || '';
         exists.ageDate = now;
@@ -1719,6 +1789,8 @@ const HOSP = {
       patients.unshift({
         id:gid('P'),name:fd.patientName,mobile:fd.mobile,
         sex:fd.sex,age:fd.patientAge,
+        dob:fd.patientDob||'',address:fd.patientAddress||'',
+        emergencyContactPhone:fd.emergencyContactPhone||'',
         ageDate:fd.patientAge!==''&&fd.patientAge!==null&&fd.patientAge!==undefined?now:'',
         history:fd.patientNotes,notes:fd.patientNotes,
         createdAt:now
@@ -1776,6 +1848,90 @@ const HOSP = {
     drop.style.display='';
   },
 
+  searchAddress(q){
+    const drop=$('hPatientAddressDrop');
+    if(!drop){return;}
+    const term=(q||'').trim().toLowerCase();
+    if(!term){drop.style.display='none';return;}
+    const matches=MOGADISHU_DISTRICTS.filter(d=>
+      (d.address||'').toLowerCase().includes(term) ||
+      (d.name||'').toLowerCase().includes(term)
+    ).slice(0,8);
+    if(!matches.length){
+      drop.innerHTML=`<div class="autocomplete-item">No matching addresses found</div>`;
+    } else {
+      drop.innerHTML=matches.map(d=>`
+        <div class="autocomplete-item" onclick="HOSP.selectAddress('${(d.address||'').replace(/'/g,"\\'")}')">
+          <strong>${d.name}</strong><span class="sub">${d.address}</span>
+        </div>`).join('');
+    }
+    drop.style.display='';
+  },
+
+  selectAddress(address){
+    const input=$('hPatientAddress');
+    if(input) input.value=address||'';
+    const drop=$('hPatientAddressDrop');
+    if(drop) drop.style.display='none';
+  },
+
+  hideAddressDrop(){
+    const drop=$('hPatientAddressDrop');
+    if(drop) drop.style.display='none';
+  },
+
+  getAgeFromDob(dob){
+    if(!dob) return '';
+    const parts = (dob||'').split('-').map(x=>parseInt(x,10));
+    if(parts.length!==3 || parts.some(isNaN)) return '';
+    const [year, month, day] = parts;
+    const date = new Date(year, month - 1, day);
+    if(isNaN(date.getTime())) return '';
+    const now = new Date();
+    let years = now.getFullYear() - date.getFullYear();
+    if(now.getMonth() < date.getMonth() || (now.getMonth() === date.getMonth() && now.getDate() < date.getDate())){
+      years -= 1;
+    }
+    return years < 0 ? 0 : years;
+  },
+
+  getDobFromAge(age){
+    if(age===''||age===null||age===undefined||isNaN(age)) return '';
+    const years=parseInt(age,10);
+    if(isNaN(years) || years < 0) return '';
+    const now=new Date();
+    const dob=new Date(now.getFullYear()-years, now.getMonth(), now.getDate());
+    return `${dob.getFullYear()}-${String(dob.getMonth()+1).padStart(2,'0')}-${String(dob.getDate()).padStart(2,'0')}`;
+  },
+
+  syncAgeWithDob(){
+    if(this._syncingDobAge) return;
+    this._syncingDobAge=true;
+    const dob=$('hPatientDob')?.value||'';
+    if(dob){
+      const age=this.getAgeFromDob(dob);
+      $('hPatientAge').value=age;
+    } else {
+      $('hPatientAge').value='';
+    }
+    this._syncingDobAge=false;
+  },
+
+  syncDobWithAge(){
+    if(this._syncingDobAge) return;
+    this._syncingDobAge=true;
+    const ageVal=$('hPatientAge')?.value;
+    if(ageVal===''){
+      $('hPatientDob').value='';
+    } else {
+      const age=parseInt(ageVal,10);
+      if(!isNaN(age) && age>=0){
+        $('hPatientDob').value=this.getDobFromAge(age);
+      }
+    }
+    this._syncingDobAge=false;
+  },
+
   selectPatient(pid){
     const p=ls_get(this.K.PATIENTS).find(x=>x.id===pid);if(!p)return;
     $('hPatientInput').value=p.name;
@@ -1785,6 +1941,8 @@ const HOSP = {
     $('hPatientAge').value=currentAge !== '' ? currentAge : '';
     // Sex - set dropdown value
     $('hPatientSex').value=p.sex||'';
+    $('hPatientDob').value=p.dob||'';
+    $('hPatientAddress').value=p.address||'';
     // Notes if exists
     if(p.notes||p.history) $('hPatientNotes').value=p.notes||p.history;
     $('hPatientDrop').style.display='none';
@@ -1803,7 +1961,7 @@ const HOSP = {
     const patients=ls_get(this.K.PATIENTS);
     const newP={
       id:'ID'+String(30000+patients.length+1).padStart(7,'0'),
-      name,mobile:'',sex:'',age:'',history:'',
+      name,mobile:'',sex:'',age:'',dob:'',address:'',emergencyContactPhone:'',history:'',
       createdAt:new Date().toISOString()
     };
     patients.unshift(newP);
@@ -2641,17 +2799,27 @@ document.addEventListener('DOMContentLoaded',()=>{
     if(!e.target.closest('#hPatientInput')&&!e.target.closest('#hPatientDrop')){
       const drop=$('hPatientDrop');if(drop)drop.style.display='none';
     }
+    if(!e.target.closest('#hPatientAddress')&&!e.target.closest('#hPatientAddressDrop')){
+      const drop=$('hPatientAddressDrop');if(drop)drop.style.display='none';
+    }
   });
   $('lrHistSearch')?.addEventListener('keypress',e=>{if(e.key==='Enter')LAB.renderHistory();});
 
-  // Age: enforce 0-120
+  // Age/DOB sync and validation
   $('hPatientAge')?.addEventListener('input',function(){
-    const v=parseInt(this.value);
+    const v=parseInt(this.value,10);
     if(this.value!==''&&(v<0||v>120)){
       this.classList.add('required-empty');
     } else {
       this.classList.remove('required-empty');
     }
+    HOSP.syncDobWithAge();
+  });
+  $('hPatientDob')?.addEventListener('input',function(){
+    HOSP.syncAgeWithDob();
+  });
+  $('hPatientDob')?.addEventListener('change',function(){
+    HOSP.syncAgeWithDob();
   });
 });
 </script>
