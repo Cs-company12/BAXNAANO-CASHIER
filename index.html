@@ -107,6 +107,7 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
 .toolbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;}
 .toolbar input,.toolbar select{height:32px;padding:0 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:12.5px;}
 .toolbar input:focus,.toolbar select:focus{outline:none;border-color:var(--primary);}
+#hFollowupDateRange{display:flex !important;gap:.3rem !important;align-items:center;}
 .search-wrap{position:relative;flex:1;min-width:220px;max-width:380px;}
 .search-wrap input{width:100%;padding-left:30px;}
 .search-wrap i{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:13px;}
@@ -720,6 +721,63 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
       </div>
     </div>
 
+    <!-- Follow-Up Messages View -->
+    <div id="hv-followup" class="view">
+      <div class="breadcrumb"><a onclick="HOSP.showView('hv-followup')">Cashier</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <span>Follow-Up Messages</span></div>
+      <div class="page-wrap">
+        <div class="stats-row" id="hFollowupStats"></div>
+        <div class="card">
+          <div class="card-header">
+            <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
+              <button class="btn btn-secondary btn-sm" onclick="HOSP.sendFollowupCardBulk()"><i class="bi bi-card-image"></i> Send 1 Follow-Up Cards</button>
+              <button class="btn btn-secondary btn-sm" onclick="HOSP.sendFollowupCardBulk()"><i class="bi bi-card-image"></i> Send Follow-Up Card</button>
+              <button class="btn btn-primary btn-sm" onclick="HOSP.sendFollowupBulk()"><i class="bi bi-send-fill"></i> Send All Follow-Ups</button>
+              <button class="btn btn-info btn-sm" onclick="HOSP.renderFollowupReport()"><i class="bi bi-bar-chart"></i> View Report</button>
+            </div>
+            <div class="toolbar" style="margin:0;flex-wrap:wrap;gap:.5rem;">
+              <div class="search-wrap" style="flex:1;min-width:220px;">
+                <i class="bi bi-search"></i>
+                <input id="hFollowupSearch" placeholder="Search by patient name, phone, doctor..." oninput="HOSP.filterFollowups()">
+              </div>
+              <select id="hFollowupDateFilter" class="form-select" style="height:32px;width:auto;" onchange="HOSP.handleFollowupDateFilterChange()">
+                <option value="">All Visits</option>
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="last7">Last 7 Days</option>
+                <option value="last30">Last 30 Days</option>
+                <option value="custom">Custom Date</option>
+                <option value="range">Date Range</option>
+              </select>
+              <input type="date" id="hFollowupCustomDate" class="form-control" style="height:32px;width:140px;display:none;" onchange="HOSP.filterFollowups()">
+              <div id="hFollowupDateRange" style="display:none;display:flex;gap:.3rem;">
+                <input type="date" id="hFollowupDateFrom" class="form-control" style="height:32px;width:130px;margin:0;" placeholder="From" onchange="HOSP.filterFollowups()">
+                <input type="date" id="hFollowupDateTo" class="form-control" style="height:32px;width:130px;margin:0;" placeholder="To" onchange="HOSP.filterFollowups()">
+              </div>
+              <select id="hFollowupStatusFilter" class="form-select" style="height:32px;width:auto;" onchange="HOSP.filterFollowups()">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="sent">Sent</option>
+              </select>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="tbl-wrap">
+              <table class="dtable" id="hFollowupTable">
+                <thead>
+                  <tr>
+                    <th>Patient Name</th><th>Phone Number</th><th>Doctor Name</th><th>Visit Date</th>
+                    <th>Days Since Visit</th><th>Follow-Up Due In</th><th>Follow-Up Status</th><th class="actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="hFollowupBody"></tbody>
+              </table>
+            </div>
+            <div style="padding:.5rem 1rem;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);" id="hFollowupCount"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /hospitalApp -->
 </div><!-- /hospitalSystem -->
 
@@ -1099,7 +1157,7 @@ const MOGADISHU_DISTRICTS = [
 const HOSP = {
   K:{
     USERS:'bax_hosp_users',PATIENTS:'bax_hosp_patients',APPTS:'bax_hosp_appts',
-    SESSION:'bax_hosp_sess',PRESCRIPTIONS:'bax_hosp_rx'
+    SESSION:'bax_hosp_sess',PRESCRIPTIONS:'bax_hosp_rx',FOLLOWUPS:'bax_hosp_followups'
   },
 
   // ── DOCTORS & CHARGE TYPES PER DOCTOR ──
@@ -1210,6 +1268,7 @@ const HOSP = {
     const items=[
       {v:'hv-appointments',l:'Appointments',roles:['admin','cashier','reception','pharmacy']},
       {v:'hv-payments',l:'Billing',roles:['admin','cashier','reception']},
+      {v:'hv-followup',l:'Follow-Up Messages',roles:['admin','cashier','reception']},
       {v:'hv-doctor',l:'Doctor Panel',roles:['admin','doctor']},
       {v:'hv-reports',l:'Reports',roles:['admin']},
       {v:'hv-users',l:'Users',roles:['admin']},
@@ -1233,6 +1292,7 @@ const HOSP = {
     if(vid==='hv-doctor')this.renderDoctor();
     if(vid==='hv-users')this.renderUsers();
     if(vid==='hv-reports')this.renderReports();
+    if(vid==='hv-followup')this.renderFollowup();
   },
 
   // ── APPOINTMENT LIST ──
@@ -1706,7 +1766,8 @@ const HOSP = {
     // Download the image for record if needed.
     setTimeout(() => {
       const link = document.createElement('a');
-      link.download = 'baxnaano-queue-' + (appt.queueNum || '0') + '.png';
+      const filenameId = appt.queueNum || appt.apptNum || appt.id || 'followup';
+      link.download = 'baxnaano-' + filenameId + '.png';
       link.href = canvas.toDataURL('image/png');
       link.click();
     }, 200);
@@ -1813,7 +1874,12 @@ const HOSP = {
     if(!this.editId) return;
     const appts=ls_get(this.K.APPTS);
     const idx=appts.findIndex(a=>a.id===this.editId);
-    if(idx!==-1){appts[idx].state='scheduled';ls_set(this.K.APPTS,appts);}
+    if(idx!==-1){
+      appts[idx].state='scheduled';
+      ls_set(this.K.APPTS,appts);
+      // Create follow-up record
+      this.createFollowupRecord(appts[idx]);
+    }
     $('hBtnConfirm').style.display='none';
     $('hBtnCredit').style.display='';
     $('hBtnCash').style.display='';
@@ -2043,6 +2109,8 @@ const HOSP = {
     appts[idx].paymentMethod=this.payMode==='cash'?'Cash':'Credit';
     appts[idx].paidAt=new Date().toISOString();
     ls_set(this.K.APPTS,appts);
+    // Create follow-up record
+    this.createFollowupRecord(appts[idx]);
     $('hBtnCredit').style.display='none';
     $('hBtnCash').style.display='none';
     $('hBtnFree').style.display='none';
@@ -2061,6 +2129,8 @@ const HOSP = {
     if(idx===-1) return;
     appts[idx].state='paid';appts[idx].paid=0;appts[idx].paymentMethod='Free';appts[idx].paidAt=new Date().toISOString();
     ls_set(this.K.APPTS,appts);
+    // Create follow-up record
+    this.createFollowupRecord(appts[idx]);
     $('hBtnCredit').style.display='none';$('hBtnCash').style.display='none';$('hBtnFree').style.display='none';
     $('hPaidRow').style.display='';$('hPaidAmt').textContent='$0.00 (FREE)';
     this.setStateBar('paid');
@@ -2286,6 +2356,627 @@ const HOSP = {
         <td>${a.doctor||'—'}</td><td>${a.chargeType||'—'}</td><td>${fmtMoney(a.paid||0)}</td>
         <td>${a.paymentMethod}</td><td>${fmtDate(a.paidAt||a.createdAt)}</td></tr>`).join('')}
       </tbody></table></div>`:'<p style="color:var(--text-muted)">No paid appointments in this period.</p>';
+  },
+
+  // ── FOLLOW-UP MESSAGES ──
+  createFollowupRecord(appt){
+    if(!appt || !appt.apptDate || !appt.mobile || !appt.patientName || !appt.doctor) return;
+    
+    const followups = ls_get(this.K.FOLLOWUPS);
+    // Check if follow-up already exists
+    const exists = followups.find(f => f.apptId === appt.id);
+    if(exists) return;
+
+    // Calculate due date (30 days after visit)
+    const visitDate = new Date(appt.apptDate);
+    const dueDate = new Date(visitDate);
+    dueDate.setDate(dueDate.getDate() + 30);
+
+    const followup = {
+      id: gid('FU'),
+      apptId: appt.id,
+      patientName: appt.patientName,
+      phone: appt.mobile,
+      doctor: appt.doctor,
+      visitDate: appt.apptDate,
+      dueDate: dueDate.toISOString(),
+      status: 'pending', // pending | sent
+      messageSentDate: null,
+      createdAt: new Date().toISOString()
+    };
+
+    followups.push(followup);
+    ls_set(this.K.FOLLOWUPS, followups);
+  },
+
+  renderFollowup(){
+    const followups = this.migrateFollowupData();
+    const today = todayStr();
+    const dueFollowups = followups.filter(f => {
+      const dueDate = (f.dueDate||'').split('T')[0];
+      return dueDate <= today;
+    });
+
+    // Dashboard stats - showing overall stats including all follow-ups
+    const totalDue = dueFollowups.length;
+    const totalCreated = followups.length;
+    const sentCount = followups.filter(f => f.status === 'sent').length;
+    const pendingCount = followups.filter(f => f.status === 'pending').length;
+
+    $('hFollowupStats').innerHTML = `
+      <div class="stat-box"><small>Total Created</small><div class="val">${totalCreated}</div></div>
+      <div class="stat-box"><small>Due Today</small><div class="val" style="color:#ff9800;">${totalDue}</div></div>
+      <div class="stat-box"><small>Pending</small><div class="val" style="color:#ff9800;">${pendingCount}</div></div>
+      <div class="stat-box"><small>Sent</small><div class="val green">${sentCount}</div></div>
+    `;
+
+    // Reset filters on initial load
+    $('hFollowupDateFilter').value = '';
+    $('hFollowupStatusFilter').value = '';
+    $('hFollowupSearch').value = '';
+    
+    this.filterFollowups();
+  },
+
+  migrateFollowupData(){
+    const followups = ls_get(this.K.FOLLOWUPS);
+    const appts = ls_get(this.K.APPTS);
+    let changed = false;
+
+    followups.forEach(f => {
+      if(!f.status){
+        f.status = 'pending';
+        changed = true;
+      }
+      if(!f.visitDate){
+        if(f.apptDate) {
+          f.visitDate = f.apptDate;
+          changed = true;
+        } else if(f.apptId){
+          const appt = appts.find(a => a.id === f.apptId);
+          if(appt?.apptDate){
+            f.visitDate = appt.apptDate;
+            changed = true;
+          }
+        }
+      }
+      if(!f.dueDate && f.visitDate){
+        const due = new Date(f.visitDate);
+        due.setDate(due.getDate() + 30);
+        f.dueDate = due.toISOString();
+        changed = true;
+      }
+      if(!f.patientName && f.apptId){
+        const appt = appts.find(a => a.id === f.apptId);
+        if(appt?.patientName){
+          f.patientName = appt.patientName;
+          changed = true;
+        }
+      }
+      if(!f.phone && f.apptId){
+        const appt = appts.find(a => a.id === f.apptId);
+        if(appt?.mobile){
+          f.phone = appt.mobile;
+          changed = true;
+        }
+      }
+      if(!f.doctor && f.apptId){
+        const appt = appts.find(a => a.id === f.apptId);
+        if(appt?.doctor){
+          f.doctor = appt.doctor;
+          changed = true;
+        }
+      }
+    });
+
+    if(changed) ls_set(this.K.FOLLOWUPS, followups);
+    return followups;
+  },
+
+  filterFollowups(){
+    const followups = ls_get(this.K.FOLLOWUPS);
+    const q = ($('hFollowupSearch').value || '').toLowerCase();
+    const dateFilter = $('hFollowupDateFilter').value;
+    const statusFilter = $('hFollowupStatusFilter').value;
+    const today = todayStr();
+    
+    let filtered = followups.filter(f => {
+      const dueDate = (f.dueDate||'').split('T')[0];
+      const visitDate = (f.visitDate||'').split('T')[0];
+      
+      // Status filter
+      if(statusFilter === 'pending' && f.status !== 'pending') return false;
+      if(statusFilter === 'sent' && f.status !== 'sent') return false;
+
+      // Date filter (by visit date)
+      if(dateFilter === 'today'){
+        if(visitDate !== today) return false;
+      } else if(dateFilter === 'yesterday'){
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+        if(visitDate !== yesterdayStr) return false;
+      } else if(dateFilter === 'last7'){
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const sevenDaysAgoStr = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth()+1).padStart(2,'0')}-${String(sevenDaysAgo.getDate()).padStart(2,'0')}`;
+        if(visitDate < sevenDaysAgoStr || visitDate > today) return false;
+      } else if(dateFilter === 'last30'){
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const thirtyDaysAgoStr = `${thirtyDaysAgo.getFullYear()}-${String(thirtyDaysAgo.getMonth()+1).padStart(2,'0')}-${String(thirtyDaysAgo.getDate()).padStart(2,'0')}`;
+        if(visitDate < thirtyDaysAgoStr || visitDate > today) return false;
+      } else if(dateFilter === 'custom'){
+        const customDate = $('hFollowupCustomDate').value;
+        if(customDate && visitDate !== customDate) return false;
+      } else if(dateFilter === 'range'){
+        const fromDate = $('hFollowupDateFrom').value;
+        const toDate = $('hFollowupDateTo').value;
+        if(fromDate && visitDate < fromDate) return false;
+        if(toDate && visitDate > toDate) return false;
+      }
+
+      // Text search filter
+      if(q){
+        const hay = `${f.patientName||''} ${f.phone||''} ${f.doctor||''}`.toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+
+      return true;
+    }).sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate));
+
+    const tbody = $('hFollowupBody');
+    tbody.innerHTML = '';
+    
+    filtered.forEach(f => {
+      const visitDate = new Date(f.visitDate);
+      const today = new Date();
+      const daysStr = Math.floor((today - visitDate) / (1000 * 60 * 60 * 24)) + ' days';
+      
+      // Calculate days until follow-up due
+      let dueDateObj = null;
+      if(f.dueDate){
+        dueDateObj = new Date(f.dueDate);
+      } else if(f.visitDate){
+        dueDateObj = new Date(f.visitDate);
+        dueDateObj.setDate(dueDateObj.getDate() + 30);
+      }
+      let dueInStr = 'N/A';
+      if(dueDateObj && !isNaN(dueDateObj)){
+        const dueInDays = Math.ceil((dueDateObj - today) / (1000 * 60 * 60 * 24));
+        if(dueInDays > 0) dueInStr = dueInDays + ' days';
+        else if(dueInDays === 0) dueInStr = 'Today';
+        else dueInStr = `Overdue ${Math.abs(dueInDays)} days`;
+      }
+      
+      const statusClass = f.status === 'sent' ? 'badge-success' : 'badge-warning';
+      const statusLabel = f.status === 'sent' ? 'Sent' : 'Pending';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${f.patientName || '—'}</strong></td>
+        <td>${f.phone || '—'}</td>
+        <td>${f.doctor || '—'}</td>
+        <td>${fmtDate(f.visitDate)}</td>
+        <td>${daysStr}</td>
+        <td>${dueInStr}</td>
+        <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+        <td class="actions">
+          <button class="btn btn-success btn-sm" onclick="HOSP.sendFollowupCard('${f.id}')"><i class="bi bi-card-image"></i> Send</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    $('hFollowupCount').textContent = `Showing ${filtered.length} follow-up(s)`;
+  },
+
+  handleFollowupDateFilterChange(){
+    const dateFilter = $('hFollowupDateFilter').value;
+    const customDateInput = $('hFollowupCustomDate');
+    const dateRangeDiv = $('hFollowupDateRange');
+    
+    if(dateFilter === 'custom'){
+      customDateInput.style.display = 'block';
+      dateRangeDiv.style.display = 'none';
+    } else if(dateFilter === 'range'){
+      customDateInput.style.display = 'none';
+      dateRangeDiv.style.display = 'flex';
+    } else {
+      customDateInput.style.display = 'none';
+      dateRangeDiv.style.display = 'none';
+    }
+    this.filterFollowups();
+  },
+
+  sendFollowupWhatsApp(followupId){
+    const followups = ls_get(this.K.FOLLOWUPS);
+    const followup = followups.find(f => f.id === followupId);
+    
+    if(!followup){
+      Swal.fire({icon:'error', title:'Follow-up not found', timer:2000, showConfirmButton:false});
+      return;
+    }
+
+    if(!followup.phone){
+      Swal.fire({icon:'warning', title:'No phone number', text:'Patient has no phone number', timer:2000, showConfirmButton:false});
+      return;
+    }
+
+    const phone = this.formatPhoneForWA(followup.phone);
+    if(!phone){
+      Swal.fire({icon:'warning', title:'Invalid phone', text:'Could not format phone number', timer:2000, showConfirmButton:false});
+      return;
+    }
+
+    // Get next day's date for follow-up
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const followUpDateStr = `${tomorrow.getDate()}/${tomorrow.getMonth()+1}/${tomorrow.getFullYear()}`;
+
+    // Get visit date
+    const visitDateObj = new Date(followup.visitDate);
+    const visitDateStr = `${visitDateObj.getDate()}/${visitDateObj.getMonth()+1}/${visitDateObj.getFullYear()}`;
+
+    // Prepare the Somali message using the template provided
+    const message = `Asc,
+
+Walaal waa qeybta soo dhaweynta macaamiisha Baxnaano Hospital.
+
+${visitDateObj.getDate()} dii bishii tagtey ayaad soo booqatey . ${followup.doctor}.
+
+Kawaran xaaladda caafimaad ${followup.patientName}?
+Daawooyinkii ma qaadataa?
+
+Waxaa muhiim ah in dawada iyo wax tarkeeda aad la socodsiisid dhakhtarka.
+La socodka dhakhtarka waa kuu muhiim.
+
+Waqtiga soo laabashada ee dhakhtarka uu kuu qabtey fadlan ku imow.
+
+Haddii aadan wali imaanin,
+Nala socodsii si waqti aan kuugu qabanno.
+
+Mahadsanid.
+
+
+Waa noo sharaf doorashada aad na dooratey.
+
+Walaal haddii aadan soo laaban, fadlan imow ${followUpDateStr}.
+
+Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
+
+    const encodedMsg = encodeURIComponent(message);
+    window.open(`https://wa.me/${phone}?text=${encodedMsg}`, '_blank');
+
+    // Mark as sent after opening WhatsApp
+    setTimeout(() => {
+      followup.status = 'sent';
+      followup.messageSentDate = new Date().toISOString();
+      ls_set(this.K.FOLLOWUPS, followups);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Message Sent',
+        text: `WhatsApp message sent to ${followup.patientName}`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      // Refresh the list
+      this.filterFollowups();
+    }, 500);
+  },
+
+  sendFollowupCard(followupId){
+    const followups = ls_get(this.K.FOLLOWUPS);
+    const followup = followups.find(f => f.id === followupId);
+    if(!followup){
+      Swal.fire({icon:'error', title:'Follow-up not found', text:'Unable to load follow-up record.', timer:2000, showConfirmButton:false});
+      return;
+    }
+    if(!followup.phone){
+      Swal.fire({icon:'warning', title:'No phone number', text:'Patient has no phone number', timer:2000, showConfirmButton:false});
+      return;
+    }
+
+    const phone = this.formatPhoneForWA(followup.phone);
+    if(!phone){
+      Swal.fire({icon:'warning', title:'Invalid phone', text:'Could not format phone number', timer:2000, showConfirmButton:false});
+      return;
+    }
+
+    const cardMsg = `Baxnaano Follow-Up Reminder - ${followup.patientName}`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(cardMsg)}`, '_blank');
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 900;
+    canvas.height = 1600;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 900, 1600);
+
+    // Top header bar
+    ctx.fillStyle = '#1a3a6b';
+    ctx.fillRect(0, 0, 900, 10);
+    ctx.fillStyle = '#4caf50';
+    ctx.fillRect(0, 10, 900, 6);
+
+    const logoImg = new Image();
+    logoImg.crossOrigin = 'anonymous';
+    logoImg.src = 'https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png';
+
+    const drawCard = () => {
+      // Logo and hospital name section
+      ctx.drawImage(logoImg, 40, 25, 85, 85);
+      ctx.fillStyle = '#1a3a6b';
+      ctx.font = 'bold 24px Arial';
+      ctx.fillText('BAXNAANO', 145, 50);
+      ctx.fillStyle = '#4caf50';
+      ctx.font = 'bold 48px Arial';
+      ctx.fillText('HOSPITAL', 145, 105);
+
+      let y = 135;
+
+      // Section divider
+      ctx.strokeStyle = '#1a3a6b';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(40, y);
+      ctx.lineTo(860, y);
+      ctx.stroke();
+
+      y += 30;
+
+      // SOMALI MESSAGE SECTION - NOW AT THE TOP
+      const visitDateObj = new Date(followup.visitDate);
+      const visitDateFormatted = `${visitDateObj.getDate()}/${visitDateObj.getMonth()+1}/${visitDateObj.getFullYear()}`;
+      const dueDateObj = new Date(followup.dueDate);
+      const dueDateFormatted = `${dueDateObj.getDate()}/${dueDateObj.getMonth()+1}/${dueDateObj.getFullYear()}`;
+
+      const messageLines = [
+        `Asc ${(followup.patientName || 'Walaal').toUpperCase()},`,
+        '',
+        `Waxaad ${visitDateFormatted} soo booqatay. ${followup.doctor}.`,
+        '',
+        `Kawaran xaaladda caafimaadkaaga?`,
+        `Daawooyinkii ma qaadataa?`,
+        '',
+        `Waxaa muhiim ah in dawada iyo wax tarkeeda aad la socodsiisid dhakhtarka.`,
+        `La socodka dhakhtarka waa kuu muhiim.`,
+        '',
+        `Haddii aadan wali soo laaban, fadlan noo imow ${dueDateFormatted} ama nala soo xiriir.`,
+        '',
+        `Mahadsanid.`
+      ];
+
+      ctx.textAlign = 'left';
+      messageLines.forEach(line => {
+        if(line.trim()){
+          if(line.includes('Asc')){
+            ctx.fillStyle = '#1a3a6b';
+            ctx.font = 'bold 34px Arial';
+          } else if(line.includes('Mahadsanid')){
+            ctx.fillStyle = '#1a3a6b';
+            ctx.font = 'bold 30px Arial';
+          } else if(line.includes('Waxaad')){
+            ctx.fillStyle = '#c41e3a';
+            ctx.font = 'bold 30px Arial';
+          } else {
+            ctx.fillStyle = '#333';
+            ctx.font = '30px Arial';
+          }
+          const wrappedLines = this.wrapText(ctx, line, 800);
+          wrappedLines.forEach(wrappedLine => {
+            ctx.fillText(wrappedLine, 50, y);
+            y += 32;
+          });
+        } else {
+          y += 18;
+        }
+      });
+
+      y += 20;
+
+      // Divider before patient details
+      ctx.strokeStyle = '#1a3a6b';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 8]);
+      ctx.beginPath();
+      ctx.moveTo(40, y);
+      ctx.lineTo(860, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      y += 30;
+
+      // PATIENT DETAILS TABLE SECTION
+      const detailLines = [
+        ['Patient Name:', (followup.patientName || 'N/A').toUpperCase()],
+        ['Doctor:', `Dr. ${followup.doctor || 'N/A'}`],
+        ['WAKHTIGA AAD TIMADAY:', fmtDate(followup.visitDate)],
+        ['WAKHTIGA OO KADHACAYO NUMBER-KA:', fmtDate(followup.dueDate)]
+      ];
+
+      detailLines.forEach(([label, value]) => {
+        ctx.fillStyle = '#666';
+        ctx.font = 'bold 30px Arial';
+        ctx.fillText(label, 50, y);
+        y += 30;
+        
+        ctx.fillStyle = '#1a3a6b';
+        ctx.font = 'bold 30px Arial';
+        ctx.fillText(value, 50, y);
+        y += 45;
+      });
+
+      y += 10;
+
+      // Bottom section
+      ctx.strokeStyle = '#1a3a6b';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(40, y);
+      ctx.lineTo(860, y);
+      ctx.stroke();
+
+      y += 30;
+      ctx.fillStyle = '#1a3a6b';
+      ctx.font = 'bold 20px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('BAXNAANO HOSPITAL', 450, y);
+      y += 30;
+      ctx.fillStyle = '#666';
+      ctx.font = '18px Arial';
+      ctx.fillText('Customer Care Department', 450, y);
+      y += 30;
+      ctx.fillStyle = '#4caf50';
+      ctx.font = 'bold 18px Arial';
+      ctx.fillText('Thank You for Choosing Us', 450, y);
+
+      canvas.toBlob(() => {
+        HOSP._fallbackWhatsApp(canvas, followup);
+      }, 'image/png');
+    };
+
+    logoImg.onload = drawCard;
+    logoImg.onerror = drawCard;
+
+    setTimeout(() => {
+      followup.status = 'sent';
+      followup.messageSentDate = new Date().toISOString();
+      ls_set(this.K.FOLLOWUPS, followups);
+      Swal.fire({
+        icon: 'success',
+        title: 'Follow-Up Card Sent',
+        text: `WhatsApp follow-up reminder sent to ${followup.patientName}`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+      this.filterFollowups();
+    }, 500);
+  },
+
+  sendFollowupCardBulk(){
+    const followups = this.migrateFollowupData();
+    const today = todayStr();
+    const pendingFollowups = followups.filter(f => {
+      const dueDate = (f.dueDate||'').split('T')[0];
+      return dueDate && dueDate <= today && f.status === 'pending';
+    }).slice(0, 1);
+
+    if(!pendingFollowups.length){
+      Swal.fire({icon:'info', title:'No pending follow-up cards', text:'There are no follow-ups due for card sending.', timer:2000, showConfirmButton:false});
+      return;
+    }
+
+    Swal.fire({
+      title: `Send Follow-Up Card?`,
+      html: `<p>This will send a follow-up reminder card to:</p><ul style="text-align:left;">` +
+            pendingFollowups.map(f => `<li>${f.patientName} (${f.phone})</li>`).join('') +
+            `</ul>`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Send Card'
+    }).then(result => {
+      if(!result.isConfirmed) return;
+      this.sendFollowupCard(pendingFollowups[0].id);
+    });
+  },
+
+  wrapText(ctx, text, maxWidth){
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+
+    words.forEach(word => {
+      const testLine = currentLine + (currentLine ? ' ' : '') + word;
+      const metrics = ctx.measureText(testLine);
+      if(metrics.width > maxWidth && currentLine){
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    });
+    if(currentLine) lines.push(currentLine);
+    return lines;
+  },
+
+  sendFollowupBulk(){
+    const followups = this.migrateFollowupData();
+    const today = todayStr();
+    const pendingFollowups = followups.filter(f => {
+      const dueDate = (f.dueDate||'').split('T')[0];
+      return dueDate && dueDate <= today && f.status === 'pending';
+    }).slice(0, 3);
+
+    if(!pendingFollowups.length){
+      Swal.fire({icon:'info', title:'No pending follow-ups', text:'All follow-ups have been sent or are not due yet', timer:2000, showConfirmButton:false});
+      return;
+    }
+
+    Swal.fire({
+      title: `Send ${pendingFollowups.length} Follow-Up Messages?`,
+      html: `<p>This will open ${pendingFollowups.length} WhatsApp messages for:</p><ul style="text-align:left;">` +
+            pendingFollowups.map(f => `<li>${f.patientName} (${f.phone})</li>`).join('') + 
+            `</ul>`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Send All'
+    }).then(result => {
+      if(!result.isConfirmed) return;
+      
+      pendingFollowups.forEach((f, idx) => {
+        setTimeout(() => {
+          this.sendFollowupWhatsApp(f.id);
+        }, idx * 1000);
+      });
+    });
+  },
+
+  renderFollowupReport(){
+    const followups = ls_get(this.K.FOLLOWUPS);
+    const today = todayStr();
+    
+    const totalDue = followups.filter(f => (f.dueDate||'').split('T')[0] <= today).length;
+    const totalSent = followups.filter(f => f.status === 'sent').length;
+    const totalPending = followups.filter(f => (f.dueDate||'').split('T')[0] <= today && f.status === 'pending').length;
+    const successRate = totalDue > 0 ? ((totalSent / totalDue) * 100).toFixed(2) : 0;
+    const totalFollowups = followups.length;
+
+    Swal.fire({
+      title: 'Follow-Up Report',
+      html: `
+        <div style="text-align:left;font-size:14px;background:#f8f9fa;padding:1rem;border-radius:6px;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr style="border-bottom:1px solid #ddd;">
+              <td style="padding:.5rem;"><strong>Total Follow-Ups Created:</strong></td>
+              <td style="padding:.5rem;text-align:right;"><span style="font-weight:bold;color:#2c3e50;">${totalFollowups}</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #ddd;">
+              <td style="padding:.5rem;"><strong>Total Follow-Ups Due:</strong></td>
+              <td style="padding:.5rem;text-align:right;"><span style="font-weight:bold;color:#2c3e50;">${totalDue}</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #ddd;">
+              <td style="padding:.5rem;"><strong>Messages Sent:</strong></td>
+              <td style="padding:.5rem;text-align:right;"><span style="font-weight:bold;color:green;">${totalSent}</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #ddd;">
+              <td style="padding:.5rem;"><strong>Pending:</strong></td>
+              <td style="padding:.5rem;text-align:right;"><span style="font-weight:bold;color:#ff9800;">${totalPending}</span></td>
+            </tr>
+            <tr>
+              <td style="padding:.5rem;"><strong>Success Rate:</strong></td>
+              <td style="padding:.5rem;text-align:right;"><span style="font-weight:bold;color:blue;">${successRate}%</span></td>
+            </tr>
+          </table>
+        </div>
+      `,
+      icon: 'info',
+      confirmButtonText: 'Close'
+    });
   }
 };
 
