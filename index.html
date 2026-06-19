@@ -2810,7 +2810,7 @@ const tomorrowDay = days[tomorrow.getDay()];
 
 const detailLines = [
   ['Patient Name:', (followup.patientName || 'N/A').toUpperCase()],
-  ['Doctor:', `Dr. ${followup.doctor || 'N/A'}`],
+  ['Doctor:', ` ${followup.doctor || 'N/A'}`],
   ['WAKHTIGA AAD TIMADAY:', fmtDate(followup.visitDate)],
   ['MAALINTA BALANTA OO AH BIRI IMOW:', tomorrowDay]
 ];
