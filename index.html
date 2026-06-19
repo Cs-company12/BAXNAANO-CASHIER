@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Odoo</title>
-<link rel="icon" type="image/png" href="https://github.com/Cs-company12/DOCTOR-PANAL/raw/main/11.png">
+<link rel="icon" type="image/png" href="https://github.com/Cs-company12/DOCTOR-PANAL/blob/main/download.jpeg?raw=true">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <style>
@@ -2685,7 +2685,7 @@ Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
       return;
     }
 
-    const cardMsg = `Baxnaano Follow-Up Reminder - ${followup.patientName}`;
+    const cardMsg = `WALAL WAA XASUSIN JAWABTADA - ${followup.patientName}`;
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(cardMsg)}`, '_blank');
 
     const canvas = document.createElement('canvas');
@@ -2709,9 +2709,9 @@ Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
 
     const drawCard = () => {
       // Logo and hospital name section
-      ctx.drawImage(logoImg, 40, 25, 85, 85);
+      ctx.drawImage(logoImg, 40, 25, 100, 100);
       ctx.fillStyle = '#1a3a6b';
-      ctx.font = 'bold 24px Arial';
+      ctx.font = 'bold 36px Arial';
       ctx.fillText('BAXNAANO', 145, 50);
       ctx.fillStyle = '#4caf50';
       ctx.font = 'bold 48px Arial';
@@ -2730,11 +2730,10 @@ Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
       y += 30;
 
       // SOMALI MESSAGE SECTION - NOW AT THE TOP
-      const visitDateObj = new Date(followup.visitDate);
-      const visitDateFormatted = `${visitDateObj.getDate()}/${visitDateObj.getMonth()+1}/${visitDateObj.getFullYear()}`;
-      const dueDateObj = new Date(followup.dueDate);
-      const dueDateFormatted = `${dueDateObj.getDate()}/${dueDateObj.getMonth()+1}/${dueDateObj.getFullYear()}`;
+     const visitDateObj = new Date(followup.visitDate);
+const visitDateFormatted = `${visitDateObj.getDate()}/${visitDateObj.getMonth()+1}/${visitDateObj.getFullYear()}`;
 
+const dueDateFormatted = `${new Date(Date.now() + 86400000).getDate()}/${new Date(Date.now() + 86400000).getMonth()+1}/${new Date(Date.now() + 86400000).getFullYear()}`;
       const messageLines = [
         `Asc ${(followup.patientName || 'Walaal').toUpperCase()},`,
         '',
@@ -2746,7 +2745,9 @@ Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
         `Waxaa muhiim ah in dawada iyo wax tarkeeda aad la socodsiisid dhakhtarka.`,
         `La socodka dhakhtarka waa kuu muhiim.`,
         '',
-        `Haddii aadan wali soo laaban, fadlan noo imow ${dueDateFormatted} ama nala soo xiriir.`,
+        `Haddii aadan wali soo laaban, fadlan  imaw Biri 
+         
+         walal number Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free Imow biri oo tariikhda tahay ${dueDateFormatted} .`,
         '',
         `Mahadsanid.`
       ];
@@ -2756,16 +2757,16 @@ Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
         if(line.trim()){
           if(line.includes('Asc')){
             ctx.fillStyle = '#1a3a6b';
-            ctx.font = 'bold 34px Arial';
+            ctx.font = 'bold 37px Arial';
           } else if(line.includes('Mahadsanid')){
             ctx.fillStyle = '#1a3a6b';
-            ctx.font = 'bold 30px Arial';
+            ctx.font = 'bold 32px Arial';
           } else if(line.includes('Waxaad')){
             ctx.fillStyle = '#c41e3a';
-            ctx.font = 'bold 30px Arial';
+            ctx.font = 'bold 32px Arial';
           } else {
             ctx.fillStyle = '#333';
-            ctx.font = '30px Arial';
+            ctx.font = '32px Arial';
           }
           const wrappedLines = this.wrapText(ctx, line, 800);
           wrappedLines.forEach(wrappedLine => {
@@ -2792,13 +2793,27 @@ Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
       y += 30;
 
       // PATIENT DETAILS TABLE SECTION
-      const detailLines = [
-        ['Patient Name:', (followup.patientName || 'N/A').toUpperCase()],
-        ['Doctor:', `Dr. ${followup.doctor || 'N/A'}`],
-        ['WAKHTIGA AAD TIMADAY:', fmtDate(followup.visitDate)],
-        ['WAKHTIGA AAN KUBALAMINAY BIRI IMOW TARIIKHDA:', fmtDate(followup.dueDate)]
-      ];
+  const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
 
+const days = [
+  'Axad',
+  'Isniin',
+  'Talaado',
+  'Arbaco',
+  'Khamiis',
+  'Sabtida',
+  'Sabti'
+];
+
+const tomorrowDay = days[tomorrow.getDay()];
+
+const detailLines = [
+  ['Patient Name:', (followup.patientName || 'N/A').toUpperCase()],
+  ['Doctor:', `Dr. ${followup.doctor || 'N/A'}`],
+  ['WAKHTIGA AAD TIMADAY:', fmtDate(followup.visitDate)],
+  ['MAALINTA BALANTA OO AH BIRI IMOW:', tomorrowDay]
+];
       detailLines.forEach(([label, value]) => {
         ctx.fillStyle = '#666';
         ctx.font = 'bold 30px Arial';
@@ -2829,11 +2844,11 @@ Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
       y += 30;
       ctx.fillStyle = '#666';
       ctx.font = '18px Arial';
-      ctx.fillText('Customer Care Department', 450, y);
+      ctx.fillText(' QEEBTA SOO DHAWAYTA MACAMISH', 450, y);
       y += 30;
       ctx.fillStyle = '#4caf50';
       ctx.font = 'bold 18px Arial';
-      ctx.fillText('Thank You for Choosing Us', 450, y);
+      ctx.fillText('KUMAH SANTAHAY DORASHADAADA', 450, y);
 
       canvas.toBlob(() => {
         HOSP._fallbackWhatsApp(canvas, followup);
