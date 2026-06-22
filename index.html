@@ -6,6 +6,7 @@
 <title>Odoo</title>
 <link rel="icon" type="image/png" href="https://github.com/Cs-company12/DOCTOR-PANAL/blob/main/download.jpeg?raw=true">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <style>
 :root {
@@ -1118,8 +1119,45 @@ function fmtDT(d){
     });
   }catch{return d||'';}}
 function gid(prefix){return prefix+'_'+Date.now()+'_'+Math.random().toString(36).substr(2,6);}
+const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+
+const DB = {
+  enabled: false,
+  client: null,
+  table: 'bax_app_data',
+  async init(){
+    if(typeof supabase === 'undefined'){console.warn('Supabase client not loaded');return;}
+    if(!SUPABASE_URL||SUPABASE_URL.includes('SUPABASE')||!SUPABASE_ANON_KEY||SUPABASE_ANON_KEY.includes('ANON')){
+      console.warn('Supabase credentials not configured');
+      return;
+    }
+    try{
+      this.client = supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+      const { data,error } = await this.client.from(this.table).select('*');
+      if(error){console.warn('Supabase init failed',error);return;}
+      if(Array.isArray(data)){
+        data.forEach(row=>{
+          if(!row?.key) return;
+          const value = row.value;
+          try{localStorage.setItem(row.key,JSON.stringify(value));}catch(err){console.warn('DB cache write failed',row.key,err);}
+        });
+      }
+      this.enabled = true;
+      console.info('Supabase enabled, loaded '+(data?.length||0)+' cache entries');
+    }catch(err){console.warn('Supabase init exception',err);}
+  },
+  async persist(key,data){
+    if(!this.enabled||!this.client) return;
+    try{
+      const { error } = await this.client.from(this.table).upsert({ key, value: data, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+      if(error) console.warn('Supabase persist failed', key, error);
+    }catch(err){console.warn('Supabase persist exception', key, err);}
+  }
+};
+
 function ls_get(k,def=[]){try{const d=localStorage.getItem(k);return d?JSON.parse(d):def;}catch{return def;}}
-function ls_set(k,d){localStorage.setItem(k,JSON.stringify(d));}
+function ls_set(k,d){localStorage.setItem(k,JSON.stringify(d));if(DB.enabled)DB.persist(k,d);}
 async function hashPw(pw,salt){
   try{
     const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(pw+salt));
@@ -3522,6 +3560,7 @@ const LAB = window.LAB = {
 
 // INIT
 document.addEventListener('DOMContentLoaded',()=>{
+  DB.init();
   $('hLoginUser')?.addEventListener('keypress',e=>{if(e.key==='Enter')$('hLoginPass').focus();});
   $('hLoginPass')?.addEventListener('keypress',e=>{if(e.key==='Enter')HOSP.login();});
   $('lLoginUser')?.addEventListener('keypress',e=>{if(e.key==='Enter')$('lLoginPass').focus();});
