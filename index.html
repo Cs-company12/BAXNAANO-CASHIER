@@ -1189,6 +1189,10 @@ const MOGADISHU_DISTRICTS = [
   { name: 'Daarusalaam', address: 'Daarusalaam, Mogadishu, Banaadir, Somalia' }
 ];
 
+  // ── Preloaded patient list (bulk import) ──
+  // This block contains the raw exported patient list. It will be parsed once
+  // on first run and added to localStorage under the appointments key.
+  const PRELOAD_PATIENT_LIST = `__PRELOAD_PLACEHOLDER__`;
 // ═══════════════════════════════════════════
 // HOSPITAL MODULE
 // ═══════════════════════════════════════════
@@ -1264,9 +1268,187 @@ const HOSP = {
     const sess=localStorage.getItem(this.K.SESSION);
     if(sess){const u=ls_get(this.K.USERS).find(x=>x.username===sess);if(u){this.cur=u;this.showApp();return;}}
     this.showLogin();
+    // Attempt to import preloaded patient list once (only if appointments empty)
+    try{
+      if(!localStorage.getItem('bax_preload_seeded')){
+        await this.importPreloadedList();
+        localStorage.setItem('bax_preload_seeded','1');
+      }
+    }catch(err){console.warn('Preload import failed',err);}
   },
 
-  showLogin(){$('hospitalLogin').style.display='';$('hospitalApp').style.display='none';},
+  // Auto-assign sex based on name (common Somali name patterns)
+  _assignSexByName(name){
+    const n=(name||'').toLowerCase();
+    const femaleEndings=['o','a','ina','aa','uu','eey'];
+    const malePrefixes=['abd','cali','hassan','yusuf','mo','ahmed','ali','omar'];
+    if(malePrefixes.some(p=>n.startsWith(p))) return 'M';
+    if(femaleEndings.some(e=>n.endsWith(e))) return 'F';
+    return Math.random()>0.5?'M':'F';
+  },
+
+  // Auto-assign age in reasonable range
+  _assignAge(){
+    return String(18+Math.floor(Math.random()*58)); // 18-75
+  },
+
+  // Import PRELOAD_PATIENT_LIST (raw text) into APPTS and PATIENTS
+  async importPreloadedList(){
+    try{
+      if(!window.PRELOAD_PATIENT_LIST) return;
+      const raw = PRELOAD_PATIENT_LIST;
+      if(!raw || !raw.includes('Patient Name:')) return;
+      const appts = ls_get(this.K.APPTS);
+      if(appts.length) return; // don't overwrite existing data
+
+      const patients = ls_get(this.K.PATIENTS);
+
+      // Regex to capture blocks of Patient Name / Doctor / Phone Number / Date
+      const re = /Patient Name:\s*(.+?)\r?\n\s*Doctor:\s*(.+?)\r?\n\s*Phone Number:\s*(.+?)\r?\n\s*Date:\s*(.+?)(?:\r?\n|$)/gms;
+      let m; let count=0; let updated=0;
+      const seenPatients = new Set(); // prevent duplicates during import
+      
+      while((m=re.exec(raw))!==null){
+        const patientName = (m[1]||'').trim();
+        let doctorRaw = (m[2]||'').trim();
+        const mobile = (m[3]||'').trim();
+        const dateStr = (m[4]||'').trim();
+
+        if(!patientName) continue;
+
+        // Dedup key: name + phone (skip if already processed this import pass)
+        const dedupKey = patientName.toLowerCase()+'::'+mobile;
+        if(seenPatients.has(dedupKey)) continue;
+        seenPatients.add(dedupKey);
+
+        // Try to extract department from parentheses in doctorRaw
+        let dept = '';
+        const par = doctorRaw.match(/\(([^)]+)\)/);
+        if(par) { dept = par[1].trim(); doctorRaw = doctorRaw.replace(/\s*\([^)]*\)/,'').trim(); }
+
+        // Find matching doctor from DOCTORS map (best-effort substring match)
+        let matchedDoctor = doctorRaw;
+        let matchedDept = dept;
+        const norm = s=> (s||'').toString().toLowerCase().replace(/\./g,'').replace(/\s+/g,' ').trim();
+        const givenNorm = norm(doctorRaw);
+        for(const dpt of Object.keys(this.DOCTORS||{})){
+          for(const dname of (this.DOCTORS[dpt]||[])){
+            if(norm(dname).includes(givenNorm) || givenNorm.includes(norm(dname))){ matchedDoctor = dname; matchedDept = dpt; break; }
+          }
+          if(matchedDept) break;
+        }
+
+        // Parse date (set to 09:00 local time). Fallback to now.
+        let apptDate = new Date(dateStr+' 09:00');
+        if(isNaN(apptDate.getTime())) apptDate = new Date();
+        const apptDateIso = apptDate.toISOString();
+
+        // Determine amount and charge type from doctor charges
+        const charges = this.getChargesForDoctor(matchedDoctor||'');
+        const chargeKeys = Object.keys(charges||{});
+        const firstChargeKey = chargeKeys[0]||'';
+        const amount = (firstChargeKey && charges[firstChargeKey])?charges[firstChargeKey]:0;
+
+        // Auto-assign sex and age
+        const sex = this._assignSexByName(patientName);
+        const age = this._assignAge();
+
+        // Compute appt number and queue number (based on current import list)
+        const existingCount = ls_get(this.K.APPTS).length || 0;
+        const apptIndex = existingCount + count + 1;
+        // queue number for the same doctor on the same visit date
+        let queueNum = 1;
+        if(matchedDoctor){
+          const dayKey = apptDateIso.split('T')[0];
+          const sameDay = appts.filter(a=> (a.doctor||'')===matchedDoctor && (a.apptDate||'').startsWith(dayKey));
+          queueNum = sameDay.length ? Math.max(...sameDay.map(a=>a.queueNum||0)) + 1 : 1;
+        }
+
+        // Create appointment object with auto-assigned fields
+        const newAppt = {
+          id: gid('A'),
+          apptNum: 'AP'+String(40000+apptIndex).padStart(6,'0'),
+          queueNum: queueNum,
+          patientName: patientName,
+          mobile: mobile,
+          patientAge: age,
+          sex: sex,
+          patientDob: '',
+          patientAddress: '',
+          patientNotes: '',
+          apptDate: apptDateIso,
+          apptType: 'New',
+          branch: 'HQ',
+          patientType: 'OPD',
+          department: matchedDept||'',
+          doctor: matchedDoctor||doctorRaw,
+          chargeType: firstChargeKey||'',
+          amount: amount,
+          state: 'scheduled',
+          paymentMethod: 'Cash',
+          createdAt: new Date().toISOString(),
+          cashier: (this.cur&&this.cur.username)||'import',
+          lastVisitDate: '',
+          lastVisitDoctor: ''
+        };
+
+        // Ensure/update patient record (dedup by name or phone)
+        try{
+          const existing = patients.find(p=> 
+            (p.name||'').trim().toLowerCase()===patientName.toLowerCase() || 
+            (p.mobile||'')===mobile 
+          );
+          if(existing){
+            // Update existing patient
+            existing.name = patientName;
+            existing.mobile = mobile;
+            if(!existing.sex) existing.sex = sex;
+            if(!existing.age) existing.age = age;
+            if(!existing.history) existing.history = '';
+            updated++;
+          } else {
+            // Create new patient
+            patients.unshift({ 
+              id: gid('P'), 
+              name: patientName, 
+              mobile: mobile, 
+              sex: sex, 
+              age: age, 
+              dob:'', 
+              address:'', 
+              history:'', 
+              createdAt:new Date().toISOString() 
+            });
+          }
+        }catch(e){console.warn('patient ensure failed',e);}
+
+        appts.push(newAppt);
+        // create followup record
+        try{ this.createFollowupRecord(newAppt); }catch(e){}
+        count++;
+      }
+
+      if(count>0){
+        ls_set(this.K.PATIENTS,patients);
+        ls_set(this.K.APPTS,appts);
+        console.info(`Imported ${count} appointments, updated ${updated} patient records`);
+        console.log(`Total patients: ${patients.length}, Total appointments: ${appts.length}`);
+      }
+    }catch(err){console.warn('importPreloadedList error',err);}
+  },
+
+  // ── DEBUG: Force import and show counts ──
+  forceReimport(){
+    localStorage.removeItem('bax_preload_seeded');
+    this.importPreloadedList().then(()=>{
+      const appts = ls_get(this.K.APPTS);
+      const patients = ls_get(this.K.PATIENTS);
+      const summary = `✅ IMPORT COMPLETE\n📋 Appointments: ${appts.length}\n👥 Patients: ${patients.length}`;
+      console.log(summary);
+      Swal.fire({icon:'success', title:'Import Complete', html:`<pre>${summary}</pre>`, confirmButtonText:'OK'});
+      this.renderAppts();
+    });
+  },
 
   showApp(){
     $('hospitalLogin').style.display='none';$('hospitalApp').style.display='';
@@ -1643,146 +1825,39 @@ const HOSP = {
 
     const phone = this.formatPhoneForWA(appt.mobile);
     const appointmentTime = appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date());
-    const directMsg = encodeURIComponent(`Queue Number: ${appt.queueNum || '---'}`);
-    window.open(`https://wa.me/${phone}?text=${directMsg}`, '_blank');
 
-    // Build canvas image
-    const canvas = document.createElement('canvas');
-    canvas.width = 800;
-    canvas.height = 520;
-    const ctx = canvas.getContext('2d');
+    // Build a clean, nicely spaced text message instead of a canvas image.
+    const message =
+`*🏥 BAXNAANO HOSPITAL*
 
-    // Background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 800, 520);
 
-    // Top header bar
-    ctx.fillStyle = '#1a3a6b';
-    ctx.fillRect(0, 0, 800, 8);
-    ctx.fillStyle = '#4caf50';
-    ctx.fillRect(0, 8, 800, 4);
+*Patient Name:* ${appt.patientName || '—'}
+*Number:* (*${appt.queueNum || '0'}*)
+*Doctor:* ${appt.doctor || '—'}
+*Department:* ${appt.department || '—'}
 
-    // Logo text area
-    const logoImg = new Image();
-    logoImg.crossOrigin = 'anonymous';
-    logoImg.src = 'https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png';
+*APPOINTMENT DETAILS*
 
-    const drawCard = () => {
-      // Logo
-      ctx.drawImage(logoImg, 30, 20, 80, 80);
+*Date:* ${appointmentTime}
+*Fee:* ${fmtMoney(appt.amount || 0)}
 
-      // Hospital name
-      ctx.fillStyle = '#1a3a6b';
-      ctx.font = 'bold 32px Arial';
-      ctx.fillText('BAXNAANO', 125, 50);
-      ctx.fillStyle = '#4caf50';
-      ctx.font = 'bold 32px Arial';
-      ctx.fillText('HOSPITAL', 125, 85);
+*FARIINTAN AQRISO*
 
-      // Main card box
-      ctx.strokeStyle = '#1a3a6b';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.roundRect(30, 120, 740, 300, 12);
-      ctx.stroke();
+NUMBER KAN WAXAA OO KUSHAQENAYA ILAA MUDO 1 BIL AH.
+FADLAN SUG ITA LAGU WACAYO.
 
-      // Table rows
-      const rows = [
-        ['Patient',    (appt.patientName || 'Patient').toUpperCase()],
-        ['NUMBER KAGA','{ ' + (appt.queueNum || '0') + ' }'],
-        ['Doctor',      appt.doctor || '—'],
-        ['Department',  appt.department || '—'],
-        ['Taariikhda',  appointmentTime],
-        ['Qiimaha',     fmtMoney(appt.amount || 0)],
-      ];
+Thank you.`;
 
-      rows.forEach((row, i) => {
-        const y = 120 + i * 50;
-        // Divider line
-        if(i > 0){
-          ctx.strokeStyle = '#dde3ef';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(30, y);
-          ctx.lineTo(770, y);
-          ctx.stroke();
-        }
-        // Vertical divider
-        ctx.strokeStyle = '#1a3a6b';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(38, y + 8);
-        ctx.lineTo(38, y + 42);
-        ctx.stroke();
+    const encodedMsg = encodeURIComponent(message);
+    window.open(`https://wa.me/${phone}?text=${encodedMsg}`, '_blank');
 
-        // Label
-        ctx.fillStyle = '#1a3a6b';
-        ctx.font = row[0] === 'NUMBER KAGA' ? 'bold 18px Arial' : 'bold 17px Arial';
-        ctx.fillText(row[0], 55, y + 32);
-
-        // Vertical center divider
-        ctx.strokeStyle = '#1a3a6b';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(290, y + 5);
-        ctx.lineTo(290, y + 45);
-        ctx.stroke();
-
-        // Value
-        if(row[0] === 'NUMBER KAGA'){
-          ctx.fillStyle = '#1a3a6b';
-          ctx.font = 'bold 26px Arial';
-          ctx.fillText(row[1], 310, y + 32);
-        } else {
-          ctx.fillStyle = '#222';
-          ctx.font = '17px Arial';
-          if(row[0] === 'Taariikhda'){
-            ctx.textAlign = 'right';
-            ctx.fillText(row[1], 760, y + 32);
-            ctx.textAlign = 'left';
-          } else {
-            ctx.fillText(row[1], 310, y + 32);
-          }
-        }
-      });
-
-      // Bottom green divider
-      ctx.strokeStyle = '#4caf50';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(30, 435);
-      ctx.lineTo(770, 435);
-      ctx.stroke();
-
-      // Green dot center
-      ctx.fillStyle = '#4caf50';
-      ctx.beginPath();
-      ctx.arc(400, 435, 6, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Footer text
-      ctx.fillStyle = '#1a3a6b';
-      ctx.font = 'bold 17px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('NUMBER KA WAXA OO KUSHAQENAYA ILAA MUDO 1 BIL AH', 400, 468);
-
-      ctx.fillStyle = '#1a3a6b';
-      ctx.font = '16px Arial';
-      ctx.fillText('Fadlan sug numberkaaga ilaa laagu yeedho.', 400, 500);
-
-      ctx.textAlign = 'left';
-
-      // Convert to image and keep record while WhatsApp chat has already been opened.
-      canvas.toBlob(() => {
-        HOSP._fallbackWhatsApp(canvas, appt);
-      }, 'image/png');
-    };
-
-    logoImg.onload = drawCard;
-    logoImg.onerror = () => {
-      // Draw without logo if image fails
-      drawCard();
-    };
+    Swal.fire({
+      icon: 'success',
+      title: 'WhatsApp La Furay',
+      text: `Fariinta number ${appt.queueNum || '—'} ayaa loo diray ${appt.patientName || 'bukaanka'}.`,
+      timer: 2200,
+      showConfirmButton: false
+    });
   },
 
   sendWhatsAppMessage(){
@@ -1797,26 +1872,6 @@ const HOSP = {
       return;
     }
     this.sendQueueToWhatsApp(appt);
-  },
-
-  _fallbackWhatsApp(canvas, appt){
-    // Image generation is complete; the WhatsApp chat was opened automatically already.
-    // Download the image for record if needed.
-    setTimeout(() => {
-      const link = document.createElement('a');
-      const filenameId = appt.queueNum || appt.apptNum || appt.id || 'followup';
-      link.download = 'baxnaano-' + filenameId + '.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    }, 200);
-
-    Swal.fire({
-      icon: 'info',
-      title: 'Sawirka La Dejiyay',
-      text: 'Sawirka waa la dejiyay. WhatsApp ayaa la furayaa — ku dir sawirka bukaanka.',
-      timer: 3500,
-      showConfirmButton: false
-    });
   },
 
   saveAppt(){
@@ -2723,192 +2778,57 @@ Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
       return;
     }
 
-    const cardMsg = `WALAL WAA XASUSIN JAWABTADA - ${followup.patientName}`;
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(cardMsg)}`, '_blank');
+    // Build a nicely spaced WhatsApp TEXT message (no canvas/image generation).
+    const visitDateObj = new Date(followup.visitDate);
+    const visitDateFormatted = `${visitDateObj.getDate()}/${visitDateObj.getMonth()+1}/${visitDateObj.getFullYear()}`;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = 900;
-    canvas.height = 1600;
-    const ctx = canvas.getContext('2d');
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dueDateFormatted = `${tomorrow.getDate()}/${tomorrow.getMonth()+1}/${tomorrow.getFullYear()}`;
+    const days = ['Axad','Isniin','Talaado','Arbaco','Khamiis','Jimce','Sabti'];
+    const tomorrowDay = days[tomorrow.getDay()];
 
-    // Background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, 900, 1600);
+    const message =
+`🏥 *BAXNAANO HOSPITAL*
+Qeybta Soo Dhaweynta Macaamiisha
 
-    // Top header bar
-    ctx.fillStyle = '#1a3a6b';
-    ctx.fillRect(0, 0, 900, 10);
-    ctx.fillStyle = '#4caf50';
-    ctx.fillRect(0, 10, 900, 6);
+Asc ${(followup.patientName || 'Walaal').toUpperCase()},
 
-    const logoImg = new Image();
-    logoImg.crossOrigin = 'anonymous';
-    logoImg.src = 'https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png';
+Waxaad ${visitDateFormatted} soo booqatay ${followup.doctor || ''}.
 
-    const drawCard = () => {
-      // Logo and hospital name section
-      ctx.drawImage(logoImg, 40, 25, 100, 100);
-      ctx.fillStyle = '#1a3a6b';
-      ctx.font = 'bold 36px Arial';
-      ctx.fillText('BAXNAANO', 145, 50);
-      ctx.fillStyle = '#4caf50';
-      ctx.font = 'bold 48px Arial';
-      ctx.fillText('HOSPITAL', 145, 105);
+Kawaran xaaladda caafimaadkaaga?
+Daawooyinkii ma qaadataa?
 
-      let y = 135;
+Waxaa muhiim ah in dawada iyo wax tarkeeda
+aad la socodsiisid dhakhtarka.
 
-      // Section divider
-      ctx.strokeStyle = '#1a3a6b';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(40, y);
-      ctx.lineTo(860, y);
-      ctx.stroke();
+Haddii aadan wali soo laaban, fadlan imow Biri.
+Number-ka kushaqenayo jawaabta lacag maaha,
+number-ku waa free, imow biri oo tariikhdu tahay ${dueDateFormatted}.
 
-      y += 30;
+— — — — — — — — — —
+Patient Name: ${(followup.patientName || 'N/A').toUpperCase()}
+Doctor: ${followup.doctor || 'N/A'}
+Wakhtiga Aad Timaday: ${fmtDate(followup.visitDate)}
+Maalinta Balanta oo Ah  (Biri Imow: *${tomorrowDay}*)
+— — — — — — — — — —
 
-      // SOMALI MESSAGE SECTION - NOW AT THE TOP
-     const visitDateObj = new Date(followup.visitDate);
-const visitDateFormatted = `${visitDateObj.getDate()}/${visitDateObj.getMonth()+1}/${visitDateObj.getFullYear()}`;
+Mahadsanid.
+Kumahsantahay doorashadaada.`;
 
-const dueDateFormatted = `${new Date(Date.now() + 86400000).getDate()}/${new Date(Date.now() + 86400000).getMonth()+1}/${new Date(Date.now() + 86400000).getFullYear()}`;
-      const messageLines = [
-        `Asc ${(followup.patientName || 'Walaal').toUpperCase()},`,
-        '',
-        `Waxaad ${visitDateFormatted} soo booqatay. ${followup.doctor}.`,
-        '',
-        `Kawaran xaaladda caafimaadkaaga?`,
-        `Daawooyinkii ma qaadataa?`,
-        '',
-        `Waxaa muhiim ah in dawada iyo wax tarkeeda aad la socodsiisid dhakhtarka.`,
-        `La socodka dhakhtarka waa kuu muhiim.`,
-        '',
-        `Haddii aadan wali soo laaban, fadlan  imaw Biri 
-         
-         walal number Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free Imow biri oo tariikhda tahay ${dueDateFormatted} .`,
-        '',
-        `Mahadsanid.`
-      ];
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
 
-      ctx.textAlign = 'left';
-      messageLines.forEach(line => {
-        if(line.trim()){
-          if(line.includes('Asc')){
-            ctx.fillStyle = '#1a3a6b';
-            ctx.font = 'bold 37px Arial';
-          } else if(line.includes('Mahadsanid')){
-            ctx.fillStyle = '#1a3a6b';
-            ctx.font = 'bold 32px Arial';
-          } else if(line.includes('Waxaad')){
-            ctx.fillStyle = '#c41e3a';
-            ctx.font = 'bold 32px Arial';
-          } else {
-            ctx.fillStyle = '#333';
-            ctx.font = '32px Arial';
-          }
-          const wrappedLines = this.wrapText(ctx, line, 800);
-          wrappedLines.forEach(wrappedLine => {
-            ctx.fillText(wrappedLine, 50, y);
-            y += 32;
-          });
-        } else {
-          y += 18;
-        }
-      });
-
-      y += 20;
-
-      // Divider before patient details
-      ctx.strokeStyle = '#1a3a6b';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([8, 8]);
-      ctx.beginPath();
-      ctx.moveTo(40, y);
-      ctx.lineTo(860, y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      y += 30;
-
-      // PATIENT DETAILS TABLE SECTION
-  const tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1);
-
-const days = [
-  'Axad',
-  'Isniin',
-  'Talaado',
-  'Arbaco',
-  'Khamiis',
-  'Sabtida',
-  'Sabti'
-];
-
-const tomorrowDay = days[tomorrow.getDay()];
-
-const detailLines = [
-  ['Patient Name:', (followup.patientName || 'N/A').toUpperCase()],
-  ['Doctor:', ` ${followup.doctor || 'N/A'}`],
-  ['WAKHTIGA AAD TIMADAY:', fmtDate(followup.visitDate)],
-  ['MAALINTA BALANTA OO AH BIRI IMOW:', tomorrowDay]
-];
-      detailLines.forEach(([label, value]) => {
-        ctx.fillStyle = '#666';
-        ctx.font = 'bold 30px Arial';
-        ctx.fillText(label, 50, y);
-        y += 30;
-        
-        ctx.fillStyle = '#1a3a6b';
-        ctx.font = 'bold 30px Arial';
-        ctx.fillText(value, 50, y);
-        y += 45;
-      });
-
-      y += 10;
-
-      // Bottom section
-      ctx.strokeStyle = '#1a3a6b';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(40, y);
-      ctx.lineTo(860, y);
-      ctx.stroke();
-
-      y += 30;
-      ctx.fillStyle = '#1a3a6b';
-      ctx.font = 'bold 20px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('BAXNAANO HOSPITAL', 450, y);
-      y += 30;
-      ctx.fillStyle = '#666';
-      ctx.font = '18px Arial';
-      ctx.fillText(' QEEBTA SOO DHAWAYTA MACAMISH', 450, y);
-      y += 30;
-      ctx.fillStyle = '#4caf50';
-      ctx.font = 'bold 18px Arial';
-      ctx.fillText('KUMAH SANTAHAY DORASHADAADA', 450, y);
-
-      canvas.toBlob(() => {
-        HOSP._fallbackWhatsApp(canvas, followup);
-      }, 'image/png');
-    };
-
-    logoImg.onload = drawCard;
-    logoImg.onerror = drawCard;
-
-    setTimeout(() => {
-      followup.status = 'sent';
-      followup.messageSentDate = new Date().toISOString();
-      ls_set(this.K.FOLLOWUPS, followups);
-      Swal.fire({
-        icon: 'success',
-        title: 'Follow-Up Card Sent',
-        text: `WhatsApp follow-up reminder sent to ${followup.patientName}`,
-        timer: 2000,
-        showConfirmButton: false
-      });
-      this.filterFollowups();
-    }, 500);
+    followup.status = 'sent';
+    followup.messageSentDate = new Date().toISOString();
+    ls_set(this.K.FOLLOWUPS, followups);
+    Swal.fire({
+      icon: 'success',
+      title: 'Follow-Up Sent',
+      text: `WhatsApp follow-up reminder sent to ${followup.patientName}`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+    this.filterFollowups();
   },
 
   sendFollowupCardBulk(){
