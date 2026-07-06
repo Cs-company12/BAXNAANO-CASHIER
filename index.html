@@ -1190,8 +1190,6 @@ const MOGADISHU_DISTRICTS = [
 ];
 
   // ── Preloaded patient list (bulk import) ──
-  // Raw exported patient list. Parsed once on first run and added to APPTS + PATIENTS.
-  // Format: date header line (e.g. "01 Jun 2026") then rows: Name,Doctor,Phone,Sex
   const PRELOAD_PATIENT_LIST = `
 01 Jun 2026
 ZAKARIYE ABDIRAHMAN OSMAN,SADIA OMAR SALIM (Psychology & Speech Therapy),0614751996,Male
@@ -1454,7 +1452,6 @@ const HOSP = {
     SESSION:'bax_hosp_sess',PRESCRIPTIONS:'bax_hosp_rx',FOLLOWUPS:'bax_hosp_followups'
   },
 
-  // ── DOCTORS & CHARGE TYPES PER DOCTOR ──
   DOCTORS:{
     'General':['Dr. Hassan Ali','Dr. Amina Yusuf'],
     'Internal Medicine':['Dr. Hersi','SADIA OMAR SALIM'],
@@ -1514,7 +1511,6 @@ const HOSP = {
         {id:gid('U'),username:'pharmacy',password:await hashPw('pharmacy123','_hosp_'),role:'pharmacy'}
       ]);
     }
-    // Attempt to import preloaded patient list once (only if appointments empty)
     try{
       if(!localStorage.getItem('bax_preload_seeded_v2')){
         await this.importPreloadedList();
@@ -1529,7 +1525,6 @@ const HOSP = {
 
   showLogin(){$('hospitalLogin').style.display='';$('hospitalApp').style.display='none';},
 
-  // Auto-assign sex based on name (common Somali name patterns)
   _assignSexByName(name){
     const n=(name||'').toLowerCase();
     const femaleEndings=['o','a','ina','aa','uu','eey'];
@@ -1543,14 +1538,13 @@ const HOSP = {
     return String(18+Math.floor(Math.random()*58));
   },
 
-  // Import PRELOAD_PATIENT_LIST into APPTS + PATIENTS (as already-visited, paid $10)
   async importPreloadedList(){
     try{
       if(typeof PRELOAD_PATIENT_LIST === 'undefined') return;
       const raw = PRELOAD_PATIENT_LIST;
-      if(!raw || raw.indexOf('__PRELOAD') !== -1) return; // placeholder not replaced
+      if(!raw || raw.indexOf('__PRELOAD') !== -1) return;
       const appts = ls_get(this.K.APPTS);
-      if(appts.length) return; // never overwrite existing appointments
+      if(appts.length) return;
       const patients = ls_get(this.K.PATIENTS);
 
       const MONTHS = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
@@ -1565,7 +1559,6 @@ const HOSP = {
         const parts = line.split(',');
         const isData = parts.length>=4 && parts[0].trim() && parts[1].trim() && /\d/.test(parts[2]||'');
 
-        // Date group header e.g. "01 Jun 2026"
         const dh = line.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/);
         if(dh && !isData){
           const d = parseInt(dh[1],10);
@@ -1576,19 +1569,17 @@ const HOSP = {
         }
 
         if(!isData) continue;
-        if(norm(parts[0])==='patient') continue; // skip column header
+        if(norm(parts[0])==='patient') continue;
 
         const patientName = parts[0].trim();
         let doctorRaw = parts[1].trim();
         const mobile = parts[2].trim();
         const sexRaw = (parts[3]||'').trim();
 
-        // department from parentheses
         let dept = '';
         const par = doctorRaw.match(/\(([^)]+)\)/);
         if(par){ dept = par[1].trim(); doctorRaw = doctorRaw.replace(/\s*\([^)]*\)/,'').trim(); }
 
-        // best-effort doctor match against DOCTORS map
         let matchedDoctor = doctorRaw, matchedDept = dept;
         const gN = norm(doctorRaw);
         for(const dpt of Object.keys(this.DOCTORS||{})){
@@ -1598,28 +1589,23 @@ const HOSP = {
           }
         }
 
-        // visit date at 09:00
         const visit = (curY!=null) ? new Date(curY,curM,curD,9,0,0) : new Date();
         const visitIso = visit.toISOString();
         const dayKey = `${visit.getFullYear()}-${String(visit.getMonth()+1).padStart(2,'0')}-${String(visit.getDate()).padStart(2,'0')}`;
 
-        // sex -> Male / Female
         let sex;
         const sn = sexRaw.toLowerCase();
         if(sn.startsWith('m')) sex = 'Male';
         else if(sn.startsWith('f')) sex = 'Female';
         else sex = this._assignSexByName(patientName)==='M' ? 'Male' : 'Female';
 
-        // age (pediatric younger, adults 16-75)
         const age = /pediatric|paed|child/i.test(matchedDept)
           ? String(1 + Math.floor(Math.random()*14))
           : String(16 + Math.floor(Math.random()*60));
 
-        // charge fixed at $10, marked PAID
         const chargeType = 'Morning';
         const amount = 10;
 
-        // queue number per doctor per visit day
         const sameDay = appts.filter(a => (a.doctor||'')===matchedDoctor && (a.apptDate||'').slice(0,10)===dayKey);
         const queueNum = sameDay.length ? Math.max(...sameDay.map(a=>a.queueNum||0))+1 : 1;
 
@@ -1640,7 +1626,6 @@ const HOSP = {
           lastVisitDate:'', lastVisitDoctor:''
         };
 
-        // upsert patient
         const existing = patients.find(p =>
           (p.name||'').trim().toLowerCase()===patientName.toLowerCase() ||
           (mobile && (p.mobile||'')===mobile));
@@ -1668,7 +1653,6 @@ const HOSP = {
     }catch(err){ console.warn('importPreloadedList error', err); }
   },
 
-  // ── DEBUG: Force import and show counts ──
   forceReimport(){
     localStorage.removeItem('bax_preload_seeded_v2');
     localStorage.removeItem(this.K.APPTS);
@@ -1748,7 +1732,6 @@ const HOSP = {
     if(vid==='hv-followup')this.renderFollowup();
   },
 
-  // ── APPOINTMENT LIST ──
   renderAppts(){
     const appts=ls_get(this.K.APPTS);
     const doctorFilter=$('hApptDoctorFilter');
