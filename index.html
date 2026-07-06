@@ -363,8 +363,8 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
                 <input id="hApptSearch" placeholder="Search name, ID, phone, doctor..." oninput="HOSP.filterAppts()">
               </div>
               <select id="hApptDateFilter" class="form-select" style="height:32px;width:auto;" onchange="HOSP.filterAppts()">
-                <option value="">All Dates</option>
-                <option value="today" selected>Today</option>
+                <option value="" selected>All Dates</option>
+                <option value="today">Today</option>
               </select>
               <select id="hApptDoctorFilter" class="form-select" style="height:32px;width:auto;" onchange="HOSP.filterAppts()">
                 <option value="">All Doctors</option>
@@ -1190,9 +1190,261 @@ const MOGADISHU_DISTRICTS = [
 ];
 
   // ── Preloaded patient list (bulk import) ──
-  // This block contains the raw exported patient list. It will be parsed once
-  // on first run and added to localStorage under the appointments key.
-  const PRELOAD_PATIENT_LIST = `__PRELOAD_PLACEHOLDER__`;
+  // Raw exported patient list. Parsed once on first run and added to APPTS + PATIENTS.
+  // Format: date header line (e.g. "01 Jun 2026") then rows: Name,Doctor,Phone,Sex
+  const PRELOAD_PATIENT_LIST = `
+01 Jun 2026
+ZAKARIYE ABDIRAHMAN OSMAN,SADIA OMAR SALIM (Psychology & Speech Therapy),0614751996,Male
+FADUMO OSMAN ISAK,Dr A Y Hersi (Internal Medicine),0611420492,Female
+ANAS ABDULLAHI HASSAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615538978,Male
+AISHA ADAN FARAH,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615537797,Female
+ASAD MOHAMED ALI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615874339,Male
+MOHAMED IBRAHIM SABRIYE,SADIA OMAR SALIM (Psychology & Speech Therapy),0614461448,Male
+SAIDO MOHAMED ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618525380,Female
+ABDULLAHI SH HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615100028,Male
+MAYSUUN ISMAIL HASSAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615650870,Female
+KHAALID ABDALLA MOHAMED QASIM,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618153035,Male
+AYANLE HASSAN ELMI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0617630442,Male
+AZHAR ABDIRAHMAN MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615572052,Female
+FADUMO ABDI SAHAL,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616461986,Female
+HANAD ABDINASIR MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0616689162,Male
+NUURA MOHAMED ABDULLE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615973277,Female
+AMIIRA ABDULLAHI HUSSEIN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0612306470,Female
+AMINA MOHAMED ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615824023,Female
+XAFSO MUMIN MURIIIDI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0613189152,Female
+SUUBAN DIRIYR SABRIYE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615841874,Female
+DEEQO ABDISALAM CIGAAL,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615347994,Female
+AHMED ABDIQANI AHMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0616675585,Female
+SAHAL HERSI HASSAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0617644412,Male
+YUSUF ROBLE AFRAH,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618167872,Male
+MUNASAR MOHAMED MOHAMUD,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615602157,Male
+ABDIKARIIN DAHIR MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615402178,Male
+ABDIHAKIIN MOHAMED ABDI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0616311066,Male
+MICRAAJ MUHUDIIN OSMAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615835459,Male
+ABSHIRO HASSAN AHMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615200394,Female
+AMINA ABDULLAHI MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618885658,Female
+ZAHRA ALI FARAH,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615151461,Female
+BASHIIR AHMED MOHAMUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0612599226,Male
+MUHUDIIN OAMAR SH MOHAMUD,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615215797,Male
+QAALI YUSUF JAMAC,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616311077,Female
+ABDIMATIIN ABDIWALI MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615275009,Male
+YUSUF MOHAMED ABDI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615275009,Male
+DEEQ MOHAMED HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0907702840,Male
+MOHAMED ALI OSMAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615020708,Male
+ADAN ABDIRIZAK ADAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615327890,Male
+TASNIIM JAMAAL ALI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615772365,Female
+SAYID ALI ABDI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615175324,Male
+QADRO ABDULLAHI JAMA,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616311801,Female
+ABDIWALI DEEQ MUSTAF,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0616872010,Male
+RANDA ABDULLAHI IBRAHIM,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618979734,Female
+MOHAMED MOHAMUD DIRSHE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615568330,Male
+ISSE MUSE MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0613689838,Male
+MAJID AHMED ALI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0617686156,Male
+YASIR MOHAMED YUSUF,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0610581933,Male
+AISHA ALI MAALIN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618086136,Female
+AMIIRO ABDIRAHMAN YUSUF,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615891207,Male
+ALI HASSAN MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615804133,Male
+BASHIIR MOHAMED HUSSEIN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0614374892,Male
+MALYUUN MOHAMED DUDAYE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615584790,Female
+NASTEHO ADAN MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615119106,Female
+TAAJA MOALIM ADAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0613710325,Female
+ABDULLAHI OSMAN HAJI ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615523776,Male
+HUSSEIN ABDI HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0617205355,Male
+FADUMO IBRAHIM MURSAL,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0617480547,Female
+ABDULLAHI ABDIRASHIID OSMAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615080930,Male
+CASHO MOHAMED ABDI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0614270910,Female
+BARLIIN ABDULLE MOHAMUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615187606,Female
+AISHA ZAKARIYE ABDIHALIIN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618541208,Female
+AISHA ZAKARIYE ABDIHALIIN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618541208,Female
+ABDICAZIZ SH DAHIR FARAH,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0612890153,Male
+02 Jun 2026
+NUURA SALAD ALI OMAR,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0619045727,Female
+SHAFICI ABDULKADIR MOHAMUD,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0619964314,Male
+ABDIRIZAK ABDULLAHI HASHI,Dr A Y Hersi (Internal Medicine),0615275549,Male
+ZEYNAB ABDIAZIIZ MOHAMUD,SADIA OMAR SALIM (Psychology & Speech Therapy),0612613014,Female
+MOHAMED HARUN ABDULKADIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0612330931,Male
+HAWO HUSSEIN ROBLE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615073928,Female
+ADHAM ABDULLAHI ALI,SADIA OMAR SALIM (Psychology & Speech Therapy),0614122128,Female
+FADUMO HUSSEIN ABDOW,Dr A Y Hersi (Internal Medicine),0615867567,Female
+ABDULKADIR HARUUN ABDULKADIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0612330931,Male
+DEEQO MOHAMED OSMAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615274395,Female
+ASLI MOHAMUD OSMAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615823742,Female
+JIMALE HARUUN ABDULKADIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0612330931,Male
+ABDIRAHMAN MOHAMED AHMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615954124,Male
+NAIMA ABDULKADIR ADAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615244644,Female
+MANAL SHARMARKE MUSE,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0613182820,Female
+NAJMA HUSSEIN ISAK,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618670340,Female
+ABDIQANI AHMED MOHAMUD,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615440611,Male
+ISTANBUUL ABDI MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615821039,Female
+AHMED OAMR HASSAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615105700,Male
+ISMAIL SHEIKH MOHAMED HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615854433,Male
+RAMLA AHMED MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615367445,Female
+DALHA MOHAMED ISSE,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615380716,Male
+NEHAAL FARHAN DAHIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618207953,Female
+AISHA AHMED HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0619157015,Female
+ABDI ABDULLAHI MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615672220,Male
+NIHAAL HUSSEIN ABDULKADIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615867567,Female
+AISHA MOHAMED AHMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615954124,Female
+HAKIIMA ISAK FARAH,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0613821260,Female
+SIDRA SAYID OMAR MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615781725,Female
+ZEYNAB ABDIAZIIZ MOHAMUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0612613014,Female
+ZAINAB SH DOON BARRE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618998722,Female
+SANAD NASRELDEEN RAAGE,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618883091,Female
+ABDIRAHMAN AHMED DAUD,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0614425511,Female
+NEYRUUS MOHAMED MAADEY,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0610996509,Female
+ABDIRAHMAN HASSAN WEHLIYE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615545614,Male
+RUMAN AXMED ISXAQ,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615168907,Male
+MOHAMED OSMAN ADAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0619851809,Male
+SIDRA ABDULKADIR ISHAK,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618946620,Female
+MOHAMED ABDIFATAH HASSAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615001130,Male
+OMAR OSMAN GUUTALE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616308421,Male
+DHAQAN ABDIRIHMAN DHICISOW,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0610912256,Female
+SAFIA ABDINASIR IBRAHIM,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0612533973,Female
+SIRAAD MOHAMED MOHAMUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615379066,Female
+FADUMO ABDULLAHI ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0617524333,Female
+MARYAN MOHAMED NIOUR,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618684772,Male
+XALWO SALAH ADAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615446211,Female
+03 Jun 2026
+XALIIMO NUUR RAAGE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615282159,Female
+AMIIRA DAHIR HASSAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615560463,Female
+MOHAMED IBRAHIM SABRIYE,SADIA OMAR SALIM (Psychology & Speech Therapy),0614461448,Male
+MAHDI YARIIS ADAN,Dr A Y Hersi (Internal Medicine),0612538240,Male
+ISRA ABDULLAHI NUUR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615908329,Female
+ABDULLAHI YUUNIS HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615584054,Male
+QAMAR MOHAMED AHMED,Dr A Y Hersi (Internal Medicine),0612382956,Female
+CAMBARO GEEDI KULMIYE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0612663447,Female
+AALA ABDULKADIR ABDI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0617505049,Female
+YUNIS YUSUF CIIDEY,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618133988,Male
+NAIMO ABDIRISAK HASSAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615575709,Female
+NAWAAL KEYSE MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0619372666,Female
+IMRAAN NOR MUSE,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615381866,Male
+ABDIFATAH MOHAMED AHMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615829804,Male
+MOHAMED AHMED DAHIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0613883340,Male
+ASMA ALI MOHAMUD,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0616141487,Female
+ABDI YUSUF DIRIYE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615581143,Male
+ISRA HUSSEIN MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615911999,Female
+AWLIYO MOHAMED LIIBAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0610188557,Female
+HASIINO AHMED GEEDI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618701066,Female
+HUSSEIN LIIBAN MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615883069,Male
+MOHAMED ABDIHAKIM ABDULKADIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615743612,Male
+AHMED OMAR MACOW,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618823215,Male
+MARYAM MOHAMED AHMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0907785074,Female
+WARDA ABDISHAKUR MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0619881149,Female
+HANAN MURSAL SAKARIYE,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0614317530,Female
+NADIIFO MOHAMED OSOBLE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616465817,Female
+CASMI JAMAC ALI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618904046,Female
+ABDIRAHMAN SH ABUUD ABDULLE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615100295,Male
+MAZIM ABDINASIR MOHMAED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615718267,Male
+NUURO SH MOHAMUD DHIBLAWE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0613206040,Female
+JAMA FARAH ISSE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615556334,Male
+MOHAMED SIYAD BILOW,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0614429301,Male
+CASHO MUHUYADIN XAJI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0611016032,Female
+LUQMAAN AHMED MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616573270,Male
+HASSAN TAHLIIL WARSAME,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615551022,Male
+JAMIILO HUSSEIN HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618502266,Female
+RAHMA JIMALE MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615672068,Female
+ABDULLAHI AHMED SH HUSSIEN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615225830,Male
+NUURO MOHAMED JIMALE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615105217,Female
+YAHYE ABDI ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615302830,Male
+ABDIQANI MOHAMUD ADAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615846571,Female
+AYUUB AHMED ABDI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615709139,Male
+MUNASAR ASAD MOHAMUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618652665,Male
+AMIIR NUR HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618679307,Male
+SADIA ADAN ELMI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615799717,Female
+MOHAMED AHMED DIRIYE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615208756,Male
+MUQTAAR FARHAAN JAMA,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618509069,Male
+AHMED YAHYE ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615742654,Male
+SARA ABDULLAHI ABUKAR,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615576941,Female
+HAWO MOHAMED MOHAMUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615249467,Female
+DALMAR SHIRE ADAWE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0617525251,Male
+HAWO IBRAHIM ADAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0610732146,Female
+HODAN DAUD YUSUF,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615283169,Female
+AAMIR ABDIKARIIN ABDULLAHI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615465813,Male
+MARYAN HASSAN ADAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616618782,Female
+04 Jun 2026
+ASMA ADAN ABDULKADIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615994688,Female
+06 Jun 2026
+ZAKARIYE ABDIRAHMAN OSMAN,SADIA OMAR SALIM (Psychology & Speech Therapy),0614751996,Male
+MINHAJ HANAD HUSEIN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615687800,Female
+YUSUF ABDULLAHI AHMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0611313403,Male
+MUAD MOHAMED AHMED,SADIA OMAR SALIM (Psychology & Speech Therapy),0619862447,Male
+MOHAMED ABDI ABDIRAHMAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615724902,Male
+HAFSA OMAR MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618501018,Female
+AAMIR ABDIKARIIN ABDULLAHI,SADIA OMAR SALIM (Psychology & Speech Therapy),0615465813,Male
+ABDULLAHI HASSAN ADAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615410665,Male
+MANAAL OMAR MOHAMUD MAALIN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0612590179,Female
+ZAKARIYE MUSSE SHEIKH ABDULLAHI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0613682474,Male
+MUUMINO AHMED MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618068602,Female
+ALMAS ZAKARIYE ABDIRAHMAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615825018,Female
+BAARI MIRE SAID,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616662511,Male
+AHMED MIRE SAID,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616662511,Male
+IKHLAAS MOHAMED ABDI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615874339,Female
+ABDIAZIIZ AHMED OMAR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615117968,Male
+AALIA MOHAMUD MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618814545,Female
+SIHAAM MUQTAR ADEN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615229287,Female
+ZEIN ABDIKARIIN HUSSEIN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0619938693,Male
+MARYAMO HASSAN ABDULLE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615570617,Female
+NADIA ABDALLA MOHAMNED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0617272622,Female
+ABDIWALI AHMED MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615737603,Male
+LEYLA AWEL JAMA,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615826161,Female
+MOHAMED SAKARIYE MACOW,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615047682,Male
+YASMIIN FARAH DAHIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618323943,Female
+HABIIBO HIRSI HOSHOW,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615535313,Female
+AHMED MOHAMUD ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618030898,Male
+MARYAN BARE MUSE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615470532,Female
+ABDULLAHI HASSAN MOHAMUD,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615483244,Male
+ELISA YUSUF HAJI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618606929,Female
+LIIBAN ABDI HASHI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618081000,Male
+HAWO MOHAMED IBRAHIM,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0612709270,Female
+HASSAN AHMED ABDULKADIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615475154,Male
+ZAKARIYE MOHAMED HASSAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0617854840,Male
+ABUKAR GEEDI DHICISOW,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615280783,Male
+DUNIYA QASIM HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615009385,Female
+ABDISALAM MOHAMED ABDISALAM,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618333830,Male
+AYMAN MAHAD DAHIR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0618472069,Male
+SUUNTO ISAK HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618686732,Female
+MOHAMUD IBRAHIM ABDULLAHI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0612707032,Male
+ABDIAZIIZ AHMED MOHAMED,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0617646663,Male
+MARYAM ABUKAR OMAR,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618996099,Female
+DALEES ADAN ELMI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615095257,Male
+BAAZI ASAD OMAR,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0612698341,Male
+MAYSUUN IBRAHIM MOHAMUD,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0619864871,Female
+SHAFICI MUHUMED DHANGAD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0619333640,Male
+OMAR OSMAN AHMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0617078446,Male
+MOHAMED ADDIRAHMAN ABDULLAHI,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615639697,Male
+NURADIN MOHAMED ISSAQ,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0613378825,Male
+HANAD ABDULKADIR HASSAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615339068,Female
+MICRAAJ ABDIQANI MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616622565,Female
+FADUMO SH ISMAIL ABDULLAHI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616620481,Female
+SUHEYB ABDIHAKIM NADAM,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0613996600,Male
+AZIIZA ABDIFATAH ADAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0612822924,Female
+SAGAL ALI DAHIR,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615909016,Female
+HALIIMA GULEED DAUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0619555533,Female
+ABDULLAHI ABDI BARQADLE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615203270,Male
+SAREEDO AHMED FARAH,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618458850,Female
+HERSI AHMED WADHOWR,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618735103,Male
+ZAMZAM AHMED MOHAMUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615969944,Female
+AYAAN KAHIYE SH ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0617958927,Female
+AISHA IISE AHMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0614206020,Female
+MUAD MOHAMED AHMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0619862447,Male
+ALI AHMED MUUMIN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616809876,Male
+YUSUF NUR MOHAMUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615544905,Male
+SHAKARON ABDIAZIZ MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615578180,Female
+BILLE ABDI ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0614775336,Male
+YASMIN ZAKARIYE ABDI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616303524,Female
+SAMARA AHMED ABUKAR,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615991546,Female
+SALAH IDIRIS JEELE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616593331,Male
+FARDOWSA HUSSEIN ABDULLAHI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615478927,Female
+SHUKRI ABDIRAHMAN OSMAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616751208,Male
+ABDIRAHMAN OSMAN ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615865564,Male
+RUQIYO SHARDI HILOWLE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618692261,Female
+WALIYO OSMAN HUSSEIN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615101531,Female
+AISHA OSMAN MOHAMUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615311839,Female
+ABDIRISAQ BARE ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616408714,Male
+QADIIJO ABDULLE FIIDOW,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615631324,Female
+LIINO MOHAMED YACQUB,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0611036102,Female
+MARYAN ABDINASIR GADUDOW,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618744459,Female
+`;
 // ═══════════════════════════════════════════
 // HOSPITAL MODULE
 // ═══════════════════════════════════════════
@@ -1203,7 +1455,6 @@ const HOSP = {
   },
 
   // ── DOCTORS & CHARGE TYPES PER DOCTOR ──
-  // Departments map to doctors
   DOCTORS:{
     'General':['Dr. Hassan Ali','Dr. Amina Yusuf'],
     'Internal Medicine':['Dr. Hersi','SADIA OMAR SALIM'],
@@ -1215,7 +1466,6 @@ const HOSP = {
     'Maternity':['Dr. Faadumo Hassan']
   },
 
-  // Per-doctor charge types with prices
   DOCTOR_CHARGES:{
     'DR. HARITH ABDULKADIR SHEIKH MOHAMUD':{
       'Daryeelka Qalalka': 3,
@@ -1236,7 +1486,6 @@ const HOSP = {
       'Family Afternoon': 15
       
     },
-    // defaults for all other doctors
     '_default':{
       'Morning': 10,
       'Afternoon': 10,
@@ -1265,17 +1514,20 @@ const HOSP = {
         {id:gid('U'),username:'pharmacy',password:await hashPw('pharmacy123','_hosp_'),role:'pharmacy'}
       ]);
     }
+    // Attempt to import preloaded patient list once (only if appointments empty)
+    try{
+      if(!localStorage.getItem('bax_preload_seeded_v2')){
+        await this.importPreloadedList();
+        localStorage.setItem('bax_preload_seeded_v2','1');
+      }
+    }catch(err){console.warn('Preload import failed',err);}
+
     const sess=localStorage.getItem(this.K.SESSION);
     if(sess){const u=ls_get(this.K.USERS).find(x=>x.username===sess);if(u){this.cur=u;this.showApp();return;}}
     this.showLogin();
-    // Attempt to import preloaded patient list once (only if appointments empty)
-    try{
-      if(!localStorage.getItem('bax_preload_seeded')){
-        await this.importPreloadedList();
-        localStorage.setItem('bax_preload_seeded','1');
-      }
-    }catch(err){console.warn('Preload import failed',err);}
   },
+
+  showLogin(){$('hospitalLogin').style.display='';$('hospitalApp').style.display='none';},
 
   // Auto-assign sex based on name (common Somali name patterns)
   _assignSexByName(name){
@@ -1287,160 +1539,141 @@ const HOSP = {
     return Math.random()>0.5?'M':'F';
   },
 
-  // Auto-assign age in reasonable range
   _assignAge(){
-    return String(18+Math.floor(Math.random()*58)); // 18-75
+    return String(18+Math.floor(Math.random()*58));
   },
 
-  // Import PRELOAD_PATIENT_LIST (raw text) into APPTS and PATIENTS
+  // Import PRELOAD_PATIENT_LIST into APPTS + PATIENTS (as already-visited, paid $10)
   async importPreloadedList(){
     try{
-      if(!window.PRELOAD_PATIENT_LIST) return;
+      if(typeof PRELOAD_PATIENT_LIST === 'undefined') return;
       const raw = PRELOAD_PATIENT_LIST;
-      if(!raw || !raw.includes('Patient Name:')) return;
+      if(!raw || raw.indexOf('__PRELOAD') !== -1) return; // placeholder not replaced
       const appts = ls_get(this.K.APPTS);
-      if(appts.length) return; // don't overwrite existing data
-
+      if(appts.length) return; // never overwrite existing appointments
       const patients = ls_get(this.K.PATIENTS);
 
-      // Regex to capture blocks of Patient Name / Doctor / Phone Number / Date
-      const re = /Patient Name:\s*(.+?)\r?\n\s*Doctor:\s*(.+?)\r?\n\s*Phone Number:\s*(.+?)\r?\n\s*Date:\s*(.+?)(?:\r?\n|$)/gms;
-      let m; let count=0; let updated=0;
-      const seenPatients = new Set(); // prevent duplicates during import
-      
-      while((m=re.exec(raw))!==null){
-        const patientName = (m[1]||'').trim();
-        let doctorRaw = (m[2]||'').trim();
-        const mobile = (m[3]||'').trim();
-        const dateStr = (m[4]||'').trim();
+      const MONTHS = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+      const norm = s => (s||'').toString().toLowerCase().replace(/\./g,'').replace(/\s+/g,' ').trim();
+      const lines = raw.split('\n');
+      let curY=null, curM=null, curD=null, count=0, updated=0;
 
-        if(!patientName) continue;
+      for(const rawLine of lines){
+        const line = rawLine.trim();
+        if(!line) continue;
 
-        // Dedup key: name + phone (skip if already processed this import pass)
-        const dedupKey = patientName.toLowerCase()+'::'+mobile;
-        if(seenPatients.has(dedupKey)) continue;
-        seenPatients.add(dedupKey);
+        const parts = line.split(',');
+        const isData = parts.length>=4 && parts[0].trim() && parts[1].trim() && /\d/.test(parts[2]||'');
 
-        // Try to extract department from parentheses in doctorRaw
+        // Date group header e.g. "01 Jun 2026"
+        const dh = line.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/);
+        if(dh && !isData){
+          const d = parseInt(dh[1],10);
+          const m = MONTHS[dh[2].slice(0,3).toLowerCase()];
+          const y = parseInt(dh[3],10);
+          if(!isNaN(d) && m!==undefined && !isNaN(y)){ curD=d; curM=m; curY=y; }
+          continue;
+        }
+
+        if(!isData) continue;
+        if(norm(parts[0])==='patient') continue; // skip column header
+
+        const patientName = parts[0].trim();
+        let doctorRaw = parts[1].trim();
+        const mobile = parts[2].trim();
+        const sexRaw = (parts[3]||'').trim();
+
+        // department from parentheses
         let dept = '';
         const par = doctorRaw.match(/\(([^)]+)\)/);
-        if(par) { dept = par[1].trim(); doctorRaw = doctorRaw.replace(/\s*\([^)]*\)/,'').trim(); }
+        if(par){ dept = par[1].trim(); doctorRaw = doctorRaw.replace(/\s*\([^)]*\)/,'').trim(); }
 
-        // Find matching doctor from DOCTORS map (best-effort substring match)
-        let matchedDoctor = doctorRaw;
-        let matchedDept = dept;
-        const norm = s=> (s||'').toString().toLowerCase().replace(/\./g,'').replace(/\s+/g,' ').trim();
-        const givenNorm = norm(doctorRaw);
+        // best-effort doctor match against DOCTORS map
+        let matchedDoctor = doctorRaw, matchedDept = dept;
+        const gN = norm(doctorRaw);
         for(const dpt of Object.keys(this.DOCTORS||{})){
           for(const dname of (this.DOCTORS[dpt]||[])){
-            if(norm(dname).includes(givenNorm) || givenNorm.includes(norm(dname))){ matchedDoctor = dname; matchedDept = dpt; break; }
+            const nn = norm(dname);
+            if(nn && (nn.includes(gN) || gN.includes(nn))){ matchedDoctor = dname; if(!matchedDept) matchedDept = dpt; break; }
           }
-          if(matchedDept) break;
         }
 
-        // Parse date (set to 09:00 local time). Fallback to now.
-        let apptDate = new Date(dateStr+' 09:00');
-        if(isNaN(apptDate.getTime())) apptDate = new Date();
-        const apptDateIso = apptDate.toISOString();
+        // visit date at 09:00
+        const visit = (curY!=null) ? new Date(curY,curM,curD,9,0,0) : new Date();
+        const visitIso = visit.toISOString();
+        const dayKey = `${visit.getFullYear()}-${String(visit.getMonth()+1).padStart(2,'0')}-${String(visit.getDate()).padStart(2,'0')}`;
 
-        // Determine amount and charge type from doctor charges
-        const charges = this.getChargesForDoctor(matchedDoctor||'');
-        const chargeKeys = Object.keys(charges||{});
-        const firstChargeKey = chargeKeys[0]||'';
-        const amount = (firstChargeKey && charges[firstChargeKey])?charges[firstChargeKey]:0;
+        // sex -> Male / Female
+        let sex;
+        const sn = sexRaw.toLowerCase();
+        if(sn.startsWith('m')) sex = 'Male';
+        else if(sn.startsWith('f')) sex = 'Female';
+        else sex = this._assignSexByName(patientName)==='M' ? 'Male' : 'Female';
 
-        // Auto-assign sex and age
-        const sex = this._assignSexByName(patientName);
-        const age = this._assignAge();
+        // age (pediatric younger, adults 16-75)
+        const age = /pediatric|paed|child/i.test(matchedDept)
+          ? String(1 + Math.floor(Math.random()*14))
+          : String(16 + Math.floor(Math.random()*60));
 
-        // Compute appt number and queue number (based on current import list)
-        const existingCount = ls_get(this.K.APPTS).length || 0;
-        const apptIndex = existingCount + count + 1;
-        // queue number for the same doctor on the same visit date
-        let queueNum = 1;
-        if(matchedDoctor){
-          const dayKey = apptDateIso.split('T')[0];
-          const sameDay = appts.filter(a=> (a.doctor||'')===matchedDoctor && (a.apptDate||'').startsWith(dayKey));
-          queueNum = sameDay.length ? Math.max(...sameDay.map(a=>a.queueNum||0)) + 1 : 1;
-        }
+        // charge fixed at $10, marked PAID
+        const chargeType = 'Morning';
+        const amount = 10;
 
-        // Create appointment object with auto-assigned fields
+        // queue number per doctor per visit day
+        const sameDay = appts.filter(a => (a.doctor||'')===matchedDoctor && (a.apptDate||'').slice(0,10)===dayKey);
+        const queueNum = sameDay.length ? Math.max(...sameDay.map(a=>a.queueNum||0))+1 : 1;
+
         const newAppt = {
           id: gid('A'),
-          apptNum: 'AP'+String(40000+apptIndex).padStart(6,'0'),
-          queueNum: queueNum,
-          patientName: patientName,
-          mobile: mobile,
-          patientAge: age,
-          sex: sex,
-          patientDob: '',
-          patientAddress: '',
-          patientNotes: '',
-          apptDate: apptDateIso,
-          apptType: 'New',
-          branch: 'HQ',
-          patientType: 'OPD',
-          department: matchedDept||'',
-          doctor: matchedDoctor||doctorRaw,
-          chargeType: firstChargeKey||'',
-          amount: amount,
-          state: 'scheduled',
-          paymentMethod: 'Cash',
-          createdAt: new Date().toISOString(),
-          cashier: (this.cur&&this.cur.username)||'import',
-          lastVisitDate: '',
-          lastVisitDoctor: ''
+          apptNum: 'AP'+String(40000+appts.length+1).padStart(6,'0'),
+          queueNum,
+          patientName, mobile,
+          patientAge: age, sex,
+          patientDob:'', patientAddress:'', patientNotes:'',
+          apptDate: visitIso,
+          apptType:'New', branch:'HQ', patientType:'OPD',
+          department: matchedDept||'', doctor: matchedDoctor||doctorRaw,
+          chargeType, amount,
+          state:'paid', paid: amount, discount:0,
+          paymentMethod:'Cash', paidAt: visitIso,
+          createdAt: visitIso, cashier:'import',
+          lastVisitDate:'', lastVisitDoctor:''
         };
 
-        // Ensure/update patient record (dedup by name or phone)
-        try{
-          const existing = patients.find(p=> 
-            (p.name||'').trim().toLowerCase()===patientName.toLowerCase() || 
-            (p.mobile||'')===mobile 
-          );
-          if(existing){
-            // Update existing patient
-            existing.name = patientName;
-            existing.mobile = mobile;
-            if(!existing.sex) existing.sex = sex;
-            if(!existing.age) existing.age = age;
-            if(!existing.history) existing.history = '';
-            updated++;
-          } else {
-            // Create new patient
-            patients.unshift({ 
-              id: gid('P'), 
-              name: patientName, 
-              mobile: mobile, 
-              sex: sex, 
-              age: age, 
-              dob:'', 
-              address:'', 
-              history:'', 
-              createdAt:new Date().toISOString() 
-            });
-          }
-        }catch(e){console.warn('patient ensure failed',e);}
+        // upsert patient
+        const existing = patients.find(p =>
+          (p.name||'').trim().toLowerCase()===patientName.toLowerCase() ||
+          (mobile && (p.mobile||'')===mobile));
+        if(existing){
+          existing.name = patientName;
+          if(mobile) existing.mobile = mobile;
+          if(!existing.sex) existing.sex = sex;
+          if(!existing.age) existing.age = age;
+          if(existing.history===undefined) existing.history = '';
+          updated++;
+        } else {
+          patients.unshift({ id: gid('P'), name: patientName, mobile, sex, age, dob:'', address:'', history:'', createdAt: new Date().toISOString() });
+        }
 
         appts.push(newAppt);
-        // create followup record
         try{ this.createFollowupRecord(newAppt); }catch(e){}
         count++;
       }
 
       if(count>0){
-        ls_set(this.K.PATIENTS,patients);
-        ls_set(this.K.APPTS,appts);
-        console.info(`Imported ${count} appointments, updated ${updated} patient records`);
-        console.log(`Total patients: ${patients.length}, Total appointments: ${appts.length}`);
+        ls_set(this.K.PATIENTS, patients);
+        ls_set(this.K.APPTS, appts);
+        console.info(`Preload: imported ${count} appointments, updated ${updated} patients`);
       }
-    }catch(err){console.warn('importPreloadedList error',err);}
+    }catch(err){ console.warn('importPreloadedList error', err); }
   },
 
   // ── DEBUG: Force import and show counts ──
   forceReimport(){
-    localStorage.removeItem('bax_preload_seeded');
+    localStorage.removeItem('bax_preload_seeded_v2');
+    localStorage.removeItem(this.K.APPTS);
     this.importPreloadedList().then(()=>{
+      localStorage.setItem('bax_preload_seeded_v2','1');
       const appts = ls_get(this.K.APPTS);
       const patients = ls_get(this.K.PATIENTS);
       const summary = `✅ IMPORT COMPLETE\n📋 Appointments: ${appts.length}\n👥 Patients: ${patients.length}`;
@@ -1541,7 +1774,6 @@ const HOSP = {
       }
       return true;
     }).sort((a,b)=>{
-      // Sort by doctor first, then by queue number (per-doctor), then by creation time
       if(a.doctor !== b.doctor) return (a.doctor||'').localeCompare(b.doctor||'');
       const qDiff = a.queueNum - b.queueNum;
       return qDiff !== 0 ? qDiff : new Date(b.createdAt) - new Date(a.createdAt);
@@ -1579,7 +1811,6 @@ const HOSP = {
 
   checkAll(cb){document.querySelectorAll('.hApptCheck').forEach(c=>c.checked=cb.checked);},
 
-  // ── DAILY QUEUE: get next number for today per doctor ──
   getNextQueueNum(doctor){
     const today = todayStr();
     const appts = ls_get(this.K.APPTS).filter(a => (a.createdAt || '').startsWith(today) && a.doctor === doctor);
@@ -1591,7 +1822,6 @@ const HOSP = {
     this.resetForm();
     $('hFormTitle').textContent='New Appointment';
     $('hApptNumDisp').textContent='/';
-    // Show next queue as 1 (will update when doctor is selected)
     $('hQueueDisp').textContent = '1';
     $('hApptDate').value=localDateTimeLocal();
     $('hBtnConfirm').style.display='';
@@ -1612,40 +1842,31 @@ const HOSP = {
     $('hFormTitle').textContent=a.apptNum||'Edit';
     $('hApptNumDisp').textContent=a.apptNum||'/';
     $('hQueueDisp').textContent=a.queueNum||0;
-    // Patient fields
     $('hPatientInput').value=a.patientName||'';
     $('hPatientMobile').value=a.mobile||'';
-    // Age - numeric
     $('hPatientAge').value=a.patientAge||'';
-    // Sex - dropdown
     $('hPatientSex').value=a.sex||'';
     $('hPatientDob').value=a.patientDob||'';
     $('hPatientAddress').value=a.patientAddress||'';
-    // Patient notes
     $('hPatientNotes').value=a.patientNotes||a.patientHistory||'';
-    // Appointment fields
     $('hApptDate').value=a.apptDate?a.apptDate.slice(0,16):'';
     $('hApptType').value=a.apptType||'New';
     $('hBranch').value=a.branch||'HQ';
     $('hPatientType').value=a.patientType||'OPD';
-    // Doctor chain
     $('hDepartment').value=a.department||'';
     this.onDeptChange(a.doctor);
     if(a.doctor) $('hDoctor').value=a.doctor;
     this.onDoctorChange(a.chargeType);
     if(a.chargeType) $('hChargeType').value=a.chargeType;
     this.updateCharges();
-    // Last visit
     $('hLastVisitDate').value=a.lastVisitDate||'';
     $('hLastVisitDoctor').value=a.lastVisitDoctor||'';
-    // Paid info
     if(a.paid>0){
       $('hPaidRow').style.display='';
       $('hPaidAmt').textContent=fmtMoney(a.paid);
     } else {
       $('hPaidRow').style.display='none';
     }
-    // Buttons based on state
     if(a.state==='draft'){
       $('hBtnConfirm').style.display='';
       $('hBtnCredit').style.display='none';$('hBtnCash').style.display='none';$('hBtnFree').style.display='none';
@@ -1707,7 +1928,6 @@ const HOSP = {
     $('hChargeType').innerHTML='<option value="">Select Charge Type</option>'+
       Object.keys(charges).map(c=>`<option value="${c}">${c} — $${charges[c].toFixed(2)}</option>`).join('');
     if(keepCharge) $('hChargeType').value=keepCharge;
-    // Update queue preview based on selected doctor
     if(doc) {
       $('hQueueDisp').textContent = this.getNextQueueNum(doc);
     } else {
@@ -1729,7 +1949,6 @@ const HOSP = {
   },
 
   getFormData(){
-    // Preserve exact DOB-based age labels, but store numeric age when entered as digits.
     const ageVal=$('hPatientAge').value.trim();
     const age = ageVal==='' ? '' : (/^\s*\d+\s*$/.test(ageVal) ? parseInt(ageVal, 10) : ageVal);
     return {
@@ -1762,7 +1981,6 @@ const HOSP = {
     return errs;
   },
 
-  // ── WHATSAPP HELPERS ──
   normalizePhone(num){
     return (num||'').replace(/\D/g, '');
   },
@@ -1770,7 +1988,6 @@ const HOSP = {
   formatPhoneForWA(num){
     if(!num) return null;
     let digits = num.replace(/\D/g, '');
-    // Convert Somali local format 061... to international 252...
     if(digits.startsWith('0')) digits = '252' + digits.slice(1);
     return digits;
   },
@@ -1826,7 +2043,6 @@ const HOSP = {
     const phone = this.formatPhoneForWA(appt.mobile);
     const appointmentTime = appt.apptDate ? fmtDT(appt.apptDate) : fmtDT(new Date());
 
-    // Build a clean, nicely spaced text message instead of a canvas image.
     const message =
 `*🏥 BAXNAANO HOSPITAL*
 
@@ -1889,7 +2105,6 @@ Thank you.`;
       ls_set(this.K.APPTS,appts);
       Swal.fire({icon:'success',title:'Saved',timer:1200,showConfirmButton:false});
     } else {
-      // Queue: per-doctor daily counter (resets every calendar day)
       const queueNum = this.getNextQueueNum(fd.doctor);
       const apptNum='AP'+String(40000+appts.length+1).padStart(6,'0');
       const newAppt={
@@ -1900,7 +2115,6 @@ Thank you.`;
         cashier:this.cur.username,
         lastVisitDate:'',lastVisitDoctor:''
       };
-      // Check previous visit
       const prev=appts.filter(a=>a.mobile&&a.mobile===fd.mobile&&a.patientName===fd.patientName)
         .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
       if(prev.length){
@@ -1917,7 +2131,6 @@ Thank you.`;
       $('hLastVisitDoctor').value=newAppt.lastVisitDoctor;
       $('hBtnPrint').style.display='';
       Swal.fire({icon:'success',title:'Appointment Created',text:'Queue #'+queueNum,timer:1500,showConfirmButton:false});
-      // ── AUTO SEND WHATSAPP ──
       this.sendQueueToWhatsApp(newAppt);
     }
     this.ensurePatient(fd);
@@ -1970,7 +2183,6 @@ Thank you.`;
     if(idx!==-1){
       appts[idx].state='scheduled';
       ls_set(this.K.APPTS,appts);
-      // Create follow-up record
       this.createFollowupRecord(appts[idx]);
     }
     $('hBtnConfirm').style.display='none';
@@ -1991,7 +2203,6 @@ Thank you.`;
     });
   },
 
-  // ── PATIENT SEARCH AUTOCOMPLETE ──
   searchPatient(q){
     const drop=$('hPatientDrop');
     if(!q||q.length<2){drop.style.display='none';return;}
@@ -2120,17 +2331,13 @@ Thank you.`;
     const p=ls_get(this.K.PATIENTS).find(x=>x.id===pid);if(!p)return;
     $('hPatientInput').value=p.name;
     $('hPatientMobile').value=p.mobile||'';
-    // Age - compute updated current age based on stored ageDate
     const currentAge = this.getCurrentPatientAge(p);
     $('hPatientAge').value=currentAge !== '' ? currentAge : '';
-    // Sex - set dropdown value
     $('hPatientSex').value=p.sex||'';
     $('hPatientDob').value=p.dob||'';
     $('hPatientAddress').value=p.address||'';
-    // Notes if exists
     if(p.notes||p.history) $('hPatientNotes').value=p.notes||p.history;
     $('hPatientDrop').style.display='none';
-    // Fill last visit from appointments
     const appts=ls_get(this.K.APPTS)
       .filter(a=>this.normalizePhone(a.mobile)===this.normalizePhone(p.mobile)||a.patientName===p.name)
       .sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
@@ -2154,7 +2361,6 @@ Thank you.`;
     $('hPatientDrop').style.display='none';
   },
 
-  // ── PAYMENT WIZARD ──
   openPayWizard(mode){
     if(!this.editId){Swal.fire({icon:'warning',title:'Save the appointment first',timer:1500});return;}
     const a=ls_get(this.K.APPTS).find(x=>x.id===this.editId);if(!a)return;
@@ -2202,7 +2408,6 @@ Thank you.`;
     appts[idx].paymentMethod=this.payMode==='cash'?'Cash':'Credit';
     appts[idx].paidAt=new Date().toISOString();
     ls_set(this.K.APPTS,appts);
-    // Create follow-up record
     this.createFollowupRecord(appts[idx]);
     $('hBtnCredit').style.display='none';
     $('hBtnCash').style.display='none';
@@ -2222,7 +2427,6 @@ Thank you.`;
     if(idx===-1) return;
     appts[idx].state='paid';appts[idx].paid=0;appts[idx].paymentMethod='Free';appts[idx].paidAt=new Date().toISOString();
     ls_set(this.K.APPTS,appts);
-    // Create follow-up record
     this.createFollowupRecord(appts[idx]);
     $('hBtnCredit').style.display='none';$('hBtnCash').style.display='none';$('hBtnFree').style.display='none';
     $('hPaidRow').style.display='';$('hPaidAmt').textContent='$0.00 (FREE)';
@@ -2234,7 +2438,6 @@ Thank you.`;
     if(this.editId) this.printAppt(this.editId);
   },
 
-  // ── PRINT ──
   printAppt(id){
     const a=ls_get(this.K.APPTS).find(x=>x.id===id);if(!a)return;
     doPrint(`
@@ -2287,7 +2490,6 @@ Thank you.`;
     `);
   },
 
-  // ── DASHBOARD ──
   renderDash(){
     const appts=ls_get(this.K.APPTS);
     const today=todayStr();
@@ -2307,7 +2509,6 @@ Thank you.`;
       '<p style="color:var(--text-muted)">No pending payments.</p>';
   },
 
-  // ── PAYMENTS ──
   renderPayments(){
     const appts=ls_get(this.K.APPTS).filter(a=>a.state==='scheduled'||a.state==='draft');
     const body=$('hPaymentsBody');
@@ -2322,7 +2523,6 @@ Thank you.`;
       </tr>`).join('')}</tbody></table></div>`;
   },
 
-  // ── USERS ──
   renderUsers(){
     $('hUserId').value='';$('hUserName').value='';$('hUserPw').value='';$('hUserRole').value='cashier';
     const users=ls_get(this.K.USERS);
@@ -2360,7 +2560,6 @@ Thank you.`;
     });
   },
 
-  // ── DOCTOR PANEL ──
   renderDoctor(){
     const appts=ls_get(this.K.APPTS);
     const today=todayStr();
@@ -2429,7 +2628,6 @@ Thank you.`;
     </div>`);
   },
 
-  // ── REPORTS ──
   renderReports(){
     const appts=ls_get(this.K.APPTS);
     const from=$('hRepFrom').value,to=$('hRepTo').value;
@@ -2451,20 +2649,14 @@ Thank you.`;
       </tbody></table></div>`:'<p style="color:var(--text-muted)">No paid appointments in this period.</p>';
   },
 
-  // ── FOLLOW-UP MESSAGES ──
   createFollowupRecord(appt){
     if(!appt || !appt.apptDate || !appt.mobile || !appt.patientName || !appt.doctor) return;
-    
     const followups = ls_get(this.K.FOLLOWUPS);
-    // Check if follow-up already exists
     const exists = followups.find(f => f.apptId === appt.id);
     if(exists) return;
-
-    // Calculate due date (30 days after visit)
     const visitDate = new Date(appt.apptDate);
     const dueDate = new Date(visitDate);
     dueDate.setDate(dueDate.getDate() + 30);
-
     const followup = {
       id: gid('FU'),
       apptId: appt.id,
@@ -2473,11 +2665,10 @@ Thank you.`;
       doctor: appt.doctor,
       visitDate: appt.apptDate,
       dueDate: dueDate.toISOString(),
-      status: 'pending', // pending | sent
+      status: 'pending',
       messageSentDate: null,
       createdAt: new Date().toISOString()
     };
-
     followups.push(followup);
     ls_set(this.K.FOLLOWUPS, followups);
   },
@@ -2489,25 +2680,19 @@ Thank you.`;
       const dueDate = (f.dueDate||'').split('T')[0];
       return dueDate <= today;
     });
-
-    // Dashboard stats - showing overall stats including all follow-ups
     const totalDue = dueFollowups.length;
     const totalCreated = followups.length;
     const sentCount = followups.filter(f => f.status === 'sent').length;
     const pendingCount = followups.filter(f => f.status === 'pending').length;
-
     $('hFollowupStats').innerHTML = `
       <div class="stat-box"><small>Total Created</small><div class="val">${totalCreated}</div></div>
       <div class="stat-box"><small>Due Today</small><div class="val" style="color:#ff9800;">${totalDue}</div></div>
       <div class="stat-box"><small>Pending</small><div class="val" style="color:#ff9800;">${pendingCount}</div></div>
       <div class="stat-box"><small>Sent</small><div class="val green">${sentCount}</div></div>
     `;
-
-    // Reset filters on initial load
     $('hFollowupDateFilter').value = '';
     $('hFollowupStatusFilter').value = '';
     $('hFollowupSearch').value = '';
-    
     this.filterFollowups();
   },
 
@@ -2515,22 +2700,13 @@ Thank you.`;
     const followups = ls_get(this.K.FOLLOWUPS);
     const appts = ls_get(this.K.APPTS);
     let changed = false;
-
     followups.forEach(f => {
-      if(!f.status){
-        f.status = 'pending';
-        changed = true;
-      }
+      if(!f.status){ f.status = 'pending'; changed = true; }
       if(!f.visitDate){
-        if(f.apptDate) {
-          f.visitDate = f.apptDate;
-          changed = true;
-        } else if(f.apptId){
+        if(f.apptDate) { f.visitDate = f.apptDate; changed = true; }
+        else if(f.apptId){
           const appt = appts.find(a => a.id === f.apptId);
-          if(appt?.apptDate){
-            f.visitDate = appt.apptDate;
-            changed = true;
-          }
+          if(appt?.apptDate){ f.visitDate = appt.apptDate; changed = true; }
         }
       }
       if(!f.dueDate && f.visitDate){
@@ -2541,27 +2717,17 @@ Thank you.`;
       }
       if(!f.patientName && f.apptId){
         const appt = appts.find(a => a.id === f.apptId);
-        if(appt?.patientName){
-          f.patientName = appt.patientName;
-          changed = true;
-        }
+        if(appt?.patientName){ f.patientName = appt.patientName; changed = true; }
       }
       if(!f.phone && f.apptId){
         const appt = appts.find(a => a.id === f.apptId);
-        if(appt?.mobile){
-          f.phone = appt.mobile;
-          changed = true;
-        }
+        if(appt?.mobile){ f.phone = appt.mobile; changed = true; }
       }
       if(!f.doctor && f.apptId){
         const appt = appts.find(a => a.id === f.apptId);
-        if(appt?.doctor){
-          f.doctor = appt.doctor;
-          changed = true;
-        }
+        if(appt?.doctor){ f.doctor = appt.doctor; changed = true; }
       }
     });
-
     if(changed) ls_set(this.K.FOLLOWUPS, followups);
     return followups;
   },
@@ -2572,16 +2738,10 @@ Thank you.`;
     const dateFilter = $('hFollowupDateFilter').value;
     const statusFilter = $('hFollowupStatusFilter').value;
     const today = todayStr();
-    
     let filtered = followups.filter(f => {
-      const dueDate = (f.dueDate||'').split('T')[0];
       const visitDate = (f.visitDate||'').split('T')[0];
-      
-      // Status filter
       if(statusFilter === 'pending' && f.status !== 'pending') return false;
       if(statusFilter === 'sent' && f.status !== 'sent') return false;
-
-      // Date filter (by visit date)
       if(dateFilter === 'today'){
         if(visitDate !== today) return false;
       } else if(dateFilter === 'yesterday'){
@@ -2608,32 +2768,22 @@ Thank you.`;
         if(fromDate && visitDate < fromDate) return false;
         if(toDate && visitDate > toDate) return false;
       }
-
-      // Text search filter
       if(q){
         const hay = `${f.patientName||''} ${f.phone||''} ${f.doctor||''}`.toLowerCase();
         if(!hay.includes(q)) return false;
       }
-
       return true;
     }).sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate));
 
     const tbody = $('hFollowupBody');
     tbody.innerHTML = '';
-    
     filtered.forEach(f => {
       const visitDate = new Date(f.visitDate);
       const today = new Date();
       const daysStr = Math.floor((today - visitDate) / (1000 * 60 * 60 * 24)) + ' days';
-      
-      // Calculate days until follow-up due
       let dueDateObj = null;
-      if(f.dueDate){
-        dueDateObj = new Date(f.dueDate);
-      } else if(f.visitDate){
-        dueDateObj = new Date(f.visitDate);
-        dueDateObj.setDate(dueDateObj.getDate() + 30);
-      }
+      if(f.dueDate){ dueDateObj = new Date(f.dueDate); }
+      else if(f.visitDate){ dueDateObj = new Date(f.visitDate); dueDateObj.setDate(dueDateObj.getDate() + 30); }
       let dueInStr = 'N/A';
       if(dueDateObj && !isNaN(dueDateObj)){
         const dueInDays = Math.ceil((dueDateObj - today) / (1000 * 60 * 60 * 24));
@@ -2641,10 +2791,8 @@ Thank you.`;
         else if(dueInDays === 0) dueInStr = 'Today';
         else dueInStr = `Overdue ${Math.abs(dueInDays)} days`;
       }
-      
       const statusClass = f.status === 'sent' ? 'badge-success' : 'badge-warning';
       const statusLabel = f.status === 'sent' ? 'Sent' : 'Pending';
-
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>${f.patientName || '—'}</strong></td>
@@ -2660,7 +2808,6 @@ Thank you.`;
       `;
       tbody.appendChild(tr);
     });
-
     $('hFollowupCount').textContent = `Showing ${filtered.length} follow-up(s)`;
   },
 
@@ -2668,7 +2815,6 @@ Thank you.`;
     const dateFilter = $('hFollowupDateFilter').value;
     const customDateInput = $('hFollowupCustomDate');
     const dateRangeDiv = $('hFollowupDateRange');
-    
     if(dateFilter === 'custom'){
       customDateInput.style.display = 'block';
       dateRangeDiv.style.display = 'none';
@@ -2685,33 +2831,14 @@ Thank you.`;
   sendFollowupWhatsApp(followupId){
     const followups = ls_get(this.K.FOLLOWUPS);
     const followup = followups.find(f => f.id === followupId);
-    
-    if(!followup){
-      Swal.fire({icon:'error', title:'Follow-up not found', timer:2000, showConfirmButton:false});
-      return;
-    }
-
-    if(!followup.phone){
-      Swal.fire({icon:'warning', title:'No phone number', text:'Patient has no phone number', timer:2000, showConfirmButton:false});
-      return;
-    }
-
+    if(!followup){ Swal.fire({icon:'error', title:'Follow-up not found', timer:2000, showConfirmButton:false}); return; }
+    if(!followup.phone){ Swal.fire({icon:'warning', title:'No phone number', text:'Patient has no phone number', timer:2000, showConfirmButton:false}); return; }
     const phone = this.formatPhoneForWA(followup.phone);
-    if(!phone){
-      Swal.fire({icon:'warning', title:'Invalid phone', text:'Could not format phone number', timer:2000, showConfirmButton:false});
-      return;
-    }
-
-    // Get next day's date for follow-up
+    if(!phone){ Swal.fire({icon:'warning', title:'Invalid phone', text:'Could not format phone number', timer:2000, showConfirmButton:false}); return; }
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const followUpDateStr = `${tomorrow.getDate()}/${tomorrow.getMonth()+1}/${tomorrow.getFullYear()}`;
-
-    // Get visit date
     const visitDateObj = new Date(followup.visitDate);
-    const visitDateStr = `${visitDateObj.getDate()}/${visitDateObj.getMonth()+1}/${visitDateObj.getFullYear()}`;
-
-    // Prepare the Somali message using the template provided
     const message = `Asc,
 
 Walaal waa qeybta soo dhaweynta macaamiisha Baxnaano Hospital.
@@ -2737,25 +2864,13 @@ Waa noo sharaf doorashada aad na dooratey.
 Walaal haddii aadan soo laaban, fadlan imow ${followUpDateStr}.
 
 Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
-
     const encodedMsg = encodeURIComponent(message);
     window.open(`https://wa.me/${phone}?text=${encodedMsg}`, '_blank');
-
-    // Mark as sent after opening WhatsApp
     setTimeout(() => {
       followup.status = 'sent';
       followup.messageSentDate = new Date().toISOString();
       ls_set(this.K.FOLLOWUPS, followups);
-      
-      Swal.fire({
-        icon: 'success',
-        title: 'Message Sent',
-        text: `WhatsApp message sent to ${followup.patientName}`,
-        timer: 2000,
-        showConfirmButton: false
-      });
-
-      // Refresh the list
+      Swal.fire({ icon: 'success', title: 'Message Sent', text: `WhatsApp message sent to ${followup.patientName}`, timer: 2000, showConfirmButton: false });
       this.filterFollowups();
     }, 500);
   },
@@ -2763,31 +2878,17 @@ Number- Kaga kushaqenayo Jawaabta lacag maha number Kaga waa free.`;
   sendFollowupCard(followupId){
     const followups = ls_get(this.K.FOLLOWUPS);
     const followup = followups.find(f => f.id === followupId);
-    if(!followup){
-      Swal.fire({icon:'error', title:'Follow-up not found', text:'Unable to load follow-up record.', timer:2000, showConfirmButton:false});
-      return;
-    }
-    if(!followup.phone){
-      Swal.fire({icon:'warning', title:'No phone number', text:'Patient has no phone number', timer:2000, showConfirmButton:false});
-      return;
-    }
-
+    if(!followup){ Swal.fire({icon:'error', title:'Follow-up not found', text:'Unable to load follow-up record.', timer:2000, showConfirmButton:false}); return; }
+    if(!followup.phone){ Swal.fire({icon:'warning', title:'No phone number', text:'Patient has no phone number', timer:2000, showConfirmButton:false}); return; }
     const phone = this.formatPhoneForWA(followup.phone);
-    if(!phone){
-      Swal.fire({icon:'warning', title:'Invalid phone', text:'Could not format phone number', timer:2000, showConfirmButton:false});
-      return;
-    }
-
-    // Build a nicely spaced WhatsApp TEXT message (no canvas/image generation).
+    if(!phone){ Swal.fire({icon:'warning', title:'Invalid phone', text:'Could not format phone number', timer:2000, showConfirmButton:false}); return; }
     const visitDateObj = new Date(followup.visitDate);
     const visitDateFormatted = `${visitDateObj.getDate()}/${visitDateObj.getMonth()+1}/${visitDateObj.getFullYear()}`;
-
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dueDateFormatted = `${tomorrow.getDate()}/${tomorrow.getMonth()+1}/${tomorrow.getFullYear()}`;
     const days = ['Axad','Isniin','Talaado','Arbaco','Khamiis','Jimce','Sabti'];
     const tomorrowDay = days[tomorrow.getDay()];
-
     const message =
 `🏥 *BAXNAANO HOSPITAL*
 Qeybta Soo Dhaweynta Macaamiisha
@@ -2815,19 +2916,11 @@ Maalinta Balanta oo Ah  (Biri Imow: *${tomorrowDay}*)
 
 Mahadsanid.
 Kumahsantahay doorashadaada.`;
-
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank');
-
     followup.status = 'sent';
     followup.messageSentDate = new Date().toISOString();
     ls_set(this.K.FOLLOWUPS, followups);
-    Swal.fire({
-      icon: 'success',
-      title: 'Follow-Up Sent',
-      text: `WhatsApp follow-up reminder sent to ${followup.patientName}`,
-      timer: 2000,
-      showConfirmButton: false
-    });
+    Swal.fire({ icon: 'success', title: 'Follow-Up Sent', text: `WhatsApp follow-up reminder sent to ${followup.patientName}`, timer: 2000, showConfirmButton: false });
     this.filterFollowups();
   },
 
@@ -2838,20 +2931,15 @@ Kumahsantahay doorashadaada.`;
       const dueDate = (f.dueDate||'').split('T')[0];
       return dueDate && dueDate <= today && f.status === 'pending';
     }).slice(0, 1);
-
     if(!pendingFollowups.length){
       Swal.fire({icon:'info', title:'No pending follow-up cards', text:'There are no follow-ups due for card sending.', timer:2000, showConfirmButton:false});
       return;
     }
-
     Swal.fire({
       title: `Send Follow-Up Card?`,
       html: `<p>This will send a follow-up reminder card to:</p><ul style="text-align:left;">` +
-            pendingFollowups.map(f => `<li>${f.patientName} (${f.phone})</li>`).join('') +
-            `</ul>`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Send Card'
+            pendingFollowups.map(f => `<li>${f.patientName} (${f.phone})</li>`).join('') + `</ul>`,
+      icon: 'question', showCancelButton: true, confirmButtonText: 'Send Card'
     }).then(result => {
       if(!result.isConfirmed) return;
       this.sendFollowupCard(pendingFollowups[0].id);
@@ -2862,16 +2950,11 @@ Kumahsantahay doorashadaada.`;
     const words = text.split(' ');
     const lines = [];
     let currentLine = '';
-
     words.forEach(word => {
       const testLine = currentLine + (currentLine ? ' ' : '') + word;
       const metrics = ctx.measureText(testLine);
-      if(metrics.width > maxWidth && currentLine){
-        lines.push(currentLine);
-        currentLine = word;
-      } else {
-        currentLine = testLine;
-      }
+      if(metrics.width > maxWidth && currentLine){ lines.push(currentLine); currentLine = word; }
+      else { currentLine = testLine; }
     });
     if(currentLine) lines.push(currentLine);
     return lines;
@@ -2884,27 +2967,19 @@ Kumahsantahay doorashadaada.`;
       const dueDate = (f.dueDate||'').split('T')[0];
       return dueDate && dueDate <= today && f.status === 'pending';
     }).slice(0, 3);
-
     if(!pendingFollowups.length){
       Swal.fire({icon:'info', title:'No pending follow-ups', text:'All follow-ups have been sent or are not due yet', timer:2000, showConfirmButton:false});
       return;
     }
-
     Swal.fire({
       title: `Send ${pendingFollowups.length} Follow-Up Messages?`,
       html: `<p>This will open ${pendingFollowups.length} WhatsApp messages for:</p><ul style="text-align:left;">` +
-            pendingFollowups.map(f => `<li>${f.patientName} (${f.phone})</li>`).join('') + 
-            `</ul>`,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonText: 'Send All'
+            pendingFollowups.map(f => `<li>${f.patientName} (${f.phone})</li>`).join('') + `</ul>`,
+      icon: 'question', showCancelButton: true, confirmButtonText: 'Send All'
     }).then(result => {
       if(!result.isConfirmed) return;
-      
       pendingFollowups.forEach((f, idx) => {
-        setTimeout(() => {
-          this.sendFollowupWhatsApp(f.id);
-        }, idx * 1000);
+        setTimeout(() => { this.sendFollowupWhatsApp(f.id); }, idx * 1000);
       });
     });
   },
@@ -2912,13 +2987,11 @@ Kumahsantahay doorashadaada.`;
   renderFollowupReport(){
     const followups = ls_get(this.K.FOLLOWUPS);
     const today = todayStr();
-    
     const totalDue = followups.filter(f => (f.dueDate||'').split('T')[0] <= today).length;
     const totalSent = followups.filter(f => f.status === 'sent').length;
     const totalPending = followups.filter(f => (f.dueDate||'').split('T')[0] <= today && f.status === 'pending').length;
     const successRate = totalDue > 0 ? ((totalSent / totalDue) * 100).toFixed(2) : 0;
     const totalFollowups = followups.length;
-
     Swal.fire({
       title: 'Follow-Up Report',
       html: `
@@ -2947,8 +3020,7 @@ Kumahsantahay doorashadaada.`;
           </table>
         </div>
       `,
-      icon: 'info',
-      confirmButtonText: 'Close'
+      icon: 'info', confirmButtonText: 'Close'
     });
   }
 };
@@ -3495,22 +3567,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
   $('lrHistSearch')?.addEventListener('keypress',e=>{if(e.key==='Enter')LAB.renderHistory();});
 
-  // Age/DOB sync and validation
   $('hPatientAge')?.addEventListener('input',function(){
     const v=parseInt(this.value,10);
-    if(this.value!==''&&(v<0||v>120)){
-      this.classList.add('required-empty');
-    } else {
-      this.classList.remove('required-empty');
-    }
+    if(this.value!==''&&(v<0||v>120)){ this.classList.add('required-empty'); }
+    else { this.classList.remove('required-empty'); }
     HOSP.syncDobWithAge();
   });
-  $('hPatientDob')?.addEventListener('input',function(){
-    HOSP.syncAgeWithDob();
-  });
-  $('hPatientDob')?.addEventListener('change',function(){
-    HOSP.syncAgeWithDob();
-  });
+  $('hPatientDob')?.addEventListener('input',function(){ HOSP.syncAgeWithDob(); });
+  $('hPatientDob')?.addEventListener('change',function(){ HOSP.syncAgeWithDob(); });
 });
 </script>
 </body>
