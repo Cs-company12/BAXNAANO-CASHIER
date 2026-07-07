@@ -1512,10 +1512,14 @@ const HOSP = {
       ]);
     }
     try{
-      if(!localStorage.getItem('bax_preload_seeded_v2')){
+      const appts = ls_get(this.K.APPTS);
+      const patients = ls_get(this.K.PATIENTS);
+      const shouldSeed = !localStorage.getItem('bax_preload_seeded_v2') || (!patients.length && appts.length) || (!appts.length && typeof PRELOAD_PATIENT_LIST !== 'undefined' && PRELOAD_PATIENT_LIST && PRELOAD_PATIENT_LIST.indexOf('__PRELOAD') === -1);
+      if(shouldSeed){
         await this.importPreloadedList();
         localStorage.setItem('bax_preload_seeded_v2','1');
       }
+      this.syncPatientsFromAppointments();
     }catch(err){console.warn('Preload import failed',err);}
 
     const sess=localStorage.getItem(this.K.SESSION);
@@ -1544,7 +1548,6 @@ const HOSP = {
       const raw = PRELOAD_PATIENT_LIST;
       if(!raw || raw.indexOf('__PRELOAD') !== -1) return;
       const appts = ls_get(this.K.APPTS);
-      if(appts.length) return;
       const patients = ls_get(this.K.PATIENTS);
 
       const MONTHS = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
@@ -1592,6 +1595,7 @@ const HOSP = {
         const visit = (curY!=null) ? new Date(curY,curM,curD,9,0,0) : new Date();
         const visitIso = visit.toISOString();
         const dayKey = `${visit.getFullYear()}-${String(visit.getMonth()+1).padStart(2,'0')}-${String(visit.getDate()).padStart(2,'0')}`;
+        const apptIdentity = `${norm(patientName)}::${norm(mobile)}::${norm(matchedDoctor)}::${dayKey}`;
 
         let sex;
         const sn = sexRaw.toLowerCase();
@@ -1608,6 +1612,9 @@ const HOSP = {
 
         const sameDay = appts.filter(a => (a.doctor||'')===matchedDoctor && (a.apptDate||'').slice(0,10)===dayKey);
         const queueNum = sameDay.length ? Math.max(...sameDay.map(a=>a.queueNum||0))+1 : 1;
+
+        const existingAppt = appts.find(a => `${norm(a.patientName)}::${norm(a.mobile)}::${norm(a.doctor)}::${(a.apptDate||'').slice(0,10)}` === apptIdentity);
+        if(existingAppt) continue;
 
         const newAppt = {
           id: gid('A'),
@@ -1626,15 +1633,14 @@ const HOSP = {
           lastVisitDate:'', lastVisitDoctor:''
         };
 
-        const existing = patients.find(p =>
-          (p.name||'').trim().toLowerCase()===patientName.toLowerCase() ||
-          (mobile && (p.mobile||'')===mobile));
+        const existing = this.findPatientMatch(patients, patientName, mobile);
         if(existing){
-          existing.name = patientName;
+          existing.name = patientName || existing.name || '';
           if(mobile) existing.mobile = mobile;
-          if(!existing.sex) existing.sex = sex;
-          if(!existing.age) existing.age = age;
+          if(!existing.sex && sex) existing.sex = sex;
+          if(!existing.age && age) existing.age = age;
           if(existing.history===undefined) existing.history = '';
+          if(!existing.createdAt) existing.createdAt = new Date().toISOString();
           updated++;
         } else {
           patients.unshift({ id: gid('P'), name: patientName, mobile, sex, age, dob:'', address:'', history:'', createdAt: new Date().toISOString() });
@@ -1968,6 +1974,20 @@ const HOSP = {
     return (num||'').replace(/\D/g, '');
   },
 
+  normalizePatientName(name){
+    return (name||'').toString().trim().toLowerCase();
+  },
+
+  findPatientMatch(patients, patientName, mobile){
+    const qName = this.normalizePatientName(patientName);
+    const qMobile = this.normalizePhone(mobile);
+    return patients.find(p => {
+      const existingName = this.normalizePatientName(p.name);
+      const existingMobile = this.normalizePhone(p.mobile);
+      return (qName && existingName && existingName === qName) || (qMobile && existingMobile && existingMobile === qMobile);
+    }) || null;
+  },
+
   formatPhoneForWA(num){
     if(!num) return null;
     let digits = num.replace(/\D/g, '');
@@ -2119,14 +2139,41 @@ Thank you.`;
     this.ensurePatient(fd);
   },
 
+  syncPatientsFromAppointments(){
+    const appts = ls_get(this.K.APPTS);
+    const patients = ls_get(this.K.PATIENTS);
+    const existingIds = new Set(patients.map(p => p.id).filter(Boolean));
+    appts.forEach(appt => {
+      if(!appt?.patientName) return;
+      const existing = this.findPatientMatch(patients, appt.patientName, appt.mobile);
+      if(existing) return;
+      patients.unshift({
+        id: gid('P'),
+        name: appt.patientName,
+        mobile: appt.mobile || '',
+        sex: appt.sex || '',
+        age: appt.patientAge || '',
+        dob: appt.patientDob || '',
+        address: appt.patientAddress || '',
+        emergencyContactPhone: '',
+        ageDate: appt.patientAge ? new Date().toISOString() : '',
+        history: appt.patientNotes || '',
+        notes: appt.patientNotes || '',
+        createdAt: appt.createdAt || new Date().toISOString()
+      });
+      existingIds.add(patients[0].id);
+    });
+    if(patients.length) ls_set(this.K.PATIENTS, patients);
+  },
+
   ensurePatient(fd){
     if(!fd.patientName) return;
     const patients=ls_get(this.K.PATIENTS);
-    const exists=patients.find(p=>p.name===fd.patientName);
+    const exists=this.findPatientMatch(patients, fd.patientName, fd.mobile);
     const now = new Date().toISOString();
     if(exists){
       exists.name = fd.patientName || exists.name;
-      exists.mobile = fd.mobile || exists.mobile;
+      if(fd.mobile) exists.mobile = fd.mobile;
       exists.sex = fd.sex || exists.sex;
       exists.dob = fd.patientDob || exists.dob || '';
       exists.address = fd.patientAddress || exists.address || '';
@@ -2142,6 +2189,7 @@ Thank you.`;
         exists.history = fd.patientNotes;
         exists.notes = fd.patientNotes;
       }
+      if(!exists.createdAt) exists.createdAt = now;
       ls_set(this.K.PATIENTS,patients);
     } else {
       const numericAge = /^\s*\d+\s*$/.test(String(fd.patientAge)) ? parseInt(fd.patientAge,10) : '';
@@ -2633,7 +2681,7 @@ Thank you.`;
   },
 
   createFollowupRecord(appt){
-    if(!appt || !appt.apptDate || !appt.mobile || !appt.patientName || !appt.doctor) return;
+    if(!appt || !appt.apptDate || !appt.patientName) return;
     const followups = ls_get(this.K.FOLLOWUPS);
     const exists = followups.find(f => f.apptId === appt.id);
     if(exists) return;
@@ -2644,8 +2692,8 @@ Thank you.`;
       id: gid('FU'),
       apptId: appt.id,
       patientName: appt.patientName,
-      phone: appt.mobile,
-      doctor: appt.doctor,
+      phone: appt.mobile || '',
+      doctor: appt.doctor || '',
       visitDate: appt.apptDate,
       dueDate: dueDate.toISOString(),
       status: 'pending',
@@ -2683,6 +2731,27 @@ Thank you.`;
     const followups = ls_get(this.K.FOLLOWUPS);
     const appts = ls_get(this.K.APPTS);
     let changed = false;
+    const seenApptIds = new Set(followups.map(f => f.apptId).filter(Boolean));
+    appts.forEach(appt => {
+      if(!appt?.patientName || !appt?.apptDate || seenApptIds.has(appt.id)) return;
+      const visitDate = new Date(appt.apptDate);
+      const dueDate = new Date(visitDate);
+      dueDate.setDate(dueDate.getDate() + 30);
+      followups.push({
+        id: gid('FU'),
+        apptId: appt.id,
+        patientName: appt.patientName,
+        phone: appt.mobile || '',
+        doctor: appt.doctor || '',
+        visitDate: appt.apptDate,
+        dueDate: dueDate.toISOString(),
+        status: 'pending',
+        messageSentDate: null,
+        createdAt: appt.createdAt || new Date().toISOString()
+      });
+      seenApptIds.add(appt.id);
+      changed = true;
+    });
     followups.forEach(f => {
       if(!f.status){ f.status = 'pending'; changed = true; }
       if(!f.visitDate){
