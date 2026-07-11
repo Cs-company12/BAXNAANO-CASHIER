@@ -1291,6 +1291,8 @@ const MOGADISHU_DISTRICTS = [
 ];
 
   // ── Preloaded patient list (bulk import) ──
+  
+  const PRELOAD_PATIENT_LIST_VERSION = '2026-07-11-extended';
   const PRELOAD_PATIENT_LIST = `
 01 Jun 2026
 ZAKARIYE ABDIRAHMAN OSMAN,SADIA OMAR SALIM (Psychology & Speech Therapy),0614751996,Male
@@ -1543,6 +1545,7 @@ ABDIRISAQ BARE ALI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0616408714,M
 QADIIJO ABDULLE FIIDOW,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615631324,Female
 LIINO MOHAMED YACQUB,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0611036102,Female
 MARYAN ABDINASIR GADUDOW,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0618744459,Female
+
 07 Jun 2026
 FARDOWSA ABDULLAHI MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0613133539,Female
 IBRAHIM MOHAMED OMAR,SADIA OMAR SALIM (Psychology & Speech Therapy),0617272622,Male
@@ -1818,6 +1821,7 @@ ABDI HASSAN ABDI,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615252936,Mal
 MAKO ABDI HASSAN,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615863278,Female
 BURHANA AHMED JAMAC,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0614244446,Female
 
+12 Jun 2026
 13 Jun 2026
 MUNASAR MOHAMED SAHAL,SADIA OMAR SALIM (Psychology & Speech Therapy),0612034153,Male
 HASSAN ABDULLAHI HASSAN,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615780874,Male
@@ -2027,6 +2031,7 @@ AISHA ABDIKAFI AWIL,DR. YAHYA SHOOLE (Pediatric Gastroenterology),0615859825,Fem
 IFRAH ALI OMAR,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615207873,Female
 AMINA MOHAMED KARIYE,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615200400,Female
 HAWA MOALIM NUUR,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615580344,Female
+
 `;
 // ═══════════════════════════════════════════
 // HOSPITAL MODULE
@@ -2160,10 +2165,12 @@ const HOSP = {
     try{
       const appts = ls_get(this.K.APPTS);
       const patients = ls_get(this.K.PATIENTS);
-      const shouldSeed = !ls_get('bax_preload_seeded_v2') || (!patients.length && appts.length) || (!appts.length && typeof PRELOAD_PATIENT_LIST !== 'undefined' && PRELOAD_PATIENT_LIST && PRELOAD_PATIENT_LIST.indexOf('__PRELOAD') === -1);
+      const preloadVersion = ls_get('bax_preload_seeded_v2_version');
+      const shouldSeed = (preloadVersion !== PRELOAD_PATIENT_LIST_VERSION) || (!ls_get('bax_preload_seeded_v2') && !appts.length && typeof PRELOAD_PATIENT_LIST !== 'undefined' && PRELOAD_PATIENT_LIST && PRELOAD_PATIENT_LIST.indexOf('__PRELOAD') === -1);
       if(shouldSeed){
         await this.importPreloadedList();
         ls_set('bax_preload_seeded_v2','1');
+        ls_set('bax_preload_seeded_v2_version', PRELOAD_PATIENT_LIST_VERSION);
       }
       this.syncPatientsFromAppointments();
     }catch(err){console.warn('Preload import failed',err);}
@@ -2307,9 +2314,11 @@ const HOSP = {
 
   forceReimport(){
     ls_remove('bax_preload_seeded_v2');
+    ls_remove('bax_preload_seeded_v2_version');
     ls_remove(this.K.APPTS);
     this.importPreloadedList().then(()=>{
       ls_set('bax_preload_seeded_v2','1');
+      ls_set('bax_preload_seeded_v2_version', PRELOAD_PATIENT_LIST_VERSION);
       const appts = ls_get(this.K.APPTS);
       const patients = ls_get(this.K.PATIENTS);
       const summary = `✅ IMPORT COMPLETE\n📋 Appointments: ${appts.length}\n👥 Patients: ${patients.length}`;
@@ -2578,6 +2587,15 @@ const HOSP = {
 
   onChargeChange(){this.updateCharges();},
 
+  getChargesForDoctor(doc){
+    if(!doc) return this.DOCTOR_CHARGES._default || {};
+    const charges = this.DOCTOR_CHARGES[doc] || this.DOCTOR_CHARGES._default || {};
+    return Object.keys(charges).reduce((acc, key) => {
+      acc[key] = Number(charges[key]) || 0;
+      return acc;
+    }, {});
+  },
+
   updateCharges(){
     const doc=$('hDoctor').value;
     const ct=$('hChargeType').value;
@@ -2756,7 +2774,6 @@ Thank you.`;
       return;
     }
     const appts=ls_get(this.K.APPTS);
-    const patients=ls_get(this.K.PATIENTS);
     const now=new Date();
     const patientRecord=this.ensurePatient(fd);
     const patientId=patientRecord ? patientRecord.id : '';
@@ -2767,6 +2784,11 @@ Thank you.`;
       }
       ls_set(this.K.APPTS,appts);
       this.syncPatientsFromAppointments();
+      this.verifyAndRestoreData();
+      this.showView('hv-appointments');
+      this.renderDash();
+      this.renderPayments();
+      this.renderFollowup();
       Swal.fire({icon:'success',title:'Saved',timer:1200,showConfirmButton:false});
     } else {
       const queueNum = this.getNextQueueNum(fd.doctor);
@@ -2788,8 +2810,8 @@ Thank you.`;
       appts.unshift(newAppt);
       this.editId=newAppt.id;
       ls_set(this.K.APPTS,appts);
-      ls_set(this.K.PATIENTS,patients);
       this.syncPatientsFromAppointments();
+      this.verifyAndRestoreData();
       this.createFollowupRecord(newAppt);
       $('hApptNumDisp').textContent=apptNum;
       $('hQueueDisp').textContent=queueNum;
@@ -2797,6 +2819,10 @@ Thank you.`;
       $('hLastVisitDate').value=newAppt.lastVisitDate;
       $('hLastVisitDoctor').value=newAppt.lastVisitDoctor;
       $('hBtnPrint').style.display='';
+      this.renderAppts();
+      this.renderDash();
+      this.renderPayments();
+      this.renderFollowup();
       Swal.fire({icon:'success',title:'Appointment Created',text:'Queue #'+queueNum,timer:1500,showConfirmButton:false});
       this.sendQueueToWhatsApp(newAppt);
     }
@@ -2810,6 +2836,10 @@ Thank you.`;
       if(!appt?.patientName) return;
       let existing = this.findPatientMatch(patients, appt.patientName, appt.mobile);
       if(existing){
+        if(!existing.id){
+          existing.id = gid('P');
+          changed = true;
+        }
         if(!appt.patientId && existing.id){
           appt.patientId = existing.id;
           changed = true;
@@ -2873,6 +2903,7 @@ Thank you.`;
     const numericAge = /^\s*\d+\s*$/.test(String(fd.patientAge)) ? parseInt(fd.patientAge,10) : '';
     if(exists){
       let changed = false;
+      if(!exists.id){ exists.id = gid('P'); changed = true; }
       if(fd.patientName && fd.patientName !== exists.name){ exists.name = fd.patientName; changed = true; }
       if(fd.mobile && fd.mobile !== exists.mobile){ exists.mobile = fd.mobile; changed = true; }
       if(fd.sex && fd.sex !== exists.sex){ exists.sex = fd.sex; changed = true; }
@@ -2925,6 +2956,10 @@ Thank you.`;
     $('hBtnCash').style.display='';
     $('hBtnFree').style.display='';
     this.setStateBar('scheduled');
+    this.renderAppts();
+    this.renderPayments();
+    this.renderDash();
+    this.renderFollowup();
     Swal.fire({icon:'success',title:'Appointment Confirmed',timer:1200,showConfirmButton:false});
   },
 
@@ -2935,6 +2970,9 @@ Thank you.`;
       if(!r.isConfirmed) return;
       ls_set(this.K.APPTS,ls_get(this.K.APPTS).filter(a=>a.id!==id));
       this.renderAppts();
+      this.renderPayments();
+      this.renderDash();
+      this.renderFollowup();
     });
   },
 
