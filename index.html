@@ -5802,6 +5802,14 @@ const LAB = window.LAB = {
 
 // INIT
 document.addEventListener('DOMContentLoaded',()=>{
+  // If editable preload text exists, clear previous preload seed flags
+  try{
+    if(typeof PRELOAD_DATA_TEXT !== 'undefined' && PRELOAD_DATA_TEXT && PRELOAD_DATA_TEXT.trim()){
+      try{ ls_remove('bax_preload_seeded_v2'); }catch(e){}
+      try{ ls_remove('bax_preload_seeded_v2_version'); }catch(e){}
+      try{ ls_remove('bax_preload_imported_jul2026'); }catch(e){}
+    }
+  }catch(e){}
   DB.init();
   $('hLoginUser')?.addEventListener('keypress',e=>{if(e.key==='Enter')$('hLoginPass').focus();});
   $('hLoginPass')?.addEventListener('keypress',e=>{if(e.key==='Enter')HOSP.login();});
