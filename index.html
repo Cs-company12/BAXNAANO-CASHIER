@@ -5822,75 +5822,38 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 
 <script>
-(function () {
-  try {
-    // Make sure required functions/variables are available
-    function waitForSystem(attempts) {
-      attempts = attempts || 0;
+  (function(){
+    try{
+      const hasJulBatch = () => (typeof PRELOAD_PATIENT_LIST !== 'undefined' && PRELOAD_PATIENT_LIST.indexOf('18 Jul 2026')!==-1);
+      const notImportedYet = () => { try{ return !ls_get('bax_preload_imported_jul2026'); }catch(e){ return true; } };
 
-      var ready =
-        typeof PRELOAD_PATIENT_LIST !== 'undefined' &&
-        typeof ls_get === 'function' &&
-        typeof ls_remove === 'function' &&
-        typeof ls_set === 'function' &&
-        window.HOSP &&
-        typeof window.HOSP.forceReimport === 'function';
-
-      if (ready) {
-        try {
-          // Only run if the July 2026 patient preload exists
-          if (
-            Array.isArray(PRELOAD_PATIENT_LIST) &&
-            PRELOAD_PATIENT_LIST.indexOf('18 Jul 2026') !== -1
-          ) {
-            // Prevent repeated imports
-            if (!ls_get('bax_preload_imported_jul2026')) {
-
-              // Clear old preload flags
-              ls_remove('bax_preload_seeded_v2');
-              ls_remove('bax_preload_seeded_v2_version');
-
-              // Run import
-              window.HOSP.forceReimport();
-
-              // Mark as imported
-              ls_set('bax_preload_imported_jul2026', '1');
-
-              console.log('July 2026 patient data imported successfully.');
-            }
-          }
-        } catch (e) {
-          console.error('Patient auto-import failed:', e);
-        }
-
-        return;
+      function waitFor(fnCheck, onReady, opts={timeout:15000, interval:300}){
+        const start = Date.now();
+        (function poll(){
+          try{ if(fnCheck()) return onReady(); }catch(e){}
+          if(Date.now() - start > opts.timeout){ console.warn('auto-import: dependency wait timed out'); return; }
+          setTimeout(poll, opts.interval);
+        })();
       }
 
-      // Wait for the system to finish loading
-      if (attempts < 50) {
-        setTimeout(function () {
-          waitForSystem(attempts + 1);
-        }, 200);
-      } else {
-        console.warn(
-          'Patient auto-import: system was not ready after waiting.'
+      document.addEventListener('DOMContentLoaded', ()=>{
+        if(!hasJulBatch() || !notImportedYet()) return;
+        waitFor(
+          // check HOSP and storage helpers exist
+          ()=> typeof ls_get === 'function' && typeof ls_set === 'function' && typeof ls_remove === 'function' && window.HOSP && typeof HOSP.forceReimport === 'function',
+          ()=>{
+            try{
+              // clear seeded flags so importer runs fresh
+              try{ ls_remove('bax_preload_seeded_v2'); ls_remove('bax_preload_seeded_v2_version'); }catch(e){}
+              HOSP.forceReimport();
+              try{ ls_set('bax_preload_imported_jul2026','1'); }catch(e){}
+            }catch(e){ console.warn('auto-import run error', e); }
+          },
+          {timeout:20000, interval:500}
         );
-      }
-    }
-
-    // Start after the page has loaded
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function () {
-        waitForSystem(0);
       });
-    } else {
-      waitForSystem(0);
-    }
-
-  } catch (e) {
-    console.error('Auto-import initialization error:', e);
-  }
-})();
+    }catch(e){ console.warn('auto-import setup error',e); }
+  })();
 </script>
 
 </div>
