@@ -300,15 +300,6 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
 
 <div id="printZone" style="display:none;"></div>
 
-<!-- IMPORT BANNER (manual control) -->
-<div id="importBanner" style="background:#fff3cd;border:1px solid #ffeeba;padding:.6rem 1rem;display:flex;align-items:center;gap:.6rem;justify-content:space-between;">
-  <div style="font-size:13px;color:#856404;">Preloaded patient batch (18–28 Jul 2026) is present. If records didn't import automatically, click to import now.</div>
-  <div style="display:flex;gap:.5rem;align-items:center;">
-    <button id="btnManualImport" class="btn btn-warning" style="padding:.4rem .8rem;" onclick="(function(){ try{ Swal.fire({title:'Run manual import?',text:'This will import preloaded patients and appointments.',icon:'question',showCancelButton:true}).then(r=>{ if(r.isConfirmed){ try{ ls_remove('bax_preload_imported_jul2026'); ls_remove('bax_preload_seeded_v2'); ls_remove('bax_preload_seeded_v2_version'); if(window.HOSP && HOSP.forceReimport){ HOSP.forceReimport(); Swal.fire({icon:'success',title:'Import started',timer:1200,showConfirmButton:false}); } else { Swal.fire({icon:'info',title:'App not ready',text:'Please open the app main page and try again.',timer:2000}); } }catch(e){ console.warn(e); Swal.fire({icon:'error',title:'Import failed',text:String(e)}) } }); }catch(e){console.warn(e);} })();">Run Import Now</button>
-    <button id="btnImportHelp" class="btn btn-light" style="padding:.35rem .6rem;" onclick="Swal.fire({title:'Import Help',html:'If auto-import didn\'t run, click <strong>Run Import Now</strong>. If that fails, open DevTools Console and run:<br><pre>localStorage.removeItem(\'bax_preload_imported_jul2026\');\nlocalStorage.removeItem(\'bax_preload_seeded_v2\');\nlocalStorage.removeItem(\'bax_preload_seeded_v2_version\');\nHOSP.forceReimport();</pre>',width:700})">Help</button>
-  </div>
-</div>
-
 <!-- LANDING -->
 <div id="landingPage">
   <div class="landing-wrap">
@@ -1301,8 +1292,15 @@ const MOGADISHU_DISTRICTS = [
 
   // ── Preloaded patient list (bulk import) ──
   
+  // EDITABLE PRELOAD DATA (Edit only the content of PRELOAD_DATA_TEXT below)
+  const PRELOAD_DATA_TEXT = `
+18 Jul 2026
+# Paste or add preloaded records here, one line per record.
+# Date headers (e.g. "18 Jul 2026") are supported.
+`;
+
   const PRELOAD_PATIENT_LIST_VERSION = '2026-07-28-july-batch';
-  const PRELOAD_PATIENT_LIST = `
+  const PRELOAD_PATIENT_LIST = (function(){ var el=(typeof document!=='undefined'&&document.getElementById)?document.getElementById('PRELOAD_DATA'):null; if(el && el.textContent && el.textContent.trim()) return el.textContent; if(typeof PRELOAD_DATA_TEXT !== 'undefined' && PRELOAD_DATA_TEXT && PRELOAD_DATA_TEXT.trim()) return PRELOAD_DATA_TEXT; return `
 01 Jun 2026
 ZAKARIYE ABDIRAHMAN OSMAN,SADIA OMAR SALIM (Psychology & Speech Therapy),0614751996,Male
 FADUMO OSMAN ISAK,Dr A Y Hersi (Internal Medicine),0611420492,Female
@@ -3415,7 +3413,7 @@ ALI AHMED MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615395121,Ma
 MOHAMED ALI MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615192430,Male
 HODAN ABDIRASHID MOHAMUD,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615112875,Female
 FAHIMA ADNAN MOHAMED,Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology),0615164603,Male
-`;
+`; })();
 // HOSPITAL MODULE
 // ═══════════════════════════════════════════
 const HOSP = {
