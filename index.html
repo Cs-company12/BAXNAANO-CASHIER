@@ -5822,23 +5822,75 @@ document.addEventListener('DOMContentLoaded',()=>{
 </script>
 
 <script>
-  (function(){
-    try{
-      if(typeof PRELOAD_PATIENT_LIST !== 'undefined' && PRELOAD_PATIENT_LIST.indexOf('18 Jul 2026')!==-1){
-        if(!ls_get('bax_preload_imported_jul2026')){
-          // clear preload-seeded flags so importer runs, then call forceReimport once
-          ls_remove('bax_preload_seeded_v2');
-          ls_remove('bax_preload_seeded_v2_version');
-          setTimeout(()=>{
-            if(window.HOSP && HOSP.forceReimport){
-              HOSP.forceReimport();
-              ls_set('bax_preload_imported_jul2026','1');
+(function () {
+  try {
+    // Make sure required functions/variables are available
+    function waitForSystem(attempts) {
+      attempts = attempts || 0;
+
+      var ready =
+        typeof PRELOAD_PATIENT_LIST !== 'undefined' &&
+        typeof ls_get === 'function' &&
+        typeof ls_remove === 'function' &&
+        typeof ls_set === 'function' &&
+        window.HOSP &&
+        typeof window.HOSP.forceReimport === 'function';
+
+      if (ready) {
+        try {
+          // Only run if the July 2026 patient preload exists
+          if (
+            Array.isArray(PRELOAD_PATIENT_LIST) &&
+            PRELOAD_PATIENT_LIST.indexOf('18 Jul 2026') !== -1
+          ) {
+            // Prevent repeated imports
+            if (!ls_get('bax_preload_imported_jul2026')) {
+
+              // Clear old preload flags
+              ls_remove('bax_preload_seeded_v2');
+              ls_remove('bax_preload_seeded_v2_version');
+
+              // Run import
+              window.HOSP.forceReimport();
+
+              // Mark as imported
+              ls_set('bax_preload_imported_jul2026', '1');
+
+              console.log('July 2026 patient data imported successfully.');
             }
-          }, 800);
+          }
+        } catch (e) {
+          console.error('Patient auto-import failed:', e);
         }
+
+        return;
       }
-    }catch(e){console.warn('auto-import error',e);} 
-  })();
+
+      // Wait for the system to finish loading
+      if (attempts < 50) {
+        setTimeout(function () {
+          waitForSystem(attempts + 1);
+        }, 200);
+      } else {
+        console.warn(
+          'Patient auto-import: system was not ready after waiting.'
+        );
+      }
+    }
+
+    // Start after the page has loaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () {
+        waitForSystem(0);
+      });
+    } else {
+      waitForSystem(0);
+    }
+
+  } catch (e) {
+    console.error('Auto-import initialization error:', e);
+  }
+})();
 </script>
 
 </div>
