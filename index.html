@@ -5820,6 +5820,27 @@ document.addEventListener('DOMContentLoaded',()=>{
   $('hPatientDob')?.addEventListener('change',function(){ HOSP.syncAgeWithDob(); });
 });
 </script>
+</script>
+
+<script>
+  (function(){
+    try{
+      if(typeof PRELOAD_PATIENT_LIST !== 'undefined' && PRELOAD_PATIENT_LIST.indexOf('18 Jul 2026')!==-1){
+        if(!ls_get('bax_preload_imported_jul2026')){
+          // clear preload-seeded flags so importer runs, then call forceReimport once
+          ls_remove('bax_preload_seeded_v2');
+          ls_remove('bax_preload_seeded_v2_version');
+          setTimeout(()=>{
+            if(window.HOSP && HOSP.forceReimport){
+              HOSP.forceReimport();
+              ls_set('bax_preload_imported_jul2026','1');
+            }
+          }, 800);
+        }
+      }
+    }catch(e){console.warn('auto-import error',e);} 
+  })();
+</script>
 
 </div>
 </body>
