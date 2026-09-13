@@ -5080,11 +5080,16 @@ const HOSP = {
     document.querySelectorAll('#hospTopNav .tnav-btn').forEach(b=>b.classList.remove('active'));
     const t=$(vid);if(t)t.classList.add('active');
     const b=document.querySelector('#hospTopNav [data-v="'+vid+'"]');if(b)b.classList.add('active');
-    
-    // Always ensure data is synchronized before rendering
-    this.syncPatientsFromAppointments();
-    this.verifyAndRestoreData();
-    
+
+    // Lightweight sync: avoid re-running expensive patient repair for every view switch.
+    if(!this._syncTimer){
+      this._syncTimer=setTimeout(()=>{
+        this._syncTimer=null;
+        this.syncPatientsFromAppointments();
+        this.verifyAndRestoreData();
+      },0);
+    }
+
     if(vid==='hv-dashboard')this.renderDash();
     if(vid==='hv-appointments')this.renderAppts();
     if(vid==='hv-payments')this.renderPayments();
@@ -5099,8 +5104,12 @@ const HOSP = {
     const doctorFilter=$('hApptDoctorFilter');
     const doctors=[...new Set(appts.map(a=>a.doctor).filter(Boolean))];
     const curDFilt=doctorFilter.value;
-    doctorFilter.innerHTML='<option value="">All Doctors</option>'+doctors.map(d=>`<option value="${d}">${d}</option>`).join('');
-    doctorFilter.value=curDFilt;
+    const nextOptions='<option value="">All Doctors</option>'+doctors.map(d=>`<option value="${d}">${d}</option>`).join('');
+    if(doctorFilter.innerHTML !== nextOptions){
+      doctorFilter.innerHTML=nextOptions;
+    }
+    if(doctors.includes(curDFilt)){ doctorFilter.value=curDFilt; }
+    else { doctorFilter.value=''; }
     this.filterAppts();
   },
 
@@ -5120,11 +5129,13 @@ const HOSP = {
       return true;
     }).sort((a,b)=>{
       if(a.doctor !== b.doctor) return (a.doctor||'').localeCompare(b.doctor||'');
-      const qDiff = a.queueNum - b.queueNum;
+      const qDiff = (a.queueNum||0) - (b.queueNum||0);
       return qDiff !== 0 ? qDiff : new Date(b.createdAt) - new Date(a.createdAt);
     });
 
-    const tbody=$('hApptBody');tbody.innerHTML='';
+    const tbody=$('hApptBody');
+    tbody.innerHTML='';
+    const frag=document.createDocumentFragment();
     filtered.forEach(a=>{
       const stateClass=a.state==='paid'?'badge-success':a.state==='scheduled'?'badge-info':'badge-warning';
       const stateLabel=a.state==='paid'?'Paid':a.state==='scheduled'?'Confirmed':'Draft';
@@ -5149,8 +5160,9 @@ const HOSP = {
           <button class="btn btn-success btn-sm" onclick="HOSP.printAppt('${a.id}')"><i class="bi bi-printer"></i></button>
           <button class="btn btn-danger btn-sm" onclick="HOSP.deleteAppt('${a.id}')"><i class="bi bi-trash"></i></button>
         </td>`;
-      tbody.appendChild(tr);
+      frag.appendChild(tr);
     });
+    tbody.appendChild(frag);
     $('hApptCount').textContent=`Showing ${filtered.length} of ${appts.length} records`;
   },
 
@@ -6235,10 +6247,7 @@ Thank you.`;
   renderFollowup(){
     const followups = this.migrateFollowupData();
     const today = todayStr();
-    const dueFollowups = followups.filter(f => {
-      const dueDate = (f.dueDate||'').split('T')[0];
-      return dueDate <= today;
-    });
+    const dueFollowups = followups.filter(f => (f.dueDate || '').split('T')[0] <= today);
     const totalDue = dueFollowups.length;
     const totalCreated = followups.length;
     const sentCount = followups.filter(f => f.status === 'sent').length;
@@ -6249,9 +6258,8 @@ Thank you.`;
       <div class="stat-box"><small>Pending</small><div class="val" style="color:#ff9800;">${pendingCount}</div></div>
       <div class="stat-box"><small>Sent</small><div class="val green">${sentCount}</div></div>
     `;
-    $('hFollowupDateFilter').value = '';
-    $('hFollowupStatusFilter').value = '';
-    $('hFollowupSearch').value = '';
+    const filters = ['hFollowupDateFilter', 'hFollowupStatusFilter', 'hFollowupSearch'];
+    filters.forEach(id => { const el = $(id); if (el) el.value = ''; });
     this.filterFollowups();
   },
 
@@ -6318,8 +6326,12 @@ Thank you.`;
     const dateFilter = $('hFollowupDateFilter').value;
     const statusFilter = $('hFollowupStatusFilter').value;
     const today = todayStr();
+    const customDate = $('hFollowupCustomDate')?.value || '';
+    const fromDate = $('hFollowupDateFrom')?.value || '';
+    const toDate = $('hFollowupDateTo')?.value || '';
+
     let filtered = followups.filter(f => {
-      const visitDate = (f.visitDate||'').split('T')[0];
+      const visitDate = (f.visitDate || '').split('T')[0];
       if(statusFilter === 'pending' && f.status !== 'pending') return false;
       if(statusFilter === 'sent' && f.status !== 'sent') return false;
       if(dateFilter === 'today'){
@@ -6340,33 +6352,29 @@ Thank you.`;
         const thirtyDaysAgoStr = `${thirtyDaysAgo.getFullYear()}-${String(thirtyDaysAgo.getMonth()+1).padStart(2,'0')}-${String(thirtyDaysAgo.getDate()).padStart(2,'0')}`;
         if(visitDate < thirtyDaysAgoStr || visitDate > today) return false;
       } else if(dateFilter === 'custom'){
-        const customDate = $('hFollowupCustomDate').value;
         if(customDate && visitDate !== customDate) return false;
       } else if(dateFilter === 'range'){
-        const fromDate = $('hFollowupDateFrom').value;
-        const toDate = $('hFollowupDateTo').value;
         if(fromDate && visitDate < fromDate) return false;
         if(toDate && visitDate > toDate) return false;
       }
       if(q){
-        const hay = `${f.patientName||''} ${f.phone||''} ${f.doctor||''}`.toLowerCase();
+        const hay = `${f.patientName || ''} ${f.phone || ''} ${f.doctor || ''}`.toLowerCase();
         if(!hay.includes(q)) return false;
       }
       return true;
-    }).sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate));
+    }).sort((a, b) => new Date(b.visitDate || 0) - new Date(a.visitDate || 0));
 
     const tbody = $('hFollowupBody');
-    tbody.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    const now = new Date();
     filtered.forEach(f => {
-      const visitDate = new Date(f.visitDate);
-      const today = new Date();
-      const daysStr = Math.floor((today - visitDate) / (1000 * 60 * 60 * 24)) + ' days';
-      let dueDateObj = null;
-      if(f.dueDate){ dueDateObj = new Date(f.dueDate); }
-      else if(f.visitDate){ dueDateObj = new Date(f.visitDate); dueDateObj.setDate(dueDateObj.getDate() + 30); }
+      const visitDate = new Date(f.visitDate || 0);
+      const daysStr = Math.floor((now - visitDate) / (1000 * 60 * 60 * 24)) + ' days';
+      let dueDateObj = f.dueDate ? new Date(f.dueDate) : null;
+      if(!dueDateObj && f.visitDate){ dueDateObj = new Date(f.visitDate); dueDateObj.setDate(dueDateObj.getDate() + 30); }
       let dueInStr = 'N/A';
-      if(dueDateObj && !isNaN(dueDateObj)){
-        const dueInDays = Math.ceil((dueDateObj - today) / (1000 * 60 * 60 * 24));
+      if(dueDateObj && !isNaN(dueDateObj.getTime())){
+        const dueInDays = Math.ceil((dueDateObj - now) / (1000 * 60 * 60 * 24));
         if(dueInDays > 0) dueInStr = dueInDays + ' days';
         else if(dueInDays === 0) dueInStr = 'Today';
         else dueInStr = `Overdue ${Math.abs(dueInDays)} days`;
@@ -6386,8 +6394,10 @@ Thank you.`;
           <button class="btn btn-success btn-sm" onclick="HOSP.sendFollowupCard('${f.id}')"><i class="bi bi-card-image"></i> Send</button>
         </td>
       `;
-      tbody.appendChild(tr);
+      frag.appendChild(tr);
     });
+    tbody.innerHTML = '';
+    tbody.appendChild(frag);
     $('hFollowupCount').textContent = `Showing ${filtered.length} follow-up(s)`;
   },
 
@@ -7019,18 +7029,25 @@ const LAB = window.LAB = {
       return true;
     });
     const sc=s=>s==='Pending'?'badge-warning':s==='Completed'?'badge-success':'badge-info';
-    $('lrHistBody').innerHTML=filtered.map(item=>`<tr>
-      <td><strong>${item.reportNumber||'—'}</strong></td>
-      <td>${fmtDate(item.reportDate||item.createdAt)}</td>
-      <td>${item.patientName||'—'}</td>
-      <td>${item.testType||item.requestedTest||'—'}</td>
-      <td><span class="badge ${sc(item.status)}">${item.status}</span></td>
-      <td class="actions">
-        <button class="btn btn-primary btn-sm" onclick="LAB.openResult('${item.id}')">View</button>
-        <button class="btn btn-info btn-sm" onclick="LAB.reprintResult('${item.id}')">Print</button>
-        <button class="btn btn-success btn-sm" onclick="LAB.setStatus('${item.id}','Completed')">Complete</button>
-        <button class="btn btn-warning btn-sm" onclick="LAB.setStatus('${item.id}','Pending')">Pending</button>
-      </td></tr>`).join('');
+    const frag=document.createDocumentFragment();
+    filtered.forEach(item=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td><strong>${item.reportNumber||'—'}</strong></td>
+        <td>${fmtDate(item.reportDate||item.createdAt)}</td>
+        <td>${item.patientName||'—'}</td>
+        <td>${item.testType||item.requestedTest||'—'}</td>
+        <td><span class="badge ${sc(item.status)}">${item.status}</span></td>
+        <td class="actions">
+          <button class="btn btn-primary btn-sm" onclick="LAB.openResult('${item.id}')">View</button>
+          <button class="btn btn-info btn-sm" onclick="LAB.reprintResult('${item.id}')">Print</button>
+          <button class="btn btn-success btn-sm" onclick="LAB.setStatus('${item.id}','Completed')">Complete</button>
+          <button class="btn btn-warning btn-sm" onclick="LAB.setStatus('${item.id}','Pending')">Pending</button>
+        </td>`;
+      frag.appendChild(tr);
+    });
+    $('lrHistBody').innerHTML='';
+    $('lrHistBody').appendChild(frag);
   },
 
   setStatus(id,status){
