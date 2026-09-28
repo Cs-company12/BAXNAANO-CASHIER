@@ -1173,6 +1173,8 @@ const DB = {
 };
 
 const STORAGE_FALLBACK = {};
+let STORAGE_BACKEND_CHECKED = false;
+let STORAGE_BACKEND = null;
 function storageAvailable(type='localStorage'){
   try{
     const storage = window[type];
@@ -1198,9 +1200,11 @@ function writeWindowNameStore(store){
   }catch{}
 }
 function getStorageBackend(){
-  if(storageAvailable('localStorage')) return localStorage;
-  if(storageAvailable('sessionStorage')) return sessionStorage;
-  return null;
+  if(STORAGE_BACKEND_CHECKED) return STORAGE_BACKEND;
+  STORAGE_BACKEND_CHECKED = true;
+  if(storageAvailable('localStorage')) STORAGE_BACKEND = localStorage;
+  else if(storageAvailable('sessionStorage')) STORAGE_BACKEND = sessionStorage;
+  return STORAGE_BACKEND;
 }
 function ls_get(k,def=[]){
   try{
@@ -1229,9 +1233,11 @@ function ls_set(k,d){
   try{
     const payload = JSON.stringify(d);
     const storage = getStorageBackend();
+    let savedToStorage = false;
     if(storage){
       try{
         storage.setItem(k,payload);
+        savedToStorage = true;
       }catch(err){
         STORAGE_FALLBACK[k]=d;
         console.warn('Storage write failed, using fallback', k, err);
@@ -1239,9 +1245,11 @@ function ls_set(k,d){
     } else {
       STORAGE_FALLBACK[k]=d;
     }
-    const fallbackStore = readWindowNameStore();
-    fallbackStore[k] = d;
-    writeWindowNameStore(fallbackStore);
+    if(!savedToStorage){
+      const fallbackStore = readWindowNameStore();
+      fallbackStore[k] = d;
+      writeWindowNameStore(fallbackStore);
+    }
   }catch(err){
     STORAGE_FALLBACK[k]=d;
     console.warn('Storage save failed',k,err);
@@ -7394,6 +7402,7 @@ Thank you.`;
   migrateFollowupData(){
     const followups = ls_get(this.K.FOLLOWUPS);
     const appts = ls_get(this.K.APPTS);
+    const apptsById = new Map(appts.map(appt => [appt.id, appt]));
     let changed = false;
     const seenApptIds = new Set(followups.map(f => f.apptId).filter(Boolean));
     appts.forEach(appt => {
@@ -7417,11 +7426,11 @@ Thank you.`;
       changed = true;
     });
     followups.forEach(f => {
+      const appt = f.apptId ? apptsById.get(f.apptId) : null;
       if(!f.status){ f.status = 'pending'; changed = true; }
       if(!f.visitDate){
         if(f.apptDate) { f.visitDate = f.apptDate; changed = true; }
-        else if(f.apptId){
-          const appt = appts.find(a => a.id === f.apptId);
+        else if(appt){
           if(appt?.apptDate){ f.visitDate = appt.apptDate; changed = true; }
         }
       }
@@ -7431,16 +7440,13 @@ Thank you.`;
         f.dueDate = due.toISOString();
         changed = true;
       }
-      if(!f.patientName && f.apptId){
-        const appt = appts.find(a => a.id === f.apptId);
+      if(!f.patientName && appt){
         if(appt?.patientName){ f.patientName = appt.patientName; changed = true; }
       }
-      if(!f.phone && f.apptId){
-        const appt = appts.find(a => a.id === f.apptId);
+      if(!f.phone && appt){
         if(appt?.mobile){ f.phone = appt.mobile; changed = true; }
       }
-      if(!f.doctor && f.apptId){
-        const appt = appts.find(a => a.id === f.apptId);
+      if(!f.doctor && appt){
         if(appt?.doctor){ f.doctor = appt.doctor; changed = true; }
       }
     });
