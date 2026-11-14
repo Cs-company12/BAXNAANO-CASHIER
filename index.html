@@ -10717,8 +10717,10 @@ const WA = window.WA = {
   },
   async api(p,method,body){
     const c=this.cfg();
-    if(!c.url||!c.token)throw new Error('Enter the gateway URL and token first (WhatsApp tab).');
-    const res=await fetch(c.url+p,{method:method||'GET',headers:{'Content-Type':'application/json',Authorization:'Bearer '+c.token},body:body?JSON.stringify(body):undefined});
+    if(!c.url)throw new Error('Enter the gateway URL first (WhatsApp tab).');
+    let res;
+    try{res=await fetch(c.url+p,{method:method||'GET',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(c.token||'local')},body:body?JSON.stringify(body):undefined});}
+    catch(e){throw new Error('Server-ka WhatsApp ma shaqeynayo ('+c.url+'). Termux ku orod: bash start.sh, kadibna fur http://localhost:3000/app');}
     const j=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error(j.error||('HTTP '+res.status));
     return j;
