@@ -654,8 +654,12 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
                   <option value="admin">Admin</option>
                 </select>
               </div>
+              <div class="form-group"><label>Dhakhtarka (Dr. Chat)</label>
+                <select id="hUserDr" class="form-select"><option value="">-</option><option value="harith">Dr. Harith</option><option value="yaxye">Dr. Yaxye</option><option value="sadia">Dr. Sadio</option><option value="hersi">Dr. Hersi</option><option value="saney">Dr. Saney</option></select>
+              </div>
               <div class="form-group" style="align-self:flex-end;"><button class="btn btn-success" type="submit"><i class="bi bi-floppy"></i> Save User</button></div>
             </form>
+            <div style="margin:.6rem 0;padding:.6rem .7rem;background:#eef7f2;border-radius:8px;font-size:13px;"><b>Dr. Chat link</b> - dhakhtar kasta link + username + password gaar ah (bukaanadiisa ayuu ku arkaa oo uu kula hadlaa WhatsApp). <div style="margin-top:.4rem;display:flex;gap:.4rem;flex-wrap:wrap;"><button type="button" class="btn btn-success btn-sm" onclick="DRC.links(false)">Samee / tus linkiyada</button><button type="button" class="btn btn-light btn-sm" onclick="DRC.links(true)">Dib u samee password-yada</button></div></div>
             <div class="tbl-wrap">
               <table class="dtable"><thead><tr><th>Username</th><th>Role</th><th class="actions">Actions</th></tr></thead>
               <tbody id="hUsersBody"></tbody></table>
@@ -875,13 +879,40 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
               <textarea id="csaiInput" class="form-control" rows="2" placeholder="Qor halkan..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();CSAI.send();}"></textarea>
               <button class="btn btn-primary" id="csaiSend" onclick="CSAI.send()"><i class="bi bi-send-fill"></i></button>
             </div>
-            <div style="font-size:11.5px;color:var(--text-muted);margin-top:.4rem;">CS AI wuxuu arkaa wadarta xogta Bulk Messages oo kaliya (ma arko magacyada iyo lambarada bukaanada).</div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin-top:.4rem;">CS AI wuxuu raadin karaa bukaanada, ballamaha, follow-ups iyo WhatsApp. Xogta aad weydiiso oo kaliya ayaa loo diraa AI-ga (Gemini); fariin ma dirto adigoo aan xaqiijin.</div>
           </div>
         </div>
       </div>
     </div>
 
     <!-- WhatsApp -->
+    <div id="hv-drchat" class="view">
+      <div class="breadcrumb"><a onclick="HOSP.showView('hv-drchat')">Doctor</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <span>Dr. Chat - la hadal bukaanka</span></div>
+      <div class="card">
+        <div class="card-header"><span class="card-title"><i class="bi bi-chat-dots"></i> Dr. Chat <span id="drcWho" style="font-weight:400;font-size:12.5px;color:var(--text-muted)"></span></span>
+          <span id="drcTools" style="display:none;gap:.4rem;align-items:center;flex-wrap:wrap;"><button class="btn btn-light btn-sm" onclick="DRC.addNumber()"><i class="bi bi-plus-lg"></i> Lambar bukaan</button><button class="btn btn-light btn-sm" onclick="DRC.load()">Refresh</button><button class="btn btn-light btn-sm" onclick="DRC.logout()">Ka bax</button></span></div>
+        <div class="card-body" style="padding:0;">
+          <div id="drcLogin" style="display:none;max-width:360px;margin:1.2rem auto;padding:0 1rem;">
+            <p style="font-size:13px;color:var(--text-muted)">Gal adigoo isticmaalaya username-ka dhakhtarka (tusaale <b>dr.harith</b>). Wuxuu ku shaqeeyaa qalab kasta.</p>
+            <input id="drcUser" class="form-control" placeholder="Username (dr.harith)" autocapitalize="none" style="margin-bottom:.5rem"><input id="drcPass" type="password" class="form-control" placeholder="Password" style="margin-bottom:.6rem" onkeydown="if(event.key==='Enter')DRC.login()">
+            <button class="btn btn-success" onclick="DRC.login()">Gal</button><div id="drcLerr" style="color:#b00;font-size:13px;min-height:1.2em;margin-top:.4rem"></div>
+          </div>
+          <div id="drcErr" style="display:none;padding:.5rem .8rem;color:#b00;font-size:13px;"></div>
+          <div id="drcGrid" style="display:none;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));">
+            <div id="drcList" style="max-height:68vh;overflow:auto;border-right:1px solid var(--border);"></div>
+            <div style="display:flex;flex-direction:column;max-height:68vh;">
+              <div id="drcHead" style="padding:.5rem .7rem;border-bottom:1px solid var(--border);min-height:40px;font-size:13px;">Dooro bukaan</div>
+              <div id="drcThread" style="flex:1;overflow:auto;padding:.5rem .7rem;min-height:200px;"></div>
+              <div id="drcBox" style="display:none;padding:.5rem;border-top:1px solid var(--border);">
+                <div style="display:flex;gap:.4rem;"><textarea id="drcText" class="form-control" rows="2" placeholder="Qoraal - toos ayaa WhatsApp-ka bukaanka loogu diraa..."></textarea><button class="btn btn-primary btn-sm" onclick="DRC.send()" title="Dir"><i class="bi bi-send-fill"></i></button></div>
+                <div style="display:flex;gap:.4rem;align-items:center;margin-top:.3rem;flex-wrap:wrap;"><label class="btn btn-light btn-sm" style="margin:0;cursor:pointer;"><i class="bi bi-paperclip"></i> PDF / sawir / cod<input type="file" accept="image/*,audio/*,video/*,application/pdf,.doc,.docx" style="display:none" onchange="DRC.pick(this)"></label><button class="btn btn-light btn-sm" id="drcRec" onclick="DRC.rec()"><i class="bi bi-mic-fill"></i> Duub cod</button><span id="drcFile" style="font-size:12px;color:var(--text-muted)"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div id="hv-wa" class="view">
       <div class="breadcrumb"><a onclick="HOSP.showView('hv-wa')">Cashier</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <span>WhatsApp</span></div>
       <div class="page-wrap">
@@ -898,6 +929,11 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
               <button class="btn btn-primary btn-sm" onclick="WA.saveGw()">Save &amp; connect</button>
               <button class="btn btn-danger btn-sm" id="waLogout" onclick="WA.logout()" style="display:none;">Disconnect WhatsApp</button>
             </div></div>
+            <div id="waKeyBox" style="border:1px solid var(--border,#dee2e6);border-radius:6px;padding:.6rem .8rem;margin-top:.6rem;">
+              <div style="font-weight:600;font-size:13px;margin-bottom:.3rem;">Gemini API key (AI-ga jawaabta iyo codka)</div>
+              <div id="waKeyState" style="font-size:12.5px;margin-bottom:.4rem;"></div>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><input id="waKeyInput" type="password" class="form-control" style="flex:1;min-width:200px;" placeholder="AIza... (aistudio.google.com > Get API key)"><button class="btn btn-primary btn-sm" onclick="WA.saveKey()">Save key</button></div>
+            </div>
             <div id="waGuide" style="background:#f0f7ff;border:1px solid #cfe2ff;border-radius:6px;padding:.6rem .8rem;font-size:12.5px;line-height:1.6;margin-top:.6rem;">
               <b>Sida loo xiro WhatsApp-ka (3 tallaabo):</b><br>
               1. Server-ka ku shaqeysii (start.sh) oo fur <code>http://localhost:3000/app</code> — tab-kan wuu is-xirayaa.<br>
@@ -961,6 +997,23 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
             <div style="font-size:11.5px;color:var(--text-muted);margin:.4rem 0;">Hospital hours used by the bot: Saturday-Thursday 06:30-20:00 (Mogadishu time), Friday closed. If a date is set, the doctor counts as away until that date.</div>
             <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><button class="btn btn-success btn-sm" onclick="WA.saveConfig()">Save</button>
               <button class="btn btn-light btn-sm" onclick="WA.syncRegistry()">Sync patient list to bot</button></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header"><span class="card-title"><i class="bi bi-chat-left-text"></i> Fariimaha Dhakhtarka (bukaan hore ayaa u soo diray)</span><span><button class="btn btn-success btn-sm" onclick="DRC.links(false)">Dr. Chat linkiyada</button> <button class="btn btn-light btn-sm" onclick="WA.loadRelays()">Refresh</button></span></div>
+          <div class="card-body">
+            <div id="waRelays" style="max-height:55vh;overflow:auto;font-size:13px;">Waa la sugayaa...</div>
+            <details style="margin-top:.6rem;"><summary style="cursor:pointer;font-size:12.5px;">WhatsApp-ka dhakhaatiirta (ikhtiyaari: fariinta halkaas ayaa loogu diraa, jawaabtooduna bukaanka ayay u aadaysaa)</summary>
+              <div class="form-grid" style="margin-top:.4rem;">
+                <div class="form-group"><label>Dr. Harith</label><input id="waPhHarith" class="form-control" placeholder="2526XXXXXXXX"></div>
+                <div class="form-group"><label>Dr. Yaxye</label><input id="waPhYaxye" class="form-control" placeholder="2526XXXXXXXX"></div>
+                <div class="form-group"><label>Dr. Hersi</label><input id="waPhHersi" class="form-control" placeholder="2526XXXXXXXX"></div>
+                <div class="form-group"><label>Dr. Sadio</label><input id="waPhSadia" class="form-control" placeholder="2526XXXXXXXX"></div>
+                <div class="form-group"><label>Dr. Saney</label><input id="waPhSaney" class="form-control" placeholder="2526XXXXXXXX"></div>
+              </div>
+              <button class="btn btn-success btn-sm" onclick="WA.saveDoctorPhones()">Save doctor numbers</button>
+            </details>
           </div>
         </div>
 
@@ -7427,6 +7480,7 @@ const HOSP = {
       {v:'hv-bulk',l:'Bulk Messages',roles:['admin','cashier','reception']},
       {v:'hv-csai',l:'CS AI',roles:['admin','cashier','reception']},
       {v:'hv-wa',l:'WhatsApp',roles:['admin','cashier','reception']},
+      {v:'hv-drchat',l:'Dr. Chat',roles:['admin','doctor']},
       {v:'hv-doctor',l:'Doctor Panel',roles:['admin','doctor']},
       {v:'hv-reports',l:'Reports',roles:['admin']},
       {v:'hv-users',l:'Users',roles:['admin']},
@@ -7464,6 +7518,7 @@ const HOSP = {
     if(vid==='hv-bulk')BULK.render();
     if(vid==='hv-csai')CSAI.render();
     if(vid==='hv-wa')WA.render();
+    if(vid==='hv-drchat')DRC.render();
   },
 
   renderAppts(){
@@ -8457,10 +8512,10 @@ Thank you.`;
   },
 
   renderUsers(){
-    $('hUserId').value='';$('hUserName').value='';$('hUserPw').value='';$('hUserRole').value='cashier';
+    $('hUserId').value='';$('hUserName').value='';$('hUserPw').value='';$('hUserRole').value='cashier';if($('hUserDr'))$('hUserDr').value='';
     const users=ls_get(this.K.USERS);
     $('hUsersBody').innerHTML=users.map(u=>`<tr>
-      <td>${u.username}</td><td><span class="badge badge-secondary">${u.role}</span></td>
+      <td>${u.username}</td><td><span class="badge badge-secondary">${u.role}</span>${u.drKey?' · '+u.drKey:''}</td>
       <td class="actions">
         <button class="btn btn-primary btn-sm" onclick="HOSP.editUser('${u.id}')">Edit</button>
         <button class="btn btn-danger btn-sm" onclick="HOSP.deleteUser('${u.id}')">Delete</button>
@@ -8469,21 +8524,21 @@ Thank you.`;
 
   async saveUser(e){
     e.preventDefault();
-    const id=$('hUserId').value,uname=$('hUserName').value.trim(),pw=$('hUserPw').value,role=$('hUserRole').value;
+    const id=$('hUserId').value,uname=$('hUserName').value.trim(),pw=$('hUserPw').value,role=$('hUserRole').value,drKey=$('hUserDr').value;
     if(!uname||(!id&&!pw)){Swal.fire({icon:'warning',title:'Username and password required'});return;}
     const users=ls_get(this.K.USERS);
     if(id){
       const idx=users.findIndex(u=>u.id===id);
-      if(idx!==-1){users[idx].username=uname;users[idx].role=role;if(pw)users[idx].password=await hashPw(pw,'_hosp_');}
+      if(idx!==-1){users[idx].username=uname;users[idx].role=role;users[idx].drKey=drKey;if(pw)users[idx].password=await hashPw(pw,'_hosp_');}
     } else {
       if(users.find(u=>u.username===uname)){Swal.fire({icon:'error',title:'Username exists'});return;}
-      users.push({id:gid('U'),username:uname,password:await hashPw(pw,'_hosp_'),role});
+      users.push({id:gid('U'),username:uname,password:await hashPw(pw,'_hosp_'),role,drKey});
     }
     ls_set(this.K.USERS,users);Swal.fire({icon:'success',title:'Saved',timer:1200});this.renderUsers();
   },
   editUser(id){
     const u=ls_get(this.K.USERS).find(x=>x.id===id);if(!u)return;
-    $('hUserId').value=u.id;$('hUserName').value=u.username;$('hUserPw').value='';$('hUserRole').value=u.role;
+    $('hUserId').value=u.id;$('hUserName').value=u.username;$('hUserPw').value='';$('hUserRole').value=u.role;$('hUserDr').value=u.drKey||'';
   },
   deleteUser(id){
     if(this.cur&&this.cur.id===id){Swal.fire({icon:'warning',title:'Cannot delete logged in user'});return;}
@@ -10614,26 +10669,134 @@ const CSAI = window.CSAI = {
       'Waxaad la shaqaysaa qaybta Bulk Messages, taas oo bukaanada u dirta fariin WhatsApp ah 30 sekan kasta. '+
       'Haddii lagu weydiiyo inaad qorto ama hagaajiso fariinta bukaanka, fariinta buuxda ku qor gudaha [[MESSAGE]] ... [[/MESSAGE]] (ku qor Af-Soomaali, ixtiraam leh, gaaban, adigoo isticmaalaya {name}, {doctor}, {visit_date} haddii ay habboon tahay). '+
       'Haddii user-ku si cad u weydiisto inaad bilowdo, hakiso, sii wado ama joojiso dirista, jawaabta ku dar sadar kaligeed ah: [[ACTION:start]], [[ACTION:pause]], [[ACTION:resume]] ama [[ACTION:stop]]. Ha ku darin ficil haddii aan la weydiin. '+
-      'Ha samayn magacyo ama lambaro bukaan; xogta hoose waa wadarta kaliya.\n\nXOGTA HADDA:\n'+this.context();
+      'Waxaad awood u leedahay inaad eegto xogta system-ka (bukaanada, ballamaha, follow-ups, WhatsApp) adigoo isticmaalaya TOOLS. Marka aad u baahan tahay xog, soo celi kaliya sadar(yo) tool ah, mid kasta sadar gooni ah, oo sug natiijada; ha qiyaasin xog. Tools: '+
+      '[[TOOL:find|magac ama lambar]] raadi bukaan; [[TOOL:visits|magac ama lambar]] taariikhda booqashooyinka bukaan; '+
+      '[[TOOL:day|today ama YYYY-MM-DD ama YYYY-MM|dhakhtar (ikhtiyaari)]] ballamaha maalin/bil; [[TOOL:range|laga bilaabo|ilaa|dhakhtar (ikhtiyaari)]] ballamaha muddo; '+
+      '[[TOOL:followups]] ama [[TOOL:followups|list]] follow-ups sugaya; [[TOOL:bulk]] xaaladda Bulk; [[TOOL:wa]] xaaladda WhatsApp; [[TOOL:inbox]] ama [[TOOL:inbox|all]] fariimaha WhatsApp ee bukaanada. '+
+      'Haddii aad rabto inaad fariin u dirto bukaan, ku dar [[SEND:lambarka|fariinta buuxda]] (user-ku ayaa xaqiijinaya ka hor intaan la dirin; ha dirin fariin aan la weydiin). Si aad u furto qayb: [[OPEN:appointments]], [[OPEN:bulk]], [[OPEN:wa]] ama [[OPEN:dashboard]]. '+
+      'Marka aad xog bukaan u soo bandhigto, kooban u soo bandhig; ha ku soo daadin dhammaan liiska haddii aan la weydiin. Ha samayn xog aan tool-ka ka imaan. Haddii su\'aashu tahay caafimaad guud ama wax kale oo aan xogta system-ka ahayn, si toos ah uga jawaab aqoontaada.\n\n'+
+      'XOGTA ISBITAALKA: Baxnaano Hospital, Muqdisho (Isgoyska Zoobe, kasoo horjeedka Xayaat Market). Saacadaha: Sabti-Khamiis 06:30-20:00, Jimce xiran. Customer Care/Cashier maalin kasta 06:30-19:00 (0613490055). Dhakhaatiirta: Dr. Harith (neerfaha), Dr. Yaxye (carruurta), Dr. Hersi (cudurrada gudaha), Dr. Sadio (speech therapy), Dr. Mohamed Saney (ENT). Online Consultation $20. Ha sheegin qiimo kale; Cashier ayaa xaqiijiya.\n\nXOGTA HADDA:\n'+this.context();
   },
-  async call(messages,system){
-    const res=await fetch(this.URL+'/functions/v1/ai-partner',{method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.KEY,'apikey':this.KEY},
-      body:JSON.stringify({messages:this.sanitize(messages),system})});
-    let data=null;try{data=await res.json();}catch(e){}
-    if(!res.ok||!data||data.error){
-      const e=data&&data.error;throw new Error((typeof e==='string'?e:(e&&e.message))||('HTTP '+res.status));
-    }
-    const parts=((data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)||[]);
-    const text=parts.filter(p=>typeof p.text==='string').map(p=>p.text).join('\n').trim();
-    if(!text)throw new Error('Jawaab madhan');
+  parse(data){
+    if(!data)return '';
+    if(data.error)throw new Error(typeof data.error==='string'?data.error:(data.error.message||'AI error'));
+    const parts=((data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)||[]);   // Gemini
+    let text=parts.filter(p=>typeof p.text==='string').map(p=>p.text).join('\n').trim();
+    if(!text&&Array.isArray(data.content))text=data.content.filter(p=>p&&p.type==='text'&&p.text).map(p=>p.text).join('\n').trim();   // Claude format
     return text;
+  },
+  async _post(url,headers,body,ms){
+    const ctl=new AbortController();const tm=setTimeout(()=>ctl.abort(),ms||25000);
+    let res;
+    try{res=await fetch(url,{method:'POST',signal:ctl.signal,headers:Object.assign({'Content-Type':'application/json'},headers),body:JSON.stringify(body)});}
+    catch(e){clearTimeout(tm);throw new Error(e.name==='AbortError'?'network':(e.message||'network'));}
+    clearTimeout(tm);
+    let data=null;try{data=await res.json();}catch(e){}
+    if(!res.ok){const e=data&&data.error;throw new Error((typeof e==='string'?e:(e&&e.message))||('HTTP '+res.status));}
+    const text=this.parse(data);if(!text)throw new Error('Jawaab madhan');return text;
+  },
+  // tries: 1) CS AI edge function  2) your WhatsApp gateway /ai (Gemini)  3) Baxnaano project ai-partner
+  async call(messages,system){
+    const body={messages:this.sanitize(messages),system};
+    const tries=[];
+    // 1) your own gateway (Gemini, newest model)  2) CS AI edge function  3) Baxnaano project ai-partner
+    try{const g=WA.cfg();if(g.url)tries.push(()=>this._post(g.url+'/ai',{Authorization:'Bearer '+(g.token||'local')},body));}catch(e){}
+    tries.push(()=>this._post(this.URL+'/functions/v1/ai-partner',{Authorization:'Bearer '+this.KEY,apikey:this.KEY},body));
+    tries.push(()=>this._post('https://tpmsyyhrnciqqcxlfamr.supabase.co/functions/v1/ai-partner',{Authorization:'Bearer sb_publishable_exzgU4lfqJpzI89f8Jjl7w_5vT2d4NR',apikey:'sb_publishable_exzgU4lfqJpzI89f8Jjl7w_5vT2d4NR'},body));
+    const errs=[];
+    for(const t of tries){try{return await t();}catch(e){errs.push(e.message==='Failed to fetch'?'network':e.message);}}
+    if(errs.every(e=>e==='network'))throw new Error('Internet-ka ama server-ka AI lama gaari karo. Hubi internet-ka; haddii uu sii socdo, server-ka CS AI (Supabase) waa la joojiyay.');
+    throw new Error(errs.filter(e=>e!=='network')[0]||errs[0]);
+  },
+  // ───────── CS AI tools: it can look into the hospital data and act ─────────
+  _today(){return new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Mogadishu'});},
+  _day(a){return String(a.apptDate||'').slice(0,10);},
+  _docKey(d){d=String(d||'').toLowerCase();return /harith/.test(d)?'harith':/yah|yax/.test(d)?'yaxye':/sadi/.test(d)?'sadia':/hersi/.test(d)?'hersi':/saney/.test(d)?'saney':d;},
+  _docMatch(a,q){if(!q)return true;q=q.toLowerCase();const k=this._docKey(a.doctor);return k.includes(q)||q.includes(k)||String(a.doctor||'').toLowerCase().includes(q);},
+  _date(q){const t=this._today();q=(q||'today').toLowerCase().trim();if(q==='today'||q==='maanta')return t;if(q==='yesterday'||q==='shalay'){const d=new Date(t+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);}return q;},
+  _fmtA(a){return this._day(a)+' · '+(a.patientName||'?')+' · '+(a.mobile||'-')+' · '+(this._docKey(a.doctor))+' · $'+(a.paid||a.amount||0)+' · '+(a.apptType||'');},
+  _norm(x){return String(x||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();},
+  _digits(x){return String(x||'').replace(/\D/g,'');},
+  _matchPatient(q){
+    const nq=this._norm(q),dq=this._digits(q);
+    const apps=ls_get(HOSP.K.APPTS)||[];
+    const map={};
+    apps.forEach(a=>{
+      const key=(a.patientId||this._digits(a.mobile)||this._norm(a.patientName));
+      const okName=nq&&nq.split(' ').filter(Boolean).every(w=>this._norm(a.patientName).includes(w));
+      const okPhone=dq.length>=6&&this._digits(a.mobile).endsWith(dq.slice(-9));
+      if(!okName&&!okPhone)return;
+      (map[key]=map[key]||{name:a.patientName,phone:a.mobile,age:a.patientAge,sex:a.sex,visits:[]}).visits.push(a);
+    });
+    return Object.values(map);
+  },
+  async tool(name,args){
+    const A=ls_get(HOSP.K.APPTS)||[];
+    if(name==='find'){
+      const r=this._matchPatient(args[0]||'');
+      if(!r.length)return 'Lama helin bukaan u dhigma "'+(args[0]||'')+'".';
+      return r.slice(0,8).map(p=>{const v=p.visits.sort((x,y)=>this._day(y).localeCompare(this._day(x)));return p.name+' · '+p.phone+' · '+(p.age||'?')+'y '+(p.sex||'')+' · '+v.length+' booqasho · ugu dambeyn '+this._day(v[0])+' ('+this._docKey(v[0].doctor)+')';}).join('\n')+(r.length>8?'\n(+'+(r.length-8)+' kale)':'');
+    }
+    if(name==='visits'){
+      const r=this._matchPatient(args[0]||'');
+      if(!r.length)return 'Lama helin bukaan.';
+      const p=r[0];const v=p.visits.sort((x,y)=>this._day(y).localeCompare(this._day(x)));
+      return p.name+' · '+p.phone+' · '+v.length+' booqasho'+(r.length>1?' (qof kale oo la mid ah: '+(r.length-1)+')':'')+'\n'+v.slice(0,15).map(a=>this._fmtA(a)).join('\n');
+    }
+    if(name==='day'){
+      const d=this._date(args[0]);const doc=args[1]||'';
+      const L=A.filter(a=>this._day(a).startsWith(d)&&this._docMatch(a,doc));
+      if(!L.length)return 'Ma jiraan ballamo '+d+(doc?' ('+doc+')':'')+'.';
+      const by={};L.forEach(a=>{by[this._docKey(a.doctor)]=(by[this._docKey(a.doctor)]||0)+1;});
+      const real=L.filter(a=>a.cashier!=='import');const rev=real.reduce((s,a)=>s+(Number(a.paid)||0),0);const revTxt=real.length?(' · dakhli $'+rev+(real.length<L.length?' ('+real.length+' ballan oo dhab ah)':'')):' · dakhli: lama hayo (xog la soo dhoofiyay)';
+      const nw=L.filter(a=>/new/i.test(a.apptType||'')).length;
+      return d+': '+L.length+' ballan · cusub '+nw+' · dib-u-soo-laabasho '+(L.length-nw)+revTxt+' · '+Object.entries(by).map(e=>e[0]+' '+e[1]).join(', ')+(L.length<=15?'\n'+L.map(a=>this._fmtA(a)).join('\n'):'');
+    }
+    if(name==='range'){
+      const f=this._date(args[0]),t=this._date(args[1]||args[0]);const doc=args[2]||'';
+      const L=A.filter(a=>{const x=this._day(a);return x>=f&&x<=t+'~'&&this._docMatch(a,doc);});
+      const byDay={};L.forEach(a=>{byDay[this._day(a)]=(byDay[this._day(a)]||0)+1;});
+      const days=Object.keys(byDay).sort();
+      const real=L.filter(a=>a.cashier!=='import');const rev=real.reduce((s,a)=>s+(Number(a.paid)||0),0);
+      return f+' → '+t+': '+L.length+' ballan · '+(real.length?('dakhli $'+rev+' ('+real.length+' ballan oo dhab ah)'):'dakhli: lama hayo (xog la soo dhoofiyay)')+' · maalmo '+days.length+'\n'+days.slice(-31).map(d=>d+': '+byDay[d]).join(', ');
+    }
+    if(name==='followups'){
+      const F=ls_get(HOSP.K.FOLLOWUPS)||[];const t=this._today();
+      const due=F.filter(f=>f.status==='pending'&&String(f.dueDate||'').slice(0,10)<=t);
+      return 'Follow-ups sugaya (waqtigoodii gaaray): '+due.length+' / '+F.filter(f=>f.status==='pending').length+' pending.'+(args[0]==='list'?'\n'+due.slice(0,15).map(f=>f.patientName+' · '+f.phone+' · '+String(f.dueDate).slice(0,10)).join('\n'):'');
+    }
+    if(name==='bulk')return this.context();
+    if(name==='wa'){
+      const s=await WA.api('/status');
+      return 'WhatsApp: '+s.state+(s.me?(' +'+s.me):'')+' · maanta la diray '+s.sentToday+'/'+s.dailyCap+' · auto-reply '+(s.autoReply?'ON':'OFF')+' · u baahan qof '+s.needsHuman+' · safka: '+(s.queue&&s.queue.status)+' '+(s.queue?(s.queue.sent+'/'+s.queue.total):'');
+    }
+    if(name==='inbox'){
+      const m=await WA.api('/inbox?limit=60');
+      const L=m.filter(x=>x.dir==='in'&&(args[0]==='all'||(x.needsHuman&&!x.handled))).slice(-10);
+      return L.length?L.map(x=>(x.name||x.number)+' ('+x.number+'): '+String(x.text).slice(0,100)).join('\n'):'Ma jiraan fariimo u baahan qof.';
+    }
+    return 'Tool aan la aqoon: '+name;
+  },
+  async run(){
+    let raw='';
+    for(let i=0;i<5;i++){
+      raw=await this.call(this.history,this.systemPrompt());
+      const calls=[...raw.matchAll(/\[\[TOOL:([a-z_]+)(?:\|([^\]]*))?\]\]/g)];
+      if(!calls.length)return raw;
+      this.history.push({role:'assistant',content:raw});
+      const outs=[];
+      for(const c of calls){let r;try{r=await this.tool(c[1],(c[2]||'').split('|').map(x=>x.trim()));}catch(e){r='Khalad: '+(e.message||e);}outs.push('['+c[1]+'] '+r);}
+      this.history.push({role:'user',content:'[NATIJADA TOOLS - ku jawaab su\'aashii hore adigoo adeegsanaya; ha ku celin tool-ka haddii aad hore u heshay xogta]\n'+outs.join('\n').slice(0,6000)});
+    }
+    return raw.replace(/\[\[TOOL:[^\]]*\]\]/g,'').trim()||'Ma helin jawaab.';
   },
   extract(text){
     const m=text.match(/\[\[MESSAGE\]\]([\s\S]*?)\[\[\/MESSAGE\]\]/);
     const actions=[...text.matchAll(/\[\[ACTION:(start|pause|resume|stop)\]\]/g)].map(x=>x[1]);
-    const clean=text.replace(/\[\[ACTION:[a-z]+\]\]/g,'').replace(/\[\[\/?MESSAGE\]\]/g,'').trim();
-    return {message:m?m[1].trim():null,actions,clean};
+    const clean=text.replace(/\[\[TOOL:[^\]]*\]\]/g,'').replace(/\[\[SEND:[^\]]*\]\]/g,'').replace(/\[\[OPEN:[a-z]+\]\]/g,'').replace(/\[\[ACTION:[a-z]+\]\]/g,'').replace(/\[\[\/?MESSAGE\]\]/g,'').trim();
+    const sends=[...text.matchAll(/\[\[SEND:([^|\]]+)\|([^\]]+)\]\]/g)].map(x=>({to:x[1].trim(),text:x[2].trim()}));
+    const opens=[...text.matchAll(/\[\[OPEN:([a-z]+)\]\]/g)].map(x=>x[1]);
+    return {message:m?m[1].trim():null,actions,clean,sends,opens};
   },
   addBubble(role,html){
     const log=$('csaiLog');
@@ -10643,18 +10806,19 @@ const CSAI = window.CSAI = {
     log.appendChild(d);log.scrollTop=log.scrollHeight;return d;
   },
   render(){
-    if(!this._r){this._r=true;this.addBubble('ai','Asc! Waxaan ahay CS AI. Waan ku caawin karaa inaan qoro ama hagaajiyo fariinta bukaanada, kuuna sheego inta hadhay, ama aan bilaabo/hakiyo dirista. Waxaan arkaa kaliya wadarta xogta, ma arko magacyada iyo lambarada bukaanada.');}
+    if(!this._r){this._r=true;this.addBubble('ai','Asc! Waxaan ahay CS AI. Waxaan kaa caawin karaa: raadinta bukaan (magac/lambar) iyo booqashooyinkiisa, ballamaha maalinta/bisha ama dhakhtar, follow-ups, xaaladda WhatsApp iyo fariimaha, qorista fariimaha bukaanada, iyo bilaabida/hakinta dirista. U sheeg waxaad rabto. Tusaale: "imisa bukaan ayaa maanta Dr Harith arkay?" ama "raadi Nasra Ahmed".');}
   },
   chip(t){$('csaiInput').value=t;this.send();},
   async send(){
     if(this.busy)return;
     const inp=$('csaiInput');const q=inp.value.trim();if(!q)return;
     inp.value='';this.addBubble('user',this.esc(q));
-    this.history.push({role:'user',content:q});if(this.history.length>20)this.history=this.history.slice(-20);
+    this.history.push({role:'user',content:q});if(this.history.length>30)this.history=this.history.slice(-30);
+    const mark=this.history.length;
     this.busy=true;$('csaiSend').disabled=true;
     const typing=this.addBubble('ai','...');
     try{
-      const raw=await this.call(this.history,this.systemPrompt());
+      const raw=await this.run();
       typing.remove();
       this.history.push({role:'assistant',content:raw});
       const ex=this.extract(raw);
@@ -10666,8 +10830,20 @@ const CSAI = window.CSAI = {
         d.firstChild.appendChild(document.createElement('br'));d.firstChild.appendChild(b);
       }
       ex.actions.forEach(a=>this.doAction(a));
+      ex.opens.forEach(v=>{try{HOSP.showView('hv-'+({appointments:'appointments',dashboard:'dashboard',bulk:'bulk',whatsapp:'wa',wa:'wa',csai:'csai'}[v]||v));}catch(e){}});
+      ex.sends.slice(0,5).forEach(sd=>{
+        const b=document.createElement('button');b.className='btn btn-primary btn-sm';b.style.cssText='margin-top:.4rem;display:block;';
+        b.innerHTML='<i class="bi bi-whatsapp"></i> Dir WhatsApp → '+this.esc(sd.to);
+        b.onclick=async()=>{
+          const r=await Swal.fire({title:'Dir fariintan?',html:'<b>'+this.esc(sd.to)+'</b><br><div style="text-align:left;white-space:pre-wrap;margin-top:.5rem;">'+this.esc(sd.text)+'</div>',showCancelButton:true,confirmButtonText:'Dir'});
+          if(!r.isConfirmed)return;
+          try{await WA.api('/send','POST',{to:sd.to,message:sd.text});b.disabled=true;b.textContent='✔ La diray';}
+          catch(e){Swal.fire({icon:'error',title:'Lama dirin',text:e.message});}
+        };
+        d.firstChild.appendChild(b);
+      });
     }catch(e){
-      typing.remove();this.history.pop();
+      typing.remove();this.history.length=Math.max(0,mark-1);
       this.addBubble('ai','Khalad: '+this.esc(e.message||e));
     }finally{this.busy=false;$('csaiSend').disabled=false;}
   },
@@ -10702,6 +10878,108 @@ const CSAI = window.CSAI = {
 // ═══════════════════════════════════════════
 // WHATSAPP MODULE (talks to the Baxnaano WhatsApp Gateway: QR link, inbox, AI auto-reply, queue)
 // ═══════════════════════════════════════════
+const DRC = window.DRC = {
+  SB:'https://tpmsyyhrnciqqcxlfamr.supabase.co',KEY:'sb_publishable_exzgU4lfqJpzI89f8Jjl7w_5vT2d4NR',
+  NM:{harith:'Dr. Harith',yaxye:'Dr. Yaxye',sadia:'Dr. Sadio',hersi:'Dr. Hersi',saney:'Dr. Saney'},
+  _tok:null,_key:'',_sel:null,_file:null,_rec:null,_pats:[],_thr:[],_sending:false,
+  esc(x){return String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));},
+  _ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){}return null;},
+  async rpc(n,b){
+    const r=await fetch(this.SB+'/rest/v1/rpc/'+n,{method:'POST',headers:{apikey:this.KEY,Authorization:'Bearer '+this.KEY,'Content-Type':'application/json'},body:JSON.stringify(b)});
+    const j=await r.json().catch(()=>null);
+    if(!r.ok)throw new Error((j&&j.message)||'HTTP '+r.status);
+    if(j&&j.error==='auth'){this._out();throw new Error('Soo gal mar kale');}
+    if(j&&j.error)throw new Error(j.error);
+    return j;
+  },
+  extra(){try{return JSON.parse(this._ls('dx_'+this._key)||'[]');}catch(e){return [];}},
+  render(){
+    this._tok=this._ls('dr_token');this._key=this._ls('dr_key')||'';
+    if(!this._tok){this._out();return;}
+    this._in();this.load();
+    if(!this._t)this._t=setInterval(()=>{if(!$('hv-drchat').classList.contains('active')){clearInterval(this._t);this._t=null;return;}if(!this._busy())this.load(true);},4000);
+  },
+  _out(){this._tok=null;this._ls('dr_token',null);const l=$('drcLogin');if(!l)return;l.style.display='';$('drcGrid').style.display='none';$('drcTools').style.display='none';$('drcWho').textContent='';},
+  _in(){$('drcLogin').style.display='none';$('drcGrid').style.display='grid';$('drcTools').style.display='flex';$('drcWho').textContent='· '+(this.NM[this._key]||'');},
+  async login(){
+    try{const r=await this.rpc('dr_login',{p_user:$('drcUser').value,p_pass:$('drcPass').value});
+      this._tok=r.token;this._key=r.key;this._ls('dr_token',r.token);this._ls('dr_key',r.key);$('drcPass').value='';$('drcLerr').textContent='';this.render();}
+    catch(e){$('drcLerr').textContent=e.message;}
+  },
+  async logout(){try{await this.rpc('dr_logout',{p_token:this._tok});}catch(e){}this._ls('dr_key',null);this._key='';this._out();},
+  _busy(){return this._rec||this._file||this._sending||($('drcText')&&$('drcText').value.trim());},
+  async load(quiet){
+    try{this._pats=await this.rpc('dr_patients',{p_token:this._tok});$('drcErr').style.display='none';
+      if(this._sel)this._thr=await this.rpc('dr_thread',{p_token:this._tok,p_number:this._sel});}
+    catch(e){if(!quiet&&this._tok){$('drcErr').textContent=e.message;$('drcErr').style.display='';}return;}
+    this.draw();
+  },
+  patients(){const m={};(this._pats||[]).forEach(p=>{m[p.number]=p;});this.extra().forEach(n=>{if(!m[n])m[n]={number:n,name:'',open:false};});return Object.values(m);},
+  draw(){
+    const L=this.patients();
+    $('drcList').innerHTML=L.length?L.map(p=>`<div onclick="DRC.open('${p.number}')" style="padding:.5rem .7rem;border-bottom:1px solid var(--border);cursor:pointer;${this._sel===p.number?'background:#eef4ff;':''}"><div style="display:flex;justify-content:space-between;gap:.4rem;"><b>${this.esc(p.name||p.number)}</b>${p.open?'<span style="background:#e67e22;color:#fff;border-radius:10px;padding:0 .45rem;font-size:11px;">sugaya</span>':''}</div><div style="font-size:11.5px;color:var(--text-muted)">${this.esc(p.number)}${p.last?' · '+this.esc(p.last):''}</div></div>`).join(''):'<div style="padding:.8rem;color:var(--text-muted);font-size:13px;">Weli fariin bukaan laguma gudbin. Riix "Lambar bukaan" si aad ugu bilowdo.</div>';
+    if(this._sel)this.drawThread();
+  },
+  async open(n){this._sel=n;this._file=null;$('drcFile').textContent='';this._thr=[];this.draw();try{this._thr=await this.rpc('dr_thread',{p_token:this._tok,p_number:n});}catch(e){}this._justSent=true;this.draw();},
+  media(m){if(!m.file_url)return '';const mt=m.file_mime||'',u=this.esc(m.file_url);
+    if(/^image\//.test(mt))return `<a href="${u}" target="_blank"><img src="${u}" style="max-width:100%;border-radius:8px;display:block;margin-top:.3rem"></a>`;
+    if(/^audio\//.test(mt))return `<audio controls src="${u}" style="width:100%;margin-top:.3rem"></audio>`;
+    return `<a href="${u}" target="_blank" style="display:inline-block;margin-top:.3rem">📄 ${this.esc(m.file_name||'fayl')}</a>`;},
+  drawThread(){
+    const n=this._sel,p=this.patients().find(x=>x.number===n)||{number:n};
+    $('drcHead').innerHTML='<b>'+this.esc(p.name||n)+'</b> · '+this.esc(n)+(p.open&&p.relay?'<div style="margin-top:.3rem;background:#fff8e6;border-radius:6px;padding:.3rem .5rem;white-space:pre-wrap;">📩 '+this.esc(p.relay)+'</div>':'');
+    $('drcBox').style.display='';
+    const box=$('drcThread');const atEnd=box.scrollTop+box.clientHeight>=box.scrollHeight-40;
+    box.innerHTML=(this._thr||[]).map(m=>{const mine=m.dir!=='in';const who=m.dir==='in'?'Bukaan':m.dir==='out'?'Dr':m.dir==='bulk'?'Isbitaal':'🤖 Bot';return `<div style="display:flex;justify-content:${mine?'flex-end':'flex-start'};margin:.25rem 0;"><div style="max-width:82%;background:${m.dir==='out'?'#d9f2d9':mine?'#eee':'#fff'};border:1px solid var(--border);border-radius:10px;padding:.35rem .55rem;white-space:pre-wrap;font-size:13px;word-break:break-word;"><div style="font-size:10.5px;color:var(--text-muted)">${who} · ${new Date(m.at).toLocaleString()}${m.dir==='out'&&m.sent===false?' · ⏳ la dirayo':''}</div>${this.esc(m.text||'')}${this.media(m)}</div></div>`;}).join('')||'<div style="color:var(--text-muted)">Fariin ma jirto.</div>';
+    if(atEnd||this._justSent){box.scrollTop=box.scrollHeight;this._justSent=false;}
+  },
+  addNumber(){
+    Swal.fire({title:'Lambarka bukaanka',input:'text',inputPlaceholder:'2526XXXXXXXX ama 06XXXXXXXX',showCancelButton:true}).then(r=>{
+      if(!r.isConfirmed)return;const n=BULK.waPhone(r.value||'');if(!n){Swal.fire({icon:'warning',title:'Lambar khaldan'});return;}
+      const a=this.extra();if(!a.includes(n)){a.push(n);this._ls('dx_'+this._key,JSON.stringify(a));}this.open(n);
+    });
+  },
+  _b64(blob){return WA._b64(blob);},
+  pick(inp){const f=inp.files&&inp.files[0];if(!f)return;if(f.size>15*1024*1024){Swal.fire({icon:'warning',title:'Faylku aad buu u weyn yahay (ugu badnaan 15MB)'});inp.value='';return;}this._file=f;$('drcFile').textContent='📎 '+f.name;inp.value='';},
+  async rec(){
+    const btn=$('drcRec');
+    if(this._rec){this._rec.stop();return;}
+    try{
+      const st=await navigator.mediaDevices.getUserMedia({audio:true});const mr=new MediaRecorder(st);const ch=[];
+      mr.ondataavailable=e=>{if(e.data.size)ch.push(e.data);};
+      mr.onstop=()=>{st.getTracks().forEach(t=>t.stop());this._rec=null;btn.innerHTML='<i class="bi bi-mic-fill"></i> Duub cod';btn.classList.remove('btn-danger');
+        const bl=new Blob(ch,{type:mr.mimeType||'audio/webm'});this._file=new File([bl],'cod.webm',{type:bl.type||'audio/webm'});$('drcFile').textContent='🎤 cod diyaar ah - riix Dir';};
+      this._rec=mr;mr.start();btn.innerHTML='<i class="bi bi-stop-fill"></i> Jooji';btn.classList.add('btn-danger');
+    }catch(e){Swal.fire({icon:'error',title:'Makarafoonka lama furi karo',text:e.message});}
+  },
+  async upload(f){
+    const rnd=Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const p=rnd+'/'+f.name.replace(/[^a-zA-Z0-9._-]+/g,'_').slice(-60);
+    const r=await fetch(this.SB+'/storage/v1/object/dr-files/'+p,{method:'POST',headers:{apikey:this.KEY,Authorization:'Bearer '+this.KEY,'Content-Type':f.type||'application/octet-stream'},body:f});
+    if(!r.ok)throw new Error('Faylka lama geliyay (HTTP '+r.status+')');
+    return this.SB+'/storage/v1/object/public/dr-files/'+p;
+  },
+  async send(){
+    const n=this._sel;if(!n||this._sending)return;const msg=($('drcText').value||'').trim();const f=this._file;if(!msg&&!f)return;
+    this._sending=true;
+    try{
+      let url=null,mime=null,name=null;if(f){url=await this.upload(f);mime=f.type||'application/octet-stream';name=f.name;}
+      await this.rpc('dr_send',{p_token:this._tok,p_number:n,p_text:msg,p_url:url,p_mime:mime,p_name:name});
+      $('drcText').value='';this._file=null;$('drcFile').textContent='';this._justSent=true;
+      const a=this.extra();if(!a.includes(n)&&!(this._pats||[]).some(p=>p.number===n)){a.push(n);this._ls('dx_'+this._key,JSON.stringify(a));}
+      this._sending=false;await this.load(true);
+    }catch(e){this._sending=false;Swal.fire({icon:'error',title:'Lama diri karo',text:e.message});}
+  },
+  async links(reset){
+    if(reset){const c=await Swal.fire({icon:'warning',title:'Password-yada hore waa la beddelayaa',text:'Dhakhaatiirta waa inaad u dirtaa kuwa cusub.',showCancelButton:true});if(!c.isConfirmed)return;}
+    let r;try{r=await WA.api('/dr-admin/create','POST',{reset:!!reset});}catch(e){Swal.fire({icon:'error',title:'Lama sameyn karo',text:e.message});return;}
+    const page=r.pageUrl||'https://baxnaanohospital.github.io/BAXNAANO/dr.html';
+    const rows=r.doctors.map(d=>{const msg='Asc '+d.name+', halkan ku gal si aad ula hadasho bukaanadaada: '+page+'\nUsername: '+d.user+(d.pass?'\nPassword: '+d.pass:'');
+      return `<tr><td style="padding:.3rem .4rem"><b>${this.esc(d.name)}</b></td><td style="padding:.3rem .4rem;text-align:left">Username: <b>${this.esc(d.user)}</b>${d.pass?' · Password: <b>'+this.esc(d.pass)+'</b>':' · <span style="color:#888">password hore ayaa jira</span>'}</td><td style="padding:.3rem .4rem">${d.pass?`<a href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank">Dir</a>`:''}</td></tr>`;}).join('');
+    Swal.fire({title:'Dr. Chat - galitaanka dhakhaatiirta',width:760,html:'<div style="text-align:left;font-size:13px;margin-bottom:.5rem">Link-ga dhakhaatiirta oo dhan: <b><a href="'+this.esc(page)+'" target="_blank">'+this.esc(page)+'</a></b><br><span style="color:#666">Fayl-ka <b>dr.html</b> ku rid GitHub repo-gaaga (BAXNAANO) si link-gu u shaqeeyo. Wuxuu ku shaqeeyaa taleefan kasta, ma u baahna Termux ama tunnel.</span></div><table style="width:100%;font-size:13px">'+rows+'</table><div style="font-size:12px;color:#666;margin-top:.5rem;text-align:left">Passwords-ka mar keliya ayaa la tusayaa. Dhakhtarku wuxuu arkaa bukaanadiisa oo keliya.</div>'});
+  },
+};
+
 const WA = window.WA = {
   esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));},
   cfg(){
@@ -10730,15 +11008,18 @@ const WA = window.WA = {
     const c=this.cfg();$('waUrl').value=c.url;$('waToken').value=c.token;
     if(window.__GW){$('waGwFields').style.display='none';$('waAuto').style.display='';}
     if(!this._timer)this._timer=setInterval(()=>{if(!$('hv-wa').classList.contains('active')){clearInterval(this._timer);this._timer=null;return;}this.poll();},3000);
-    this.poll();this.loadConfig();this.loadInbox();
+    this.poll();this.loadConfig();this.loadInbox();this.loadRelays();this.autoSyncPatients();
+    if(!this._rt)this._rt=setInterval(()=>{if($('hv-wa').classList.contains('active'))this.loadRelays();},8000);
   },
   async poll(){
     const box=$('waState');
     try{
       const s=await this.api('/status');
+      this._public=s.publicUrl||'';
       const label={open:'Connected',qr:'Waiting for scan',connecting:'Connecting...',closed:'Disconnected'}[s.state]||s.state;
       const col=s.state==='open'?'badge-success':s.state==='qr'?'badge-warning':'badge-danger';
       box.innerHTML=`<span class="badge ${col}">${label}</span> ${s.me?('<b>+'+this.esc(s.me)+'</b>'):''} <span style="color:var(--text-muted);font-size:12px;">Today: ${s.sentToday}/${s.dailyCap} · Opt-outs: ${s.optouts} · Needs a human: ${s.needsHuman}</span>`;
+      $('waKeyState').innerHTML=s.geminiSet?'<span style="color:var(--success)">✔ Gemini key waa jiraa</span>':'<span style="color:#b45309">⚠ Gemini key ma jiro — AI-ga ma jawaabi karo. Geli hoos.</span>';
       $('waQrBox').style.display=s.state==='open'?'none':'';
       $('waLogout').style.display=s.state==='open'?'':'none';
       if(s.state!=='open'){const q=await this.api('/qr');$('waQrImg').innerHTML=q.qr?`<img src="${q.qr}" style="width:240px;height:240px;">`:`<span style="color:var(--text-muted);">${q.state==='connecting'?'Preparing QR...':'No QR yet'}</span>`;if(q.pairCode)$('waPairCode').textContent=q.pairCode;}
@@ -10774,9 +11055,16 @@ const WA = window.WA = {
         $('waKnowledge').value=c.knowledge||'';$('waRules').value=c.extraRules||'';
         $('waHandoff').value=(c.handoffKeywords||[]).join(', ');
         $('waHStatus').value=c.harithStatus||'available';$('waHUntil').value=c.harithLeaveUntil||'';$('waYStatus').value=c.yaxyeStatus||'available';$('waYUntil').value=c.yaxyeLeaveUntil||'';
+        const dp=c.doctorPhones||{};$('waPhHarith').value=dp.harith||'';$('waPhYaxye').value=dp.yaxye||'';$('waPhHersi').value=dp.hersi||'';$('waPhSadia').value=dp.sadia||'';$('waPhSaney').value=dp.saney||'';
         $('waMaxReplies').value=c.maxRepliesPerContactPerDay;$('waDailyCap').value=c.dailyCap;$('waJitter').value=c.jitterSec;
       }
     }catch(e){}
+  },
+  async saveKey(){
+    const k=$('waKeyInput').value.trim();
+    if(k.length<20){Swal.fire({icon:'warning',title:'Geli furaha oo dhan'});return;}
+    try{await this.api('/config','POST',{geminiKey:k});$('waKeyInput').value='';Swal.fire({icon:'success',title:'Key waa la kaydiyay',timer:1200,showConfirmButton:false});this.poll();}
+    catch(e){Swal.fire({icon:'error',title:'Save failed',text:e.message});}
   },
   async saveConfig(){
     try{
@@ -10784,10 +11072,77 @@ const WA = window.WA = {
         autoReply:$('waAutoState').checked,knowledge:$('waKnowledge').value,extraRules:$('waRules').value,
         handoffKeywords:$('waHandoff').value.split(',').map(x=>x.trim()).filter(Boolean),
         harithStatus:$('waHStatus').value,harithLeaveUntil:$('waHUntil').value,yaxyeStatus:$('waYStatus').value,yaxyeLeaveUntil:$('waYUntil').value,
-        maxRepliesPerContactPerDay:parseInt($('waMaxReplies').value,10)||15,
+        maxRepliesPerContactPerDay:parseInt($('waMaxReplies').value,10)||60,
         dailyCap:parseInt($('waDailyCap').value,10)||1000,jitterSec:parseInt($('waJitter').value,10)||0});
       Swal.fire({icon:'success',title:'Saved',timer:1000,showConfirmButton:false});
     }catch(e){Swal.fire({icon:'error',title:'Save failed',text:e.message});}
+  },
+  async loadRelays(){
+    try{this._relays=await this.api('/relays');}catch(e){const b=$('waRelays');if(b)b.textContent='Lama soo qaadi karo: '+e.message;return;}
+    const box=$('waRelays');if(!box)return;
+    if(this._rec||Object.keys(this._files).length||[...box.querySelectorAll('textarea')].some(t=>t.value.trim()))return;   // don't wipe what the doctor is typing
+    const L=this._relays||[];
+    if(!L.length){box.innerHTML='<div style="color:var(--text-muted)">Weli fariin dhakhtar looma gudbin.</div>';return;}
+    const nm={harith:'Dr. Harith',yaxye:'Dr. Yaxye',sadia:'Dr. Sadio',hersi:'Dr. Hersi',saney:'Dr. Saney'};
+    box.innerHTML=L.map(r=>`<div style="border:1px solid var(--border);border-radius:8px;padding:.5rem .6rem;margin-bottom:.5rem;${r.status==='open'?'background:#fff8e6;':''}">
+      <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;"><b>${this.esc(r.name||'?')} · ${this.esc(r.number)}</b><span style="font-size:11.5px;color:var(--text-muted)">${this.esc(nm[r.doctor]||r.doctor)} · ${new Date(r.at).toLocaleString()} · ${r.status==='open'?'SUGAYA JAWAAB':r.status==='answered'?'la jawaabay':'xiran'}</span></div>
+      <div style="white-space:pre-wrap;margin:.3rem 0;">${r.voice?'🎤 ':''}${this.esc(r.text)}</div>
+      ${r.status==='answered'?`<div style="background:#e8f7ec;border-radius:6px;padding:.3rem .5rem;">✅ ${this.esc(r.answer||'')}</div>`:`<div style="display:flex;gap:.4rem;"><textarea id="rl_${r.id}" class="form-control" rows="2" placeholder="Qoraal / cod / sawir / PDF - toos ayaa bukaanka WhatsApp-kiisa loogu diraa..."></textarea><div style="display:flex;flex-direction:column;gap:.3rem;"><button class="btn btn-primary btn-sm" onclick="WA.relayReply('${r.id}')" title="Dir"><i class="bi bi-send-fill"></i></button><button class="btn btn-light btn-sm" onclick="WA.relayClose('${r.id}')">Xir</button></div></div>
+      <div style="display:flex;gap:.4rem;align-items:center;margin-top:.3rem;flex-wrap:wrap;"><label class="btn btn-light btn-sm" style="margin:0;cursor:pointer;"><i class="bi bi-paperclip"></i> Fayl (PDF/sawir/cod)<input type="file" accept="image/*,audio/*,video/*,application/pdf,.doc,.docx" style="display:none" onchange="WA.pickFile('${r.id}',this)"></label><button class="btn btn-light btn-sm" id="rec_${r.id}" onclick="WA.recToggle('${r.id}')"><i class="bi bi-mic-fill"></i> Duub cod</button><span id="fl_${r.id}" style="font-size:12px;color:var(--text-muted)"></span></div>`}
+    </div>`).join('');
+  },
+  _files:{},
+  _b64(blob){return new Promise((res,rej)=>{const f=new FileReader();f.onload=()=>res(String(f.result).split(',')[1]);f.onerror=rej;f.readAsDataURL(blob);});},
+  async pickFile(id,inp){
+    const f=inp.files&&inp.files[0];if(!f)return;
+    if(f.size>16*1024*1024){Swal.fire({icon:'warning',title:'Faylku aad buu u weyn yahay (ugu badnaan 16MB)'});inp.value='';return;}
+    this._files[id]={name:f.name,mime:f.type||'application/octet-stream',data:await this._b64(f)};
+    $('fl_'+id).textContent='📎 '+f.name;
+  },
+  async recToggle(id){
+    const btn=$('rec_'+id);
+    if(this._rec&&this._rec.id===id){this._rec.mr.stop();return;}
+    if(this._rec){Swal.fire({icon:'info',title:'Hore u jooji duubka kale'});return;}
+    try{
+      const st=await navigator.mediaDevices.getUserMedia({audio:true});
+      const mr=new MediaRecorder(st);const ch=[];
+      mr.ondataavailable=e=>{if(e.data.size)ch.push(e.data);};
+      mr.onstop=async()=>{
+        st.getTracks().forEach(t=>t.stop());this._rec=null;btn.innerHTML='<i class="bi bi-mic-fill"></i> Duub cod';btn.classList.remove('btn-danger');
+        const blob=new Blob(ch,{type:mr.mimeType||'audio/webm'});
+        this._files[id]={name:'cod.webm',mime:'audio/webm',data:await this._b64(blob)};
+        $('fl_'+id).textContent='🎤 cod diyaar ah ('+Math.round(blob.size/1024)+' KB) - riix Dir';
+      };
+      this._rec={id,mr};mr.start();btn.innerHTML='<i class="bi bi-stop-fill"></i> Jooji';btn.classList.add('btn-danger');
+    }catch(e){Swal.fire({icon:'error',title:'Makarafoonka lama furi karo',text:e.message});}
+  },
+  async relayReply(id){
+    const t=$('rl_'+id);const m=(t&&t.value||'').trim();const file=this._files[id];if(!m&&!file)return;
+    try{await this.api('/relays/'+id+'/reply','POST',{message:m,file});delete this._files[id];Swal.fire({icon:'success',title:'Waa la diray bukaanka',timer:1200,showConfirmButton:false});this.loadRelays();}
+    catch(e){Swal.fire({icon:'error',title:'Lama diri karo',text:e.message});}
+  },
+  async relayClose(id){try{await this.api('/relays/'+id+'/close','POST');this.loadRelays();}catch(e){}},
+  async saveDoctorPhones(){
+    const g=i=>($(i).value||'').replace(/\D/g,'');
+    const doctorPhones={};[['harith','waPhHarith'],['yaxye','waPhYaxye'],['hersi','waPhHersi'],['sadia','waPhSadia'],['saney','waPhSaney']].forEach(([k,i])=>{const v=g(i);if(v)doctorPhones[k]=v;});
+    try{await this.api('/config','POST',{doctorPhones});Swal.fire({icon:'success',title:'Waa la kaydiyay',timer:1000,showConfirmButton:false});}
+    catch(e){Swal.fire({icon:'error',title:'Save failed',text:e.message});}
+  },
+  async autoSyncPatients(){
+    // all patients from appointments -> the bot can verify "bukaan hore" by number or name
+    try{
+      const A=ls_get(HOSP.K.APPTS)||[];const m={};
+      A.forEach(a=>{
+        const n=BULK.waPhone(a.mobile);if(!n)return;
+        const d=String(a.apptDate||'').slice(0,10);
+        const o=m[n]||(m[n]={number:n,name:BULK.titleCase(a.patientName||''),doctor:BULK.cleanDoctor(a.doctor||''),visit:'',visits:0});
+        o.visits++;if(d>=o.visit){o.visit=d;o.doctor=BULK.cleanDoctor(a.doctor||'')||o.doctor;o.name=BULK.titleCase(a.patientName||'')||o.name;}
+      });
+      const rows=Object.values(m);if(!rows.length)return;
+      const sig=rows.length+':'+rows.reduce((x,r)=>x+(r.visit>x?r.visit:''),'');
+      if(this._lastSync===sig)return;
+      const r=await this.api('/registry','POST',{rows});this._lastSync=sig;this._syncTotal=r.total;
+    }catch(e){console.warn('sync',e);}
   },
   async syncRegistry(){
     const rows=(ls_get(BULK.K.LIST,[])||[]).map(r=>({number:BULK.waPhone(r.phone),name:BULK.titleCase(r.name),doctor:BULK.cleanDoctor(r.doctor),visit:r.date})).filter(r=>r.number);
