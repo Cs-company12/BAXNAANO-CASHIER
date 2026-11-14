@@ -891,7 +891,7 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
           <div class="card-body">
             <div id="waAuto" style="display:none;font-size:12.5px;color:var(--success);margin-bottom:.4rem;">✔ Connected to the gateway automatically.</div>
             <div id="waGwFields"><div class="form-grid">
-              <div class="form-group"><label>Gateway URL</label><input id="waUrl" class="form-control" placeholder="http://localhost:3000"></div>
+              <div class="form-group"><label>Gateway URL</label><input id="waUrl" class="form-control" placeholder="https://xxxx.onrender.com"></div>
               <div class="form-group"><label>Gateway token</label><input id="waToken" class="form-control" placeholder="printed by the gateway on start"></div>
             </div>
             <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;">
@@ -10707,7 +10707,7 @@ const WA = window.WA = {
   cfg(){
     const g=window.__GW||{};let st={};
     try{st=JSON.parse(localStorage.getItem('bax_wa_gw')||'{}');}catch(e){}
-    return {url:g.url||st.url||'http://localhost:3000',token:g.token||st.token||''};
+    return {url:(g.url||st.url||'').replace(/\/+$/,''),token:g.token||st.token||''};
   },
   saveGw(){
     const c={url:$('waUrl').value.trim().replace(/\/$/,''),token:$('waToken').value.trim()};
@@ -10717,10 +10717,10 @@ const WA = window.WA = {
   },
   async api(p,method,body){
     const c=this.cfg();
-    if(!c.url)throw new Error('Enter the gateway URL first (WhatsApp tab).');
+    if(!c.url)throw new Error('Server-ka WhatsApp weli lama geliyin. Tab-ka WhatsApp > geli URL-ka (tusaale https://xxxx.onrender.com) iyo token-ka, ama fur system-ka adigoo isticmaalaya URL-kaas + /app.');
     let res;
     try{res=await fetch(c.url+p,{method:method||'GET',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(c.token||'local')},body:body?JSON.stringify(body):undefined});}
-    catch(e){throw new Error('Server-ka WhatsApp ma shaqeynayo ('+c.url+'). Termux ku orod: bash start.sh, kadibna fur http://localhost:3000/app');}
+    catch(e){throw new Error('Server-ka WhatsApp lama gaari karo ('+c.url+'). Hubi URL-ka iyo token-ka (tab-ka WhatsApp), ama in server-ku (Render) uu "Live" yahay.');}
     const j=await res.json().catch(()=>({}));
     if(!res.ok)throw new Error(j.error||('HTTP '+res.status));
     return j;
