@@ -654,12 +654,9 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
                   <option value="admin">Admin</option>
                 </select>
               </div>
-              <div class="form-group"><label>Dhakhtarka (Dr. Chat)</label>
-                <select id="hUserDr" class="form-select"><option value="">-</option><option value="harith">Dr. Harith</option><option value="yaxye">Dr. Yaxye</option><option value="sadia">Dr. Sadio</option><option value="hersi">Dr. Hersi</option><option value="saney">Dr. Saney</option></select>
-              </div>
               <div class="form-group" style="align-self:flex-end;"><button class="btn btn-success" type="submit"><i class="bi bi-floppy"></i> Save User</button></div>
             </form>
-            <div style="margin:.6rem 0;padding:.6rem .7rem;background:#eef7f2;border-radius:8px;font-size:13px;"><b>Dr. Chat link</b> - dhakhtar kasta link + username + password gaar ah (bukaanadiisa ayuu ku arkaa oo uu kula hadlaa WhatsApp). <div style="margin-top:.4rem;display:flex;gap:.4rem;flex-wrap:wrap;"><button type="button" class="btn btn-success btn-sm" onclick="DRC.links(false)">Samee / tus linkiyada</button><button type="button" class="btn btn-light btn-sm" onclick="DRC.links(true)">Dib u samee password-yada</button></div></div>
+            <div style="margin:.6rem 0;padding:.6rem .7rem;background:#eef7f2;border-radius:8px;font-size:13px;"><b>Dr. Chat link</b> - dhakhtar kasta link + username + password gaar ah (bukaanadiisa ayuu ku arkaa oo uu kula hadlaa WhatsApp). <div style="margin-top:.4rem;display:flex;gap:.4rem;flex-wrap:wrap;"><button type="button" class="btn btn-success btn-sm" onclick="WA.drLinks(false)">Samee / tus linkiyada</button><button type="button" class="btn btn-light btn-sm" onclick="WA.drLinks(true)">Dib u samee password-yada</button></div></div>
             <div class="tbl-wrap">
               <table class="dtable"><thead><tr><th>Username</th><th>Role</th><th class="actions">Actions</th></tr></thead>
               <tbody id="hUsersBody"></tbody></table>
@@ -885,27 +882,49 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
       </div>
     </div>
 
-    <!-- WhatsApp -->
-    <div id="hv-drchat" class="view">
-      <div class="breadcrumb"><a onclick="HOSP.showView('hv-drchat')">Doctor</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <span>Dr. Chat - la hadal bukaanka</span></div>
-      <div class="card">
-        <div class="card-header"><span class="card-title"><i class="bi bi-chat-dots"></i> Dr. Chat <span id="drcWho" style="font-weight:400;font-size:12.5px;color:var(--text-muted)"></span></span>
-          <span id="drcTools" style="display:none;gap:.4rem;align-items:center;flex-wrap:wrap;"><button class="btn btn-light btn-sm" onclick="DRC.addNumber()"><i class="bi bi-plus-lg"></i> Lambar bukaan</button><button class="btn btn-light btn-sm" onclick="DRC.load()">Refresh</button><button class="btn btn-light btn-sm" onclick="DRC.logout()">Ka bax</button></span></div>
-        <div class="card-body" style="padding:0;">
-          <div id="drcLogin" style="display:none;max-width:360px;margin:1.2rem auto;padding:0 1rem;">
-            <p style="font-size:13px;color:var(--text-muted)">Gal adigoo isticmaalaya username-ka dhakhtarka (tusaale <b>dr.harith</b>). Wuxuu ku shaqeeyaa qalab kasta.</p>
-            <input id="drcUser" class="form-control" placeholder="Username (dr.harith)" autocapitalize="none" style="margin-bottom:.5rem"><input id="drcPass" type="password" class="form-control" placeholder="Password" style="margin-bottom:.6rem" onkeydown="if(event.key==='Enter')DRC.login()">
-            <button class="btn btn-success" onclick="DRC.login()">Gal</button><div id="drcLerr" style="color:#b00;font-size:13px;min-height:1.2em;margin-top:.4rem"></div>
+    <!-- WA Admin (Supabase) -->
+    <div id="hv-adm" class="view">
+      <div class="breadcrumb"><a>Admin</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <span>WA Inbox &amp; Sync (Supabase)</span></div>
+      <div class="page-wrap">
+        <div class="card" id="admLogin" style="max-width:420px;margin:0 auto 1rem;display:none;">
+          <div class="card-header"><span class="card-title"><i class="bi bi-lock"></i> Admin login (Supabase)</span></div>
+          <div class="card-body">
+            <div class="form-group"><label>Username</label><input id="admU" class="form-control" value="admin.wa" autocapitalize="off"></div>
+            <div class="form-group"><label>Password</label><input id="admP" type="password" class="form-control" onkeydown="if(event.key==='Enter')ADM.login()"></div>
+            <button class="btn btn-primary btn-sm" onclick="ADM.login()">Gal</button>
+            <div id="admErr" style="color:#c0392b;font-size:12.5px;margin-top:.4rem;"></div>
+            <div style="font-size:12px;color:#666;margin-top:.5rem;">Username/password-ka waxaa laga helaa gateway-ga: WhatsApp tab &rarr; "Dr. Chat linkiyada" (admin.wa).</div>
           </div>
-          <div id="drcErr" style="display:none;padding:.5rem .8rem;color:#b00;font-size:13px;"></div>
-          <div id="drcGrid" style="display:none;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));">
-            <div id="drcList" style="max-height:68vh;overflow:auto;border-right:1px solid var(--border);"></div>
-            <div style="display:flex;flex-direction:column;max-height:68vh;">
-              <div id="drcHead" style="padding:.5rem .7rem;border-bottom:1px solid var(--border);min-height:40px;font-size:13px;">Dooro bukaan</div>
-              <div id="drcThread" style="flex:1;overflow:auto;padding:.5rem .7rem;min-height:200px;"></div>
-              <div id="drcBox" style="display:none;padding:.5rem;border-top:1px solid var(--border);">
-                <div style="display:flex;gap:.4rem;"><textarea id="drcText" class="form-control" rows="2" placeholder="Qoraal - toos ayaa WhatsApp-ka bukaanka loogu diraa..."></textarea><button class="btn btn-primary btn-sm" onclick="DRC.send()" title="Dir"><i class="bi bi-send-fill"></i></button></div>
-                <div style="display:flex;gap:.4rem;align-items:center;margin-top:.3rem;flex-wrap:wrap;"><label class="btn btn-light btn-sm" style="margin:0;cursor:pointer;"><i class="bi bi-paperclip"></i> PDF / sawir / cod<input type="file" accept="image/*,audio/*,video/*,application/pdf,.doc,.docx" style="display:none" onchange="DRC.pick(this)"></label><button class="btn btn-light btn-sm" id="drcRec" onclick="DRC.rec()"><i class="bi bi-mic-fill"></i> Duub cod</button><span id="drcFile" style="font-size:12px;color:var(--text-muted)"></span></div>
+        </div>
+        <div id="admMain" style="display:none;">
+          <div class="card" style="margin-bottom:1rem;">
+            <div class="card-header"><span class="card-title"><i class="bi bi-arrow-repeat"></i> Xogta isku xirka (device kasta)</span><span><button class="btn btn-light btn-sm" onclick="ADM.logout()">Ka bax</button></span></div>
+            <div class="card-body">
+              <div id="admSyncInfo" style="font-size:13px;margin-bottom:.5rem;">...</div>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+                <button class="btn btn-success btn-sm" onclick="ADM.push()"><i class="bi bi-cloud-upload"></i> Device-kan &rarr; Supabase (soo dir)</button>
+                <button class="btn btn-primary btn-sm" onclick="ADM.pull()"><i class="bi bi-cloud-download"></i> Supabase &rarr; Device-kan (soo qaado)</button>
+                <label style="display:flex;align-items:center;gap:.3rem;font-size:13px;"><input type="checkbox" id="admAuto"> Auto-push (30 ilbiriqsi)</label>
+              </div>
+              <div style="font-size:12px;color:#666;margin-top:.4rem;">Waxa la isku xiraa: isticmaalayaasha, bukaanada, ballamaha, dawooyinka, follow-up, bulk list. Hubi inaad ka soo dirto device-ka xogta ugu cusub, kuwa kalena ka soo qaadato.</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title"><i class="bi bi-whatsapp"></i> Fariimaha WhatsApp oo dhan</span><span><input id="admQ" class="form-control" placeholder="Raadi magac/lambar" style="display:inline-block;width:180px;" oninput="ADM.draw()"> <button class="btn btn-light btn-sm" onclick="ADM.load()">Refresh</button></span></div>
+            <div class="card-body" style="padding:0;">
+              <div id="admGrid" style="display:grid;grid-template-columns:minmax(220px,300px) 1fr;min-height:480px;">
+                <div id="admList" style="border-right:1px solid #e5e5e5;overflow:auto;max-height:620px;"></div>
+                <div style="display:flex;flex-direction:column;max-height:620px;">
+                  <div id="admHead" style="padding:.5rem .8rem;border-bottom:1px solid #e5e5e5;font-weight:600;font-size:14px;">Dooro bukaan</div>
+                  <div id="admThread" style="flex:1;overflow:auto;padding:.6rem;background:#f4f1ea;"></div>
+                  <div style="display:flex;gap:.4rem;padding:.5rem;border-top:1px solid #e5e5e5;align-items:center;">
+                    <label class="btn btn-light btn-sm" style="margin:0;"><i class="bi bi-paperclip"></i><input type="file" id="admFile" style="display:none" onchange="ADM.pick(this)"></label>
+                    <button class="btn btn-light btn-sm" id="admRec" onclick="ADM.rec()"><i class="bi bi-mic"></i></button>
+                    <input id="admTxt" class="form-control" placeholder="Qor fariin..." onkeydown="if(event.key==='Enter')ADM.send()">
+                    <button class="btn btn-success btn-sm" onclick="ADM.send()"><i class="bi bi-send"></i></button>
+                  </div>
+                  <div id="admAtt" style="font-size:12px;padding:0 .6rem .4rem;color:#555;"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -913,6 +932,7 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
       </div>
     </div>
 
+    <!-- WhatsApp -->
     <div id="hv-wa" class="view">
       <div class="breadcrumb"><a onclick="HOSP.showView('hv-wa')">Cashier</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <span>WhatsApp</span></div>
       <div class="page-wrap">
@@ -1001,7 +1021,7 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
         </div>
 
         <div class="card" style="margin-bottom:1rem;">
-          <div class="card-header"><span class="card-title"><i class="bi bi-chat-left-text"></i> Fariimaha Dhakhtarka (bukaan hore ayaa u soo diray)</span><span><button class="btn btn-success btn-sm" onclick="DRC.links(false)">Dr. Chat linkiyada</button> <button class="btn btn-light btn-sm" onclick="WA.loadRelays()">Refresh</button></span></div>
+          <div class="card-header"><span class="card-title"><i class="bi bi-chat-left-text"></i> Fariimaha Dhakhtarka (bukaan hore ayaa u soo diray)</span><span><button class="btn btn-success btn-sm" onclick="WA.drLinks(false)">Dr. Chat linkiyada</button> <button class="btn btn-light btn-sm" onclick="WA.loadRelays()">Refresh</button></span></div>
           <div class="card-body">
             <div id="waRelays" style="max-height:55vh;overflow:auto;font-size:13px;">Waa la sugayaa...</div>
             <details style="margin-top:.6rem;"><summary style="cursor:pointer;font-size:12.5px;">WhatsApp-ka dhakhaatiirta (ikhtiyaari: fariinta halkaas ayaa loogu diraa, jawaabtooduna bukaanka ayay u aadaysaa)</summary>
@@ -7480,7 +7500,7 @@ const HOSP = {
       {v:'hv-bulk',l:'Bulk Messages',roles:['admin','cashier','reception']},
       {v:'hv-csai',l:'CS AI',roles:['admin','cashier','reception']},
       {v:'hv-wa',l:'WhatsApp',roles:['admin','cashier','reception']},
-      {v:'hv-drchat',l:'Dr. Chat',roles:['admin','doctor']},
+      {v:'hv-adm',l:'WA Inbox (Supabase)',roles:['admin']},
       {v:'hv-doctor',l:'Doctor Panel',roles:['admin','doctor']},
       {v:'hv-reports',l:'Reports',roles:['admin']},
       {v:'hv-users',l:'Users',roles:['admin']},
@@ -7518,7 +7538,7 @@ const HOSP = {
     if(vid==='hv-bulk')BULK.render();
     if(vid==='hv-csai')CSAI.render();
     if(vid==='hv-wa')WA.render();
-    if(vid==='hv-drchat')DRC.render();
+    if(vid==='hv-adm')ADM.render();
   },
 
   renderAppts(){
@@ -8512,10 +8532,10 @@ Thank you.`;
   },
 
   renderUsers(){
-    $('hUserId').value='';$('hUserName').value='';$('hUserPw').value='';$('hUserRole').value='cashier';if($('hUserDr'))$('hUserDr').value='';
+    $('hUserId').value='';$('hUserName').value='';$('hUserPw').value='';$('hUserRole').value='cashier'
     const users=ls_get(this.K.USERS);
     $('hUsersBody').innerHTML=users.map(u=>`<tr>
-      <td>${u.username}</td><td><span class="badge badge-secondary">${u.role}</span>${u.drKey?' · '+u.drKey:''}</td>
+      <td>${u.username}</td><td><span class="badge badge-secondary">${u.role}</span></td>
       <td class="actions">
         <button class="btn btn-primary btn-sm" onclick="HOSP.editUser('${u.id}')">Edit</button>
         <button class="btn btn-danger btn-sm" onclick="HOSP.deleteUser('${u.id}')">Delete</button>
@@ -8524,21 +8544,21 @@ Thank you.`;
 
   async saveUser(e){
     e.preventDefault();
-    const id=$('hUserId').value,uname=$('hUserName').value.trim(),pw=$('hUserPw').value,role=$('hUserRole').value,drKey=$('hUserDr').value;
+    const id=$('hUserId').value,uname=$('hUserName').value.trim(),pw=$('hUserPw').value,role=$('hUserRole').value;
     if(!uname||(!id&&!pw)){Swal.fire({icon:'warning',title:'Username and password required'});return;}
     const users=ls_get(this.K.USERS);
     if(id){
       const idx=users.findIndex(u=>u.id===id);
-      if(idx!==-1){users[idx].username=uname;users[idx].role=role;users[idx].drKey=drKey;if(pw)users[idx].password=await hashPw(pw,'_hosp_');}
+      if(idx!==-1){users[idx].username=uname;users[idx].role=role;if(pw)users[idx].password=await hashPw(pw,'_hosp_');}
     } else {
       if(users.find(u=>u.username===uname)){Swal.fire({icon:'error',title:'Username exists'});return;}
-      users.push({id:gid('U'),username:uname,password:await hashPw(pw,'_hosp_'),role,drKey});
+      users.push({id:gid('U'),username:uname,password:await hashPw(pw,'_hosp_'),role});
     }
     ls_set(this.K.USERS,users);Swal.fire({icon:'success',title:'Saved',timer:1200});this.renderUsers();
   },
   editUser(id){
     const u=ls_get(this.K.USERS).find(x=>x.id===id);if(!u)return;
-    $('hUserId').value=u.id;$('hUserName').value=u.username;$('hUserPw').value='';$('hUserRole').value=u.role;$('hUserDr').value=u.drKey||'';
+    $('hUserId').value=u.id;$('hUserName').value=u.username;$('hUserPw').value='';$('hUserRole').value=u.role;
   },
   deleteUser(id){
     if(this.cur&&this.cur.id===id){Swal.fire({icon:'warning',title:'Cannot delete logged in user'});return;}
@@ -10878,106 +10898,153 @@ const CSAI = window.CSAI = {
 // ═══════════════════════════════════════════
 // WHATSAPP MODULE (talks to the Baxnaano WhatsApp Gateway: QR link, inbox, AI auto-reply, queue)
 // ═══════════════════════════════════════════
-const DRC = window.DRC = {
-  SB:'https://tpmsyyhrnciqqcxlfamr.supabase.co',KEY:'sb_publishable_exzgU4lfqJpzI89f8Jjl7w_5vT2d4NR',
-  NM:{harith:'Dr. Harith',yaxye:'Dr. Yaxye',sadia:'Dr. Sadio',hersi:'Dr. Hersi',saney:'Dr. Saney'},
-  _tok:null,_key:'',_sel:null,_file:null,_rec:null,_pats:[],_thr:[],_sending:false,
-  esc(x){return String(x==null?'':x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));},
-  _ls(k,v){try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){}return null;},
+const ADM = window.ADM = {
+  SB:'https://tpmsyyhrnciqqcxlfamr.supabase.co', KEY:'sb_publishable_exzgU4lfqJpzI89f8Jjl7w_5vT2d4NR',
+  KEYS:['bax_hosp_users','bax_hosp_patients','bax_hosp_appts','bax_hosp_rx','bax_hosp_followups','bax_bulk_list','bax_bulk_msg'],
+  msgs:[], cur:null, att:null, _t:null, _a:null,
+  tok(){try{return localStorage.getItem('adm_token')||'';}catch(e){return '';}},
+  dev(){try{let d=localStorage.getItem('adm_dev');if(!d){d='d'+Math.random().toString(36).slice(2,8);localStorage.setItem('adm_dev',d);}return d;}catch(e){return 'd0';}},
+  esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));},
   async rpc(n,b){
     const r=await fetch(this.SB+'/rest/v1/rpc/'+n,{method:'POST',headers:{apikey:this.KEY,Authorization:'Bearer '+this.KEY,'Content-Type':'application/json'},body:JSON.stringify(b)});
     const j=await r.json().catch(()=>null);
     if(!r.ok)throw new Error((j&&j.message)||'HTTP '+r.status);
-    if(j&&j.error==='auth'){this._out();throw new Error('Soo gal mar kale');}
+    if(j&&j.error==='auth'){try{localStorage.removeItem('adm_token');}catch(e){}this.render();throw new Error('Soo gal dib');}
     if(j&&j.error)throw new Error(j.error);
     return j;
   },
-  extra(){try{return JSON.parse(this._ls('dx_'+this._key)||'[]');}catch(e){return [];}},
   render(){
-    this._tok=this._ls('dr_token');this._key=this._ls('dr_key')||'';
-    if(!this._tok){this._out();return;}
-    this._in();this.load();
-    if(!this._t)this._t=setInterval(()=>{if(!$('hv-drchat').classList.contains('active')){clearInterval(this._t);this._t=null;return;}if(!this._busy())this.load(true);},4000);
+    const ok=!!this.tok();
+    $('admLogin').style.display=ok?'none':'block';
+    $('admMain').style.display=ok?'block':'none';
+    clearInterval(this._t);this._t=null;
+    if(ok){
+      this.load();this.syncInfo();
+      this._t=setInterval(()=>{if(!$('hv-adm').classList.contains('active')){clearInterval(this._t);this._t=null;return;}this.load(true);},5000);
+      try{$('admAuto').checked=localStorage.getItem('adm_auto')==='1';}catch(e){}
+      $('admAuto').onchange=()=>{try{localStorage.setItem('adm_auto',$('admAuto').checked?'1':'0');}catch(e){}this.autoSet();};
+      this.autoSet();
+    }
   },
-  _out(){this._tok=null;this._ls('dr_token',null);const l=$('drcLogin');if(!l)return;l.style.display='';$('drcGrid').style.display='none';$('drcTools').style.display='none';$('drcWho').textContent='';},
-  _in(){$('drcLogin').style.display='none';$('drcGrid').style.display='grid';$('drcTools').style.display='flex';$('drcWho').textContent='· '+(this.NM[this._key]||'');},
+  autoSet(){
+    clearInterval(this._a);this._a=null;
+    if(this.tok()&&$('admAuto').checked)this._a=setInterval(()=>this.push(true),30000);
+  },
   async login(){
-    try{const r=await this.rpc('dr_login',{p_user:$('drcUser').value,p_pass:$('drcPass').value});
-      this._tok=r.token;this._key=r.key;this._ls('dr_token',r.token);this._ls('dr_key',r.key);$('drcPass').value='';$('drcLerr').textContent='';this.render();}
-    catch(e){$('drcLerr').textContent=e.message;}
-  },
-  async logout(){try{await this.rpc('dr_logout',{p_token:this._tok});}catch(e){}this._ls('dr_key',null);this._key='';this._out();},
-  _busy(){return this._rec||this._file||this._sending||($('drcText')&&$('drcText').value.trim());},
-  async load(quiet){
-    try{this._pats=await this.rpc('dr_patients',{p_token:this._tok});$('drcErr').style.display='none';
-      if(this._sel)this._thr=await this.rpc('dr_thread',{p_token:this._tok,p_number:this._sel});}
-    catch(e){if(!quiet&&this._tok){$('drcErr').textContent=e.message;$('drcErr').style.display='';}return;}
-    this.draw();
-  },
-  patients(){const m={};(this._pats||[]).forEach(p=>{m[p.number]=p;});this.extra().forEach(n=>{if(!m[n])m[n]={number:n,name:'',open:false};});return Object.values(m);},
-  draw(){
-    const L=this.patients();
-    $('drcList').innerHTML=L.length?L.map(p=>`<div onclick="DRC.open('${p.number}')" style="padding:.5rem .7rem;border-bottom:1px solid var(--border);cursor:pointer;${this._sel===p.number?'background:#eef4ff;':''}"><div style="display:flex;justify-content:space-between;gap:.4rem;"><b>${this.esc(p.name||p.number)}</b>${p.open?'<span style="background:#e67e22;color:#fff;border-radius:10px;padding:0 .45rem;font-size:11px;">sugaya</span>':''}</div><div style="font-size:11.5px;color:var(--text-muted)">${this.esc(p.number)}${p.last?' · '+this.esc(p.last):''}</div></div>`).join(''):'<div style="padding:.8rem;color:var(--text-muted);font-size:13px;">Weli fariin bukaan laguma gudbin. Riix "Lambar bukaan" si aad ugu bilowdo.</div>';
-    if(this._sel)this.drawThread();
-  },
-  async open(n){this._sel=n;this._file=null;$('drcFile').textContent='';this._thr=[];this.draw();try{this._thr=await this.rpc('dr_thread',{p_token:this._tok,p_number:n});}catch(e){}this._justSent=true;this.draw();},
-  media(m){if(!m.file_url)return '';const mt=m.file_mime||'',u=this.esc(m.file_url);
-    if(/^image\//.test(mt))return `<a href="${u}" target="_blank"><img src="${u}" style="max-width:100%;border-radius:8px;display:block;margin-top:.3rem"></a>`;
-    if(/^audio\//.test(mt))return `<audio controls src="${u}" style="width:100%;margin-top:.3rem"></audio>`;
-    return `<a href="${u}" target="_blank" style="display:inline-block;margin-top:.3rem">📄 ${this.esc(m.file_name||'fayl')}</a>`;},
-  drawThread(){
-    const n=this._sel,p=this.patients().find(x=>x.number===n)||{number:n};
-    $('drcHead').innerHTML='<b>'+this.esc(p.name||n)+'</b> · '+this.esc(n)+(p.open&&p.relay?'<div style="margin-top:.3rem;background:#fff8e6;border-radius:6px;padding:.3rem .5rem;white-space:pre-wrap;">📩 '+this.esc(p.relay)+'</div>':'');
-    $('drcBox').style.display='';
-    const box=$('drcThread');const atEnd=box.scrollTop+box.clientHeight>=box.scrollHeight-40;
-    box.innerHTML=(this._thr||[]).map(m=>{const mine=m.dir!=='in';const who=m.dir==='in'?'Bukaan':m.dir==='out'?'Dr':m.dir==='bulk'?'Isbitaal':'🤖 Bot';return `<div style="display:flex;justify-content:${mine?'flex-end':'flex-start'};margin:.25rem 0;"><div style="max-width:82%;background:${m.dir==='out'?'#d9f2d9':mine?'#eee':'#fff'};border:1px solid var(--border);border-radius:10px;padding:.35rem .55rem;white-space:pre-wrap;font-size:13px;word-break:break-word;"><div style="font-size:10.5px;color:var(--text-muted)">${who} · ${new Date(m.at).toLocaleString()}${m.dir==='out'&&m.sent===false?' · ⏳ la dirayo':''}</div>${this.esc(m.text||'')}${this.media(m)}</div></div>`;}).join('')||'<div style="color:var(--text-muted)">Fariin ma jirto.</div>';
-    if(atEnd||this._justSent){box.scrollTop=box.scrollHeight;this._justSent=false;}
-  },
-  addNumber(){
-    Swal.fire({title:'Lambarka bukaanka',input:'text',inputPlaceholder:'2526XXXXXXXX ama 06XXXXXXXX',showCancelButton:true}).then(r=>{
-      if(!r.isConfirmed)return;const n=BULK.waPhone(r.value||'');if(!n){Swal.fire({icon:'warning',title:'Lambar khaldan'});return;}
-      const a=this.extra();if(!a.includes(n)){a.push(n);this._ls('dx_'+this._key,JSON.stringify(a));}this.open(n);
-    });
-  },
-  _b64(blob){return WA._b64(blob);},
-  pick(inp){const f=inp.files&&inp.files[0];if(!f)return;if(f.size>15*1024*1024){Swal.fire({icon:'warning',title:'Faylku aad buu u weyn yahay (ugu badnaan 15MB)'});inp.value='';return;}this._file=f;$('drcFile').textContent='📎 '+f.name;inp.value='';},
-  async rec(){
-    const btn=$('drcRec');
-    if(this._rec){this._rec.stop();return;}
     try{
-      const st=await navigator.mediaDevices.getUserMedia({audio:true});const mr=new MediaRecorder(st);const ch=[];
-      mr.ondataavailable=e=>{if(e.data.size)ch.push(e.data);};
-      mr.onstop=()=>{st.getTracks().forEach(t=>t.stop());this._rec=null;btn.innerHTML='<i class="bi bi-mic-fill"></i> Duub cod';btn.classList.remove('btn-danger');
-        const bl=new Blob(ch,{type:mr.mimeType||'audio/webm'});this._file=new File([bl],'cod.webm',{type:bl.type||'audio/webm'});$('drcFile').textContent='🎤 cod diyaar ah - riix Dir';};
-      this._rec=mr;mr.start();btn.innerHTML='<i class="bi bi-stop-fill"></i> Jooji';btn.classList.add('btn-danger');
-    }catch(e){Swal.fire({icon:'error',title:'Makarafoonka lama furi karo',text:e.message});}
+      const r=await this.rpc('dr_login',{p_user:$('admU').value,p_pass:$('admP').value});
+      if(r.key!=='admin')throw new Error('Kani ma aha admin login');
+      localStorage.setItem('adm_token',r.token);$('admErr').textContent='';$('admP').value='';this.render();
+    }catch(e){$('admErr').textContent=e.message;}
+  },
+  async logout(){try{await this.rpc('dr_logout',{p_token:this.tok()});}catch(e){}try{localStorage.removeItem('adm_token');}catch(e){}this.render();},
+  async load(quiet){
+    try{
+      const m=await this.rpc('ad_inbox',{p_token:this.tok(),p_limit:2000});
+      this.msgs=m;this.draw();
+    }catch(e){if(!quiet)Swal.fire('Cilad',e.message,'error');}
+  },
+  convs(){
+    const by={};
+    this.msgs.forEach(m=>{const c=by[m.number]||(by[m.number]={number:m.number,name:'',at:'',last:'',need:false,n:0});
+      if(m.name)c.name=m.name;c.at=m.at;c.last=m.text||(m.file_url?'📎 fayl':'');c.n++;
+      if(m.dir==='in')c.need=!!m.needs_human;else if(m.dir==='out')c.need=false;});
+    return Object.values(by).sort((a,b)=>(b.need-a.need)||String(b.at).localeCompare(String(a.at)));
+  },
+  draw(){
+    const q=($('admQ').value||'').toLowerCase();
+    const l=this.convs().filter(c=>!q||(c.name||'').toLowerCase().includes(q)||c.number.includes(q));
+    $('admList').innerHTML=l.map(c=>'<div onclick="ADM.open(\''+c.number+'\')" style="padding:.5rem .7rem;border-bottom:1px solid #eee;cursor:pointer;'+(c.number===this.cur?'background:#e8f3ec;':'')+'"><div style="font-weight:600;font-size:13.5px;">'+(c.need?'<span style="color:#c0392b">● </span>':'')+this.esc(c.name||'+'+c.number)+'</div><div style="font-size:12px;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+this.esc(String(c.last).slice(0,70))+'</div></div>').join('')||'<div style="padding:1rem;color:#888;font-size:13px;">Fariin ma jiraan</div>';
+    if(this.cur)this.drawThread();
+  },
+  open(n){this.cur=n;this.draw();},
+  media(m){
+    if(!m.file_url)return '';
+    const u=this.esc(m.file_url),t=m.file_mime||'';
+    if(/^image/.test(t))return '<div><a href="'+u+'" target="_blank"><img src="'+u+'" style="max-width:220px;border-radius:8px;"></a></div>';
+    if(/^audio/.test(t))return '<audio controls src="'+u+'" style="max-width:240px;"></audio>';
+    return '<div><a href="'+u+'" target="_blank">📎 '+this.esc(m.file_name||'fayl')+'</a></div>';
+  },
+  drawThread(){
+    const n=this.cur,th=this.msgs.filter(m=>m.number===n);
+    const c=this.convs().find(x=>x.number===n)||{};
+    $('admHead').textContent=(c.name||'')+' +'+n;
+    const box=$('admThread'),atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<80;
+    box.innerHTML=th.map(m=>{
+      const mine=m.dir!=='in',col=m.dir==='in'?'#fff':m.dir==='out'?'#d9fdd3':m.dir==='bulk'?'#fff3cd':'#e3f0ff';
+      const who=m.dir==='in'?'Bukaan':m.dir==='out'?'Aad/Dr':m.dir==='bulk'?'Bulk':'Bot';
+      return '<div style="display:flex;justify-content:'+(mine?'flex-end':'flex-start')+';margin:.25rem 0;"><div style="max-width:78%;background:'+col+';padding:.4rem .6rem;border-radius:10px;font-size:13.5px;box-shadow:0 1px 1px #0002;"><div style="font-size:10.5px;color:#777;">'+who+' · '+new Date(m.at).toLocaleString()+(m.needs_human?' · <b style="color:#c0392b">u baahan dhakhtar</b>':'')+'</div>'+(m.text?'<div style="white-space:pre-wrap">'+this.esc(m.text)+'</div>':'')+this.media(m)+'</div></div>';
+    }).join('');
+    if(atBottom||this._fresh!==n){box.scrollTop=box.scrollHeight;this._fresh=n;}
   },
   async upload(f){
-    const rnd=Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b=>b.toString(16).padStart(2,'0')).join('');
-    const p=rnd+'/'+f.name.replace(/[^a-zA-Z0-9._-]+/g,'_').slice(-60);
+    const ext=(f.name&&f.name.includes('.'))?f.name.split('.').pop().replace(/\W/g,'').slice(0,5):'bin';
+    const p=Date.now().toString(36)+Math.random().toString(36).slice(2,8)+'.'+ext;
     const r=await fetch(this.SB+'/storage/v1/object/dr-files/'+p,{method:'POST',headers:{apikey:this.KEY,Authorization:'Bearer '+this.KEY,'Content-Type':f.type||'application/octet-stream'},body:f});
     if(!r.ok)throw new Error('Faylka lama geliyay (HTTP '+r.status+')');
     return this.SB+'/storage/v1/object/public/dr-files/'+p;
   },
-  async send(){
-    const n=this._sel;if(!n||this._sending)return;const msg=($('drcText').value||'').trim();const f=this._file;if(!msg&&!f)return;
-    this._sending=true;
+  pick(i){const f=i.files[0];if(!f)return;this.att=f;$('admAtt').textContent='📎 '+f.name+' ('+Math.round(f.size/1024)+' KB)';},
+  async rec(){
+    const b=$('admRec');
     try{
-      let url=null,mime=null,name=null;if(f){url=await this.upload(f);mime=f.type||'application/octet-stream';name=f.name;}
-      await this.rpc('dr_send',{p_token:this._tok,p_number:n,p_text:msg,p_url:url,p_mime:mime,p_name:name});
-      $('drcText').value='';this._file=null;$('drcFile').textContent='';this._justSent=true;
-      const a=this.extra();if(!a.includes(n)&&!(this._pats||[]).some(p=>p.number===n)){a.push(n);this._ls('dx_'+this._key,JSON.stringify(a));}
-      this._sending=false;await this.load(true);
-    }catch(e){this._sending=false;Swal.fire({icon:'error',title:'Lama diri karo',text:e.message});}
+      if(this._mr&&this._mr.state==='recording'){this._mr.stop();return;}
+      const st=await navigator.mediaDevices.getUserMedia({audio:true});
+      const ch=[];const mr=this._mr=new MediaRecorder(st);
+      mr.ondataavailable=e=>ch.push(e.data);
+      mr.onstop=()=>{st.getTracks().forEach(t=>t.stop());b.style.background='';const bl=new Blob(ch,{type:mr.mimeType||'audio/webm'});this.att=new File([bl],'cod.'+((mr.mimeType||'').includes('ogg')?'ogg':'webm'),{type:bl.type});$('admAtt').textContent='🎤 Cod diyaar ah - riix dir';};
+      mr.start();b.style.background='#f5b7b1';$('admAtt').textContent='🎤 Duubaya... riix mic mar kale si aad u joojiso';
+    }catch(e){Swal.fire('Mic','Microphone lama furi karo: '+e.message,'error');}
   },
-  async links(reset){
-    if(reset){const c=await Swal.fire({icon:'warning',title:'Password-yada hore waa la beddelayaa',text:'Dhakhaatiirta waa inaad u dirtaa kuwa cusub.',showCancelButton:true});if(!c.isConfirmed)return;}
-    let r;try{r=await WA.api('/dr-admin/create','POST',{reset:!!reset});}catch(e){Swal.fire({icon:'error',title:'Lama sameyn karo',text:e.message});return;}
-    const page=r.pageUrl||'https://baxnaanohospital.github.io/BAXNAANO/dr.html';
-    const rows=r.doctors.map(d=>{const msg='Asc '+d.name+', halkan ku gal si aad ula hadasho bukaanadaada: '+page+'\nUsername: '+d.user+(d.pass?'\nPassword: '+d.pass:'');
-      return `<tr><td style="padding:.3rem .4rem"><b>${this.esc(d.name)}</b></td><td style="padding:.3rem .4rem;text-align:left">Username: <b>${this.esc(d.user)}</b>${d.pass?' · Password: <b>'+this.esc(d.pass)+'</b>':' · <span style="color:#888">password hore ayaa jira</span>'}</td><td style="padding:.3rem .4rem">${d.pass?`<a href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank">Dir</a>`:''}</td></tr>`;}).join('');
-    Swal.fire({title:'Dr. Chat - galitaanka dhakhaatiirta',width:760,html:'<div style="text-align:left;font-size:13px;margin-bottom:.5rem">Link-ga dhakhaatiirta oo dhan: <b><a href="'+this.esc(page)+'" target="_blank">'+this.esc(page)+'</a></b><br><span style="color:#666">Fayl-ka <b>dr.html</b> ku rid GitHub repo-gaaga (BAXNAANO) si link-gu u shaqeeyo. Wuxuu ku shaqeeyaa taleefan kasta, ma u baahna Termux ama tunnel.</span></div><table style="width:100%;font-size:13px">'+rows+'</table><div style="font-size:12px;color:#666;margin-top:.5rem;text-align:left">Passwords-ka mar keliya ayaa la tusayaa. Dhakhtarku wuxuu arkaa bukaanadiisa oo keliya.</div>'});
+  async send(){
+    if(!this.cur)return Swal.fire('','Marka hore dooro bukaan','info');
+    const t=$('admTxt').value.trim();if(!t&&!this.att)return;
+    try{
+      let u=null,mi=null,nm=null;
+      if(this.att){u=await this.upload(this.att);mi=this.att.type||null;nm=this.att.name;}
+      await this.rpc('ad_send',{p_token:this.tok(),p_number:this.cur,p_text:t||null,p_url:u,p_mime:mi,p_name:nm});
+      $('admTxt').value='';this.att=null;$('admAtt').textContent='✔ La diray - gateway-ga ayaa u gudbinaya WhatsApp';$('admFile').value='';
+      setTimeout(()=>this.load(true),4500);
+    }catch(e){Swal.fire('Cilad',e.message,'error');}
   },
+  // ---- data sync ----
+  async syncInfo(){
+    try{
+      const m=await this.rpc('sync_meta',{p_token:this.tok()});
+      const el=$('admSyncInfo');
+      el.innerHTML=this.KEYS.map(k=>{const x=m.find(y=>y.key===k);return '<div>'+k.replace('bax_','')+': '+(x?'<b>'+new Date(x.updated_at).toLocaleString()+'</b> ('+this.esc(x.by_device||'?')+')':'<span style="color:#999">weli lama soo dirin</span>')+'</div>';}).join('')+'<div style="color:#666;margin-top:.3rem;">Device-kan: '+this.dev()+'</div>';
+    }catch(e){$('admSyncInfo').textContent=e.message;}
+  },
+  async push(quiet){
+    try{
+      const ver=Date.now(),SZ=400000;
+      for(const k of this.KEYS){
+        let v=null;try{v=localStorage.getItem(k);}catch(e){}
+        if(v==null)continue;
+        const parts=[];for(let i=0;i<v.length;i+=SZ)parts.push(v.slice(i,i+SZ));if(!parts.length)parts.push('');
+        for(let i=0;i<parts.length;i++)await this.rpc('sync_put',{p_token:this.tok(),p_key:k,p_ver:ver,p_idx:i,p_total:parts.length,p_data:parts[i],p_device:this.dev()});
+      }
+      this.syncInfo();
+      if(!quiet)Swal.fire('Waa la diray','Xogta device-kan waxaa loo geliyay Supabase.','success');
+    }catch(e){if(!quiet)Swal.fire('Cilad',e.message,'error');}
+  },
+  async pull(){
+    const c=await Swal.fire({title:'Xogta soo qaado?',text:'Xogta device-kan waxaa lagu bedelayaa tan Supabase ku jirta. Hubi inaad horay u dirtay xogta cusub haddii device-kan wax cusub ku jiraan.',icon:'warning',showCancelButton:true,confirmButtonText:'Haa, soo qaado',cancelButtonText:'Maya'});
+    if(!c.isConfirmed)return;
+    try{
+      const got={};
+      for(const k of this.KEYS){
+        let first;try{first=await this.rpc('sync_get',{p_token:this.tok(),p_key:k,p_idx:0});}catch(e){if(/jirto/.test(e.message))continue;throw e;}
+        let s=first.data||'';
+        for(let i=1;i<first.total;i++){const r=await this.rpc('sync_get',{p_token:this.tok(),p_key:k,p_idx:i});if(r.ver!==first.ver)throw new Error('Xogta ayaa isbeddelay, mar kale isku day');s+=r.data||'';}
+        JSON.parse(s); got[k]=s;
+      }
+      // keep a safety copy of what this device had
+      try{const bk={};this.KEYS.forEach(k=>bk[k]=localStorage.getItem(k));localStorage.setItem('adm_backup',JSON.stringify(bk));}catch(e){}
+      Object.keys(got).forEach(k=>localStorage.setItem(k,got[k]));
+      await Swal.fire('La soo qaaday','Bogga ayaa dib loo furayaa.','success');location.reload();
+    }catch(e){Swal.fire('Cilad',e.message,'error');}
+  }
 };
 
 const WA = window.WA = {
@@ -11143,6 +11210,14 @@ const WA = window.WA = {
       if(this._lastSync===sig)return;
       const r=await this.api('/registry','POST',{rows});this._lastSync=sig;this._syncTotal=r.total;
     }catch(e){console.warn('sync',e);}
+  },
+  async drLinks(reset){
+    if(reset){const c=await Swal.fire({icon:'warning',title:'Password-yada hore waa la beddelayaa',text:'Dhakhaatiirta waa inaad u dirtaa kuwa cusub.',showCancelButton:true});if(!c.isConfirmed)return;}
+    let r;try{r=await WA.api('/dr-admin/create','POST',{reset:!!reset});}catch(e){Swal.fire({icon:'error',title:'Lama sameyn karo',text:e.message});return;}
+    const page=r.pageUrl||'https://baxnaanohospital.github.io/BAXNAANO/dr.html';
+    const rows=r.doctors.map(d=>{const msg='Asc '+d.name+', halkan ku gal si aad ula hadasho bukaanadaada: '+page+'\nUsername: '+d.user+(d.pass?'\nPassword: '+d.pass:'');
+      return `<tr><td style="padding:.3rem .4rem"><b>${this.esc(d.name)}</b></td><td style="padding:.3rem .4rem;text-align:left">Username: <b>${this.esc(d.user)}</b>${d.pass?' · Password: <b>'+this.esc(d.pass)+'</b>':' · <span style="color:#888">password hore ayaa jira</span>'}</td><td style="padding:.3rem .4rem">${d.pass?`<a href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank">Dir</a>`:''}</td></tr>`;}).join('');
+    Swal.fire({title:'Dr. Chat - galitaanka dhakhaatiirta',width:760,html:'<div style="text-align:left;font-size:13px;margin-bottom:.5rem">Link-ga dhakhaatiirta oo dhan: <b><a href="'+this.esc(page)+'" target="_blank">'+this.esc(page)+'</a></b><br><span style="color:#666">Bogga dhakhtarku waa fayl gooni ah (<b>dr.html</b>) oo aan la dhex dhicin nidaamka. Ku rid GitHub repo-gaaga (BAXNAANO). Wuxuu ku shaqeeyaa taleefan/laptop kasta.</span></div><table style="width:100%;font-size:13px">'+rows+'</table><div style="font-size:12px;color:#666;margin-top:.5rem;text-align:left">Passwords-ka mar keliya ayaa la tusayaa. Dhakhtarku wuxuu arkaa bukaanadiisa oo keliya.</div>'});
   },
   async syncRegistry(){
     const rows=(ls_get(BULK.K.LIST,[])||[]).map(r=>({number:BULK.waPhone(r.phone),name:BULK.titleCase(r.name),doctor:BULK.cleanDoctor(r.doctor),visit:r.date})).filter(r=>r.number);
