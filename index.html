@@ -788,7 +788,7 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
             <span style="display:flex;gap:.4rem;"><button class="btn btn-info btn-sm" onclick="CSAI.improveBulk()"><i class="bi bi-stars"></i> Improve with CS AI</button><button class="btn btn-light btn-sm" onclick="BULK.resetMsg()">Reset to default</button></span></div>
           <div class="card-body">
             <textarea id="bulkMsg" class="form-control" rows="12" oninput="BULK.saveMsg()" style="font-family:inherit;line-height:1.5;"></textarea>
-            <div style="font-size:11.5px;color:var(--text-muted);margin-top:.35rem;">Placeholders: <code>{name}</code> <code>{first_name}</code> <code>{doctor}</code> <code>{visit_date}</code> <code>{phone}</code>. Saved automatically.</div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin-top:.35rem;">Placeholders: <code>{name}</code> <code>{first_name}</code> <code>{doctor}</code> <code>{visit_date}</code> <code>{phone}</code> <code>{tomorrow_day}</code> <code>{tomorrow_date}</code>. Saved automatically.</div>
             <div style="margin-top:.6rem;font-size:12px;font-weight:600;">Preview (first patient):</div>
             <pre id="bulkPreview" style="white-space:pre-wrap;background:#f8f9fa;border:1px solid var(--border);border-radius:4px;padding:.6rem;font-family:inherit;font-size:12.5px;margin-top:.25rem;"></pre>
           </div>
@@ -904,7 +904,7 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
               <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
                 <button class="btn btn-success btn-sm" onclick="ADM.push()"><i class="bi bi-cloud-upload"></i> Device-kan &rarr; Supabase (soo dir)</button>
                 <button class="btn btn-primary btn-sm" onclick="ADM.pull()"><i class="bi bi-cloud-download"></i> Supabase &rarr; Device-kan (soo qaado)</button>
-                <label style="display:flex;align-items:center;gap:.3rem;font-size:13px;"><input type="checkbox" id="admAuto"> Auto-push (30 ilbiriqsi)</label>
+                <label style="display:flex;align-items:center;gap:.3rem;font-size:13px;"><input type="checkbox" id="admAuto"> Isku xirka toos ah (20 ilbiriqsi)</label>
               </div>
               <div style="font-size:12px;color:#666;margin-top:.4rem;">Waxa la isku xiraa: isticmaalayaasha, bukaanada, ballamaha, dawooyinka, follow-up, bulk list. Hubi inaad ka soo dirto device-ka xogta ugu cusub, kuwa kalena ka soo qaadato.</div>
             </div>
@@ -913,7 +913,15 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
             <div class="card-header"><span class="card-title"><i class="bi bi-whatsapp"></i> Fariimaha WhatsApp oo dhan</span><span><input id="admQ" class="form-control" placeholder="Raadi magac/lambar" style="display:inline-block;width:180px;" oninput="ADM.draw()"> <button class="btn btn-light btn-sm" onclick="ADM.load()">Refresh</button></span></div>
             <div class="card-body" style="padding:0;">
               <div id="admGrid" style="display:grid;grid-template-columns:minmax(220px,300px) 1fr;min-height:480px;">
-                <div id="admList" style="border-right:1px solid #e5e5e5;overflow:auto;max-height:620px;"></div>
+                <div style="border-right:1px solid #e5e5e5;display:flex;flex-direction:column;max-height:620px;">
+                  <div style="padding:.5rem;border-bottom:1px solid #e5e5e5;background:#f8faf9;">
+                    <div style="font-size:12px;font-weight:600;margin-bottom:.25rem;">+ Fariin lambar cusub</div>
+                    <input id="admNewN" class="form-control" placeholder="Lambar: 06XXXXXXXX / 2526XXXXXXXX" inputmode="tel" style="margin-bottom:.3rem;" onkeydown="if(event.key==='Enter')ADM.newNum()">
+                    <input id="admNewName" class="form-control" placeholder="Magac (ikhtiyaari)" style="margin-bottom:.3rem;" onkeydown="if(event.key==='Enter')ADM.newNum()">
+                    <button class="btn btn-success btn-sm" style="width:100%" onclick="ADM.newNum()">Fur wada hadal</button>
+                  </div>
+                  <div id="admList" style="overflow:auto;flex:1;"></div>
+                </div>
                 <div style="display:flex;flex-direction:column;max-height:620px;">
                   <div id="admHead" style="padding:.5rem .8rem;border-bottom:1px solid #e5e5e5;font-weight:600;font-size:14px;">Dooro bukaan</div>
                   <div id="admThread" style="flex:1;overflow:auto;padding:.6rem;background:#f4f1ea;"></div>
@@ -7500,7 +7508,7 @@ const HOSP = {
       {v:'hv-bulk',l:'Bulk Messages',roles:['admin','cashier','reception']},
       {v:'hv-csai',l:'CS AI',roles:['admin','cashier','reception']},
       {v:'hv-wa',l:'WhatsApp',roles:['admin','cashier','reception']},
-      {v:'hv-adm',l:'WA Inbox (Supabase)',roles:['admin']},
+      {v:'hv-adm',l:'WA Inbox (Supabase)',roles:['admin','cashier','reception']},
       {v:'hv-doctor',l:'Doctor Panel',roles:['admin','doctor']},
       {v:'hv-reports',l:'Reports',roles:['admin']},
       {v:'hv-users',l:'Users',roles:['admin']},
@@ -10325,7 +10333,8 @@ Waa noo sharaf doorashada aad na dooratey.`,
     ls_set(this.K.CFG,c);return c;
   },
   getMsg(){const m=ls_get(this.K.MSG,'');return (typeof m==='string'&&m.trim())?m:this.DEFAULT_MSG;},
-  saveMsg(){ls_set(this.K.MSG,$('bulkMsg').value);this.renderPreview();},
+  saveMsg(){ls_set(this.K.MSG,$('bulkMsg').value);this.renderPreview();clearTimeout(this._tp);this._tp=setTimeout(()=>this.pushTpl(),700);},
+  pushTpl(){const v=$('bulkMsg')&&$('bulkMsg').value;if(!v||!v.trim()||!this.gwTimer)return;try{WA.api('/bulk/template','POST',{tpl:v}).catch(()=>{});}catch(e){}},
   resetMsg(){$('bulkMsg').value=this.DEFAULT_MSG;this.saveMsg();},
   getStatus(){return ls_get(this.K.STATUS,{})||{};},
 
@@ -10412,8 +10421,19 @@ Waa noo sharaf doorashada aad na dooratey.`,
       .replace(/\{first_name\}/g,first)
       .replace(/\{doctor\}/g,this.cleanDoctor(r.doctor))
       .replace(/\{visit_date\}/g,this.fmtVisit(r.date))
-      .replace(/\{phone\}/g,r.phone||'');
+      .replace(/\{phone\}/g,r.phone||'')
+      .replace(/\{\s*tomorrow_day\s*\}/gi,this.tomorrow().day)
+      .replace(/\{\s*tomorrow_date\s*\}/gi,this.tomorrow().date)
+      .replace(/\{\s*today_date\s*\}/gi,this.tomorrow(0).date).replace(/\*+/g,'');
   },
+  // tomorrow in Mogadishu time (UTC+3): Somali weekday + date like "15 Nov 2026"
+  tomorrow(add){
+    const n=(add==null?1:add),t=new Date(Date.now()+3*3600e3+n*86400e3);
+    const day=['Axad','Isniin','Salaasa','Arbaco','Khamiis','Jimce','Sabti'][t.getUTCDay()];
+    const date=t.getUTCDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][t.getUTCMonth()]+' '+t.getUTCFullYear();
+    return {day,date};
+  },
+  leftover(msg){const m=String(msg).match(/\{[a-z_ ]+\}/gi);return m?[...new Set(m)]:[];},
 
   // ---- UI ----
   render(){
@@ -10516,13 +10536,14 @@ Waa noo sharaf doorashada aad na dooratey.`,
     if(st.state!=='open'){Swal.fire({icon:'warning',title:'WhatsApp is not linked',text:'Open the WhatsApp tab and link it first (QR or phone number).'});return;}
     if(['running','paused'].includes(st.queue.status)){this.gwAttach();Swal.fire({icon:'info',title:'A queue is already running',text:'Showing its progress.'});return;}
     const tpl=$('bulkMsg').value;
+    {const lf=this.leftover(this.buildMsg(list[0],tpl));if(lf.length){Swal.fire({icon:'error',title:'Fariinta waxaa ku jira meel aan la buuxin',text:lf.join(' ')+' - ka saar ama sax ka hor intaan la dirin.'});return;}}
     const items=list.map(r=>({to:r.wa,name:this.titleCase(r.name),doctor:this.cleanDoctor(r.doctor),visit:r.date,message:this.buildMsg(r,tpl)}));
     const ok=await Swal.fire({title:`Send to ${items.length} patients?`,html:`The gateway sends one message every <b>${c.delay} seconds</b> (about ${Math.ceil(items.length*c.delay/60)} min). You can close this page.`,icon:'question',showCancelButton:true,confirmButtonText:'Start'});
     if(!ok.isConfirmed)return;
-    try{await WA.api('/bulk','POST',{items,delaySec:c.delay});}catch(e){Swal.fire({icon:'error',title:'Could not start',text:e.message});return;}
+    try{await WA.api('/bulk','POST',{items,delaySec:c.delay,tpl});}catch(e){Swal.fire({icon:'error',title:'Could not start',text:e.message});return;}
     this.gwAttach();
   },
-  gwAttach(){if(!this.gwTimer){this.gwTimer=setInterval(()=>this.gwPoll(),3000);}this.gwPoll();},
+  gwAttach(){if(!this.gwTimer){this.gwTimer=setInterval(()=>this.gwPoll(),3000);}this.gwPoll();setTimeout(()=>this.pushTpl(),1500);},
   gwDetach(){clearInterval(this.gwTimer);this.gwTimer=null;},
   async gwPoll(){
     try{
@@ -10921,15 +10942,11 @@ const ADM = window.ADM = {
     if(ok){
       this.load();this.syncInfo();
       this._t=setInterval(()=>{if(!$('hv-adm').classList.contains('active')){clearInterval(this._t);this._t=null;return;}this.load(true);},5000);
-      try{$('admAuto').checked=localStorage.getItem('adm_auto')==='1';}catch(e){}
-      $('admAuto').onchange=()=>{try{localStorage.setItem('adm_auto',$('admAuto').checked?'1':'0');}catch(e){}this.autoSet();};
-      this.autoSet();
+      try{$('admAuto').checked=localStorage.getItem('adm_auto')!=='0';}catch(e){}
+      $('admAuto').onchange=()=>{try{localStorage.setItem('adm_auto',$('admAuto').checked?'1':'0');}catch(e){}};
     }
   },
-  autoSet(){
-    clearInterval(this._a);this._a=null;
-    if(this.tok()&&$('admAuto').checked)this._a=setInterval(()=>this.push(true),30000);
-  },
+  autoSet(){},
   async login(){
     try{
       const r=await this.rpc('dr_login',{p_user:$('admU').value,p_pass:$('admP').value});
@@ -10949,6 +10966,7 @@ const ADM = window.ADM = {
     this.msgs.forEach(m=>{const c=by[m.number]||(by[m.number]={number:m.number,name:'',at:'',last:'',need:false,n:0});
       if(m.name)c.name=m.name;c.at=m.at;c.last=m.text||(m.file_url?'📎 fayl':'');c.n++;
       if(m.dir==='in')c.need=!!m.needs_human;else if(m.dir==='out')c.need=false;});
+    Object.keys(this.pend||{}).forEach(n=>{if(!by[n])by[n]={number:n,name:this.pend[n].name,at:'9999',last:'(wada hadal cusub)',need:false,n:0};});
     return Object.values(by).sort((a,b)=>(b.need-a.need)||String(b.at).localeCompare(String(a.at)));
   },
   draw(){
@@ -10958,6 +10976,14 @@ const ADM = window.ADM = {
     if(this.cur)this.drawThread();
   },
   open(n){this.cur=n;this.draw();},
+  norm(v){let d=String(v||'').replace(/\D/g,'');if(d.length===9&&d[0]==='6')d='252'+d;else if(d.length===10&&d[0]==='0')d='252'+d.slice(1);return d.length>=11&&d.length<=15?d:'';},
+  newNum(){
+    const n=this.norm($('admNewN').value);
+    if(!n)return Swal.fire('Lambar khaldan','Tusaale: 0615551234 ama 252615551234','warning');
+    const nm=$('admNewName').value.trim();
+    (this.pend=this.pend||{})[n]={name:nm};
+    $('admNewN').value='';$('admNewName').value='';this.cur=n;this.draw();setTimeout(()=>$('admTxt').focus(),100);
+  },
   media(m){
     if(!m.file_url)return '';
     const u=this.esc(m.file_url),t=m.file_mime||'';
@@ -11015,38 +11041,73 @@ const ADM = window.ADM = {
       el.innerHTML=this.KEYS.map(k=>{const x=m.find(y=>y.key===k);return '<div>'+k.replace('bax_','')+': '+(x?'<b>'+new Date(x.updated_at).toLocaleString()+'</b> ('+this.esc(x.by_device||'?')+')':'<span style="color:#999">weli lama soo dirin</span>')+'</div>';}).join('')+'<div style="color:#666;margin-top:.3rem;">Device-kan: '+this.dev()+'</div>';
     }catch(e){$('admSyncInfo').textContent=e.message;}
   },
-  async push(quiet){
+  hash(str){let h=5381;str=String(str==null?'':str);for(let i=0;i<str.length;i++)h=((h<<5)+h+str.charCodeAt(i))|0;return h+':'+str.length;},
+  st(){try{return JSON.parse(localStorage.getItem('adm_state')||'{}');}catch(e){return {};}},
+  setSt(o){try{localStorage.setItem('adm_state',JSON.stringify(o));}catch(e){}},
+  async putKey(k,v){
+    const ver=Date.now(),SZ=400000,parts=[];
+    for(let i=0;i<v.length;i+=SZ)parts.push(v.slice(i,i+SZ));if(!parts.length)parts.push('');
+    for(let i=0;i<parts.length;i++)await this.rpc('sync_put',{p_token:this.tok(),p_key:k,p_ver:ver,p_idx:i,p_total:parts.length,p_data:parts[i],p_device:this.dev()});
+    return ver;
+  },
+  async getKey(k){
+    const first=await this.rpc('sync_get',{p_token:this.tok(),p_key:k,p_idx:0});
+    let s=first.data||'';
+    for(let i=1;i<first.total;i++){const r=await this.rpc('sync_get',{p_token:this.tok(),p_key:k,p_idx:i});if(r.ver!==first.ver)throw new Error('Xogta ayaa isbeddelay, mar kale isku day');s+=r.data||'';}
+    return {data:s,ver:first.ver};
+  },
+  // automatic two-way sync: each key is pushed when only this device changed, pulled when only Supabase changed, and flagged when both changed
+  async auto(){
+    if(!this.tok()||this._busy)return;
+    try{if(localStorage.getItem('adm_auto')==='0')return;}catch(e){}
+    this._busy=true;
     try{
-      const ver=Date.now(),SZ=400000;
+      const meta=await this.rpc('sync_meta',{p_token:this.tok()}),state=this.st();let pulled=false,conf=[],pushed=0;
       for(const k of this.KEYS){
-        let v=null;try{v=localStorage.getItem(k);}catch(e){}
-        if(v==null)continue;
-        const parts=[];for(let i=0;i<v.length;i+=SZ)parts.push(v.slice(i,i+SZ));if(!parts.length)parts.push('');
-        for(let i=0;i<parts.length;i++)await this.rpc('sync_put',{p_token:this.tok(),p_key:k,p_ver:ver,p_idx:i,p_total:parts.length,p_data:parts[i],p_device:this.dev()});
+        const local=localStorage.getItem(k),lh=this.hash(local),rm=meta.find(x=>x.key===k),s0=state[k];
+        if(!s0){
+          if(!rm){if(local!=null){const v=await this.putKey(k,local);state[k]={h:lh,v};pushed++;}}
+          else if(local==null){const g=await this.getKey(k);localStorage.setItem(k,g.data);state[k]={h:this.hash(g.data),v:g.ver};pulled=true;}
+          else conf.push(k);
+          continue;
+        }
+        const lc=lh!==s0.h,rc=!!rm&&rm.ver!==s0.v;
+        if(lc&&!rc&&local!=null){const v=await this.putKey(k,local);state[k]={h:lh,v};pushed++;}
+        else if(!lc&&rc){const g=await this.getKey(k);localStorage.setItem(k,g.data);state[k]={h:this.hash(g.data),v:g.ver};pulled=true;}
+        else if(lc&&rc)conf.push(k);
       }
+      this.setSt(state);this._conf=conf;
       this.syncInfo();
+      if(conf.length&&!this._warned){this._warned=true;Swal.fire({icon:'warning',title:'Xogta isku dhac ayaa jirta',text:'Device-kan iyo Supabase labaduba way isbeddeleen ('+conf.map(k=>k.replace('bax_','')).join(', ')+'). Tag tab-ka "WA Inbox (Supabase)" oo dooro: soo dir ama soo qaado.'});}
+      if(pulled){const ae=document.activeElement;if(!ae||!/INPUT|TEXTAREA|SELECT/.test(ae.tagName))location.reload();else this._reload=true;}
+    }catch(e){/* offline or signed out - try again next cycle */}
+    finally{this._busy=false;}
+    if(this._reload){const ae=document.activeElement;if(!ae||!/INPUT|TEXTAREA|SELECT/.test(ae.tagName))location.reload();}
+  },
+  async push(quiet){   // force: this device wins
+    try{
+      const state=this.st();
+      for(const k of this.KEYS){const v=localStorage.getItem(k);if(v==null)continue;const ver=await this.putKey(k,v);state[k]={h:this.hash(v),v:ver};}
+      this.setSt(state);this._conf=[];this._warned=false;this.syncInfo();
       if(!quiet)Swal.fire('Waa la diray','Xogta device-kan waxaa loo geliyay Supabase.','success');
     }catch(e){if(!quiet)Swal.fire('Cilad',e.message,'error');}
   },
-  async pull(){
-    const c=await Swal.fire({title:'Xogta soo qaado?',text:'Xogta device-kan waxaa lagu bedelayaa tan Supabase ku jirta. Hubi inaad horay u dirtay xogta cusub haddii device-kan wax cusub ku jiraan.',icon:'warning',showCancelButton:true,confirmButtonText:'Haa, soo qaado',cancelButtonText:'Maya'});
+  async pull(){   // force: Supabase wins
+    const c=await Swal.fire({title:'Xogta soo qaado?',text:'Xogta device-kan waxaa lagu bedelayaa tan Supabase ku jirta.',icon:'warning',showCancelButton:true,confirmButtonText:'Haa, soo qaado',cancelButtonText:'Maya'});
     if(!c.isConfirmed)return;
     try{
       const got={};
-      for(const k of this.KEYS){
-        let first;try{first=await this.rpc('sync_get',{p_token:this.tok(),p_key:k,p_idx:0});}catch(e){if(/jirto/.test(e.message))continue;throw e;}
-        let s=first.data||'';
-        for(let i=1;i<first.total;i++){const r=await this.rpc('sync_get',{p_token:this.tok(),p_key:k,p_idx:i});if(r.ver!==first.ver)throw new Error('Xogta ayaa isbeddelay, mar kale isku day');s+=r.data||'';}
-        JSON.parse(s); got[k]=s;
-      }
-      // keep a safety copy of what this device had
+      for(const k of this.KEYS){let g;try{g=await this.getKey(k);}catch(e){if(/jirto/.test(e.message))continue;throw e;}got[k]=g;}
       try{const bk={};this.KEYS.forEach(k=>bk[k]=localStorage.getItem(k));localStorage.setItem('adm_backup',JSON.stringify(bk));}catch(e){}
-      Object.keys(got).forEach(k=>localStorage.setItem(k,got[k]));
+      const state=this.st();
+      Object.keys(got).forEach(k=>{localStorage.setItem(k,got[k].data);state[k]={h:this.hash(got[k].data),v:got[k].ver};});
+      this.setSt(state);
       await Swal.fire('La soo qaaday','Bogga ayaa dib loo furayaa.','success');location.reload();
     }catch(e){Swal.fire('Cilad',e.message,'error');}
   }
 };
 
+setInterval(()=>{try{ADM.auto();}catch(e){}},20000);setTimeout(()=>{try{ADM.auto();}catch(e){}},6000);
 const WA = window.WA = {
   esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));},
   cfg(){
