@@ -54,12 +54,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:13
 .landing-card img{width:80px;margin-bottom:.75rem;}
 .landing-card h2{font-size:1.3rem;font-weight:700;color:var(--primary-dark);margin-bottom:.3rem;}
 .landing-card p{color:var(--text-muted);font-size:.9rem;margin-bottom:1.5rem;}
-.landing-btns{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.landing-btns{display:grid;grid-template-columns:1fr;gap:1rem;}
 .landing-btn{padding:1.5rem .75rem;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;color:#fff;display:flex;flex-direction:column;align-items:center;gap:.4rem;transition:transform .2s,box-shadow .2s;}
 .landing-btn i{font-size:2rem;}
 .landing-btn:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.2);}
 .lb-hosp{background:linear-gradient(135deg,var(--primary),var(--primary-light));}
-.lb-lab{background:linear-gradient(135deg,#0f6e82,var(--info));}
 .landing-footer{margin-top:1rem;font-size:.75rem;color:#bbb;}
 
 /* LOGIN */
@@ -310,9 +309,6 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
       <div class="landing-btns">
         <button onclick="enterSystem('hospital')" class="landing-btn lb-hosp">
           <i class="bi bi-hospital"></i>Hospital & Cashier
-        </button>
-        <button onclick="enterSystem('lab')" class="landing-btn lb-lab">
-          <i class="bi bi-flask"></i>Lab Management & POS
         </button>
       </div>
       <div class="landing-footer">v4.1 · Baxnaano Medical Systems · 2026</div>
@@ -680,21 +676,6 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
             <div style="display:grid;grid-template-columns:2fr 1fr;gap:1rem;">
               <div>
                 <div class="form-section">
-                  <div class="form-section-title">Send Lab Request</div>
-                  <div class="form-grid-2" style="gap:.6rem;">
-                    <div class="form-group"><label>Patient Name</label><input id="dLabPatient" class="form-control" placeholder="Patient name"></div>
-                    <div class="form-group"><label>Test Type</label>
-                      <select id="dLabTest" class="form-select">
-                        <option value="">Select Test</option>
-                        <option>CBC</option><option>Blood Sugar</option><option>Urine Test</option>
-                        <option>Stool Test</option><option>X-Ray</option><option>Ultrasound</option><option>Other</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="form-group" style="margin-top:.5rem;"><label>Clinical Notes</label><textarea id="dLabNotes" class="form-control" rows="2" placeholder="Notes for lab"></textarea></div>
-                  <button class="btn btn-info btn-sm" style="margin-top:.5rem;" onclick="HOSP.sendLabReq()"><i class="bi bi-send"></i> Send to Lab</button>
-                </div>
-                <div class="form-section">
                   <div class="form-section-title">Prescription</div>
                   <div class="form-grid-2" style="gap:.6rem;">
                     <div class="form-group"><label>Patient</label><input id="dRxPatient" class="form-control" placeholder="Patient name"></div>
@@ -795,6 +776,205 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
       </div>
     </div>
 
+    <!-- Bulk Messages -->
+    <div id="hv-bulk" class="view">
+      <div class="breadcrumb"><a onclick="HOSP.showView('hv-bulk')">Cashier</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <span>Bulk Messages</span></div>
+      <div class="page-wrap">
+        <div class="stats-row" id="bulkStats"></div>
+
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header"><span class="card-title"><i class="bi bi-chat-text"></i> Message (edit it here)</span>
+            <span style="display:flex;gap:.4rem;"><button class="btn btn-info btn-sm" onclick="CSAI.improveBulk()"><i class="bi bi-stars"></i> Improve with CS AI</button><button class="btn btn-light btn-sm" onclick="BULK.resetMsg()">Reset to default</button></span></div>
+          <div class="card-body">
+            <textarea id="bulkMsg" class="form-control" rows="12" oninput="BULK.saveMsg()" style="font-family:inherit;line-height:1.5;"></textarea>
+            <div style="font-size:11.5px;color:var(--text-muted);margin-top:.35rem;">Placeholders: <code>{name}</code> <code>{first_name}</code> <code>{doctor}</code> <code>{visit_date}</code> <code>{phone}</code>. Saved automatically.</div>
+            <div style="margin-top:.6rem;font-size:12px;font-weight:600;">Preview (first patient):</div>
+            <pre id="bulkPreview" style="white-space:pre-wrap;background:#f8f9fa;border:1px solid var(--border);border-radius:4px;padding:.6rem;font-family:inherit;font-size:12.5px;margin-top:.25rem;"></pre>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header"><span class="card-title"><i class="bi bi-send-fill"></i> Send</span></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group"><label>Visit from</label><input type="date" id="bulkFrom" class="form-control" onchange="BULK.onFilter()"></div>
+              <div class="form-group"><label>Visit to</label><input type="date" id="bulkTo" class="form-control" onchange="BULK.onFilter()"></div>
+              <div class="form-group"><label>Doctor</label><select id="bulkDoctor" class="form-select" onchange="BULK.onFilter()"></select></div>
+              <div class="form-group"><label>Gap between messages (seconds)</label><input type="number" id="bulkDelay" class="form-control" min="5" value="30" onchange="BULK.onFilter()"></div>
+              <div class="form-group"><label>Send mode</label>
+                <select id="bulkMode" class="form-select" onchange="BULK.onMode();BULK.onFilter()">
+                  <option value="link">WhatsApp link (you tap Send in WhatsApp)</option>
+                  <option value="gateway">Automatic via WhatsApp Gateway (QR-linked, runs on the server)</option>
+                  <option value="api">Automatic via custom bot / API endpoint</option>
+                </select></div>
+            </div>
+            <div id="bulkApiBox" class="form-grid" style="display:none;margin-top:.5rem;">
+              <div class="form-group"><label>Endpoint URL (POST JSON: to, message)</label><input id="bulkEndpoint" class="form-control" placeholder="https://..." onchange="BULK.onFilter()"></div>
+              <div class="form-group"><label>Token (optional, sent as Bearer)</label><input id="bulkToken" class="form-control" onchange="BULK.onFilter()"></div>
+            </div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin:.5rem 0;">A web page cannot press WhatsApp's Send button by itself, so the best option is the WhatsApp Gateway (link WhatsApp once in the WhatsApp tab): it sends everything by itself on the server, even if you close this page. "WhatsApp link" opens each chat with the text ready, every gap seconds, and you tap Send. "Automatic" posts each message to your own bot/gateway, so nothing needs tapping. Keep this page open while it runs.</div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+              <button class="btn btn-success" id="bulkBtnStart" onclick="BULK.start()"><i class="bi bi-play-fill"></i> Start</button>
+              <button class="btn btn-warning" id="bulkBtnPause" onclick="BULK.pause()" style="display:none;"><i class="bi bi-pause-fill"></i> Pause</button>
+              <button class="btn btn-primary" id="bulkBtnResume" onclick="BULK.resume()" style="display:none;"><i class="bi bi-play-fill"></i> Resume</button>
+              <button class="btn btn-danger" id="bulkBtnStop" onclick="BULK.stop()" style="display:none;"><i class="bi bi-stop-fill"></i> Stop</button>
+              <button class="btn btn-light btn-sm" onclick="BULK.resetStatus()">Reset statuses</button>
+              <span id="bulkRunState" style="font-weight:600;font-size:13px;">Idle.</span>
+            </div>
+            <div style="height:8px;background:#e9ecef;border-radius:4px;margin-top:.6rem;overflow:hidden;"><div id="bulkBar" style="height:100%;width:0;background:var(--success);transition:width .3s;"></div></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header"><span class="card-title"><i class="bi bi-upload"></i> Import more patients</span></div>
+          <div class="card-body">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:.4rem;">Paste lines like <code>17 Oct 2026</code> then <code>NAME,DOCTOR,PHONE,SEX</code> (or the tab text files), or choose a .txt file.</div>
+            <textarea id="bulkImportText" class="form-control" rows="4"></textarea>
+            <div style="display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;align-items:center;">
+              <button class="btn btn-primary btn-sm" onclick="BULK.importText()">Import pasted text</button>
+              <input type="file" accept=".txt,.csv,.tsv" onchange="BULK.importFile(this)">
+              <button class="btn btn-danger btn-sm" onclick="BULK.clearList()" style="margin-left:auto;">Clear list</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="bi bi-people"></i> Recipients</span>
+            <div class="search-wrap"><i class="bi bi-search"></i><input id="bulkSearch" placeholder="Search name, phone, doctor..." oninput="BULK.onFilter()"></div>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="tbl-wrap">
+              <table class="dtable">
+                <thead><tr><th>#</th><th>Visit</th><th>Patient</th><th>Phone</th><th>Doctor</th><th>Status</th><th class="actions">Open</th></tr></thead>
+                <tbody id="bulkBody"></tbody>
+              </table>
+            </div>
+            <div style="padding:.5rem 1rem;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);" id="bulkCount"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- CS AI -->
+    <div id="hv-csai" class="view">
+      <div class="breadcrumb"><a onclick="HOSP.showView('hv-csai')">Cashier</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <span>CS AI</span></div>
+      <div class="page-wrap">
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="bi bi-stars"></i> CS AI</span>
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
+              <button class="btn btn-light btn-sm" onclick="CSAI.chip('U qor fariin follow-up ah oo bukaanada loo dirayo')">Qor fariin</button>
+              <button class="btn btn-light btn-sm" onclick="CSAI.chip('Imisa bukaan ayaa hadhay, intee waqti ayay qaadanaysaa?')">Inta hadhay</button>
+              <button class="btn btn-light btn-sm" onclick="CSAI.chip('Hakii dirista')">Hakii</button>
+              <button class="btn btn-light btn-sm" onclick="CSAI.chip('Sii wad dirista')">Sii wad</button>
+            </div></div>
+          <div class="card-body">
+            <div id="csaiLog" style="height:55vh;min-height:300px;overflow:auto;border:1px solid var(--border);border-radius:6px;padding:.6rem;background:#fff;"></div>
+            <div style="display:flex;gap:.5rem;margin-top:.6rem;">
+              <textarea id="csaiInput" class="form-control" rows="2" placeholder="Qor halkan..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();CSAI.send();}"></textarea>
+              <button class="btn btn-primary" id="csaiSend" onclick="CSAI.send()"><i class="bi bi-send-fill"></i></button>
+            </div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin-top:.4rem;">CS AI wuxuu arkaa wadarta xogta Bulk Messages oo kaliya (ma arko magacyada iyo lambarada bukaanada).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WhatsApp -->
+    <div id="hv-wa" class="view">
+      <div class="breadcrumb"><a onclick="HOSP.showView('hv-wa')">Cashier</a> <i class="bi bi-chevron-right" style="font-size:10px;"></i> <span>WhatsApp</span></div>
+      <div class="page-wrap">
+
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header"><span class="card-title"><i class="bi bi-whatsapp"></i> Connection</span><span id="waState"></span></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group"><label>Gateway URL</label><input id="waUrl" class="form-control" placeholder="http://localhost:3000"></div>
+              <div class="form-group"><label>Gateway token</label><input id="waToken" class="form-control" placeholder="printed by the gateway on start"></div>
+            </div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;">
+              <button class="btn btn-primary btn-sm" onclick="WA.saveGw()">Save &amp; connect</button>
+              <button class="btn btn-danger btn-sm" id="waLogout" onclick="WA.logout()" style="display:none;">Disconnect WhatsApp</button>
+            </div>
+            <div id="waQrBox" style="display:none;margin-top:1rem;">
+              <div class="form-grid-2">
+                <div><div style="font-weight:600;font-size:13px;margin-bottom:.3rem;">Option 1 — Scan the QR</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-bottom:.4rem;">WhatsApp &gt; Linked devices &gt; Link a device (from another phone).</div>
+                  <div id="waQrImg"></div></div>
+                <div><div style="font-weight:600;font-size:13px;margin-bottom:.3rem;">Option 2 — Link with phone number (one phone only)</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-bottom:.4rem;">Enter the hospital WhatsApp number, then WhatsApp &gt; Linked devices &gt; Link with phone number instead, and type the code.</div>
+                  <div style="display:flex;gap:.4rem;"><input id="waPairPhone" class="form-control" placeholder="06xxxxxxxx"><button class="btn btn-info btn-sm" onclick="WA.pair()">Get code</button></div>
+                  <div id="waPairCode" style="font-size:26px;font-weight:700;letter-spacing:4px;margin-top:.6rem;"></div></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:.4rem;margin-top:1rem;align-items:center;flex-wrap:wrap;">
+              <input id="waTestTo" class="form-control" style="max-width:200px;" placeholder="Test number 06...">
+              <button class="btn btn-light btn-sm" onclick="WA.test()">Send test message</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header"><span class="card-title"><i class="bi bi-send-fill"></i> Bulk queue (runs on the gateway)</span>
+            <span style="display:flex;gap:.4rem;"><button class="btn btn-warning btn-sm" onclick="WA.qpost('/bulk/pause')">Pause</button><button class="btn btn-primary btn-sm" onclick="WA.qpost('/bulk/resume')">Resume</button><button class="btn btn-danger btn-sm" onclick="WA.qpost('/bulk/stop')">Stop</button></span></div>
+          <div class="card-body" id="waQueue" style="font-size:13px;"></div>
+        </div>
+
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header"><span class="card-title"><i class="bi bi-robot"></i> AI auto-reply</span>
+            <label style="display:flex;gap:.4rem;align-items:center;font-size:13px;"><input type="checkbox" id="waAutoState" onchange="WA.toggleAuto(this)"> Auto-reply ON</label></div>
+          <div class="card-body">
+            <div class="form-group"><label>Hospital information the AI may use (location, hours, doctors, fees)</label>
+              <textarea id="waKnowledge" class="form-control" rows="6"></textarea></div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin:.25rem 0 .6rem;">If the gateway has the Supabase settings, it also reads the doctors and settings tables automatically. The AI never diagnoses and hands over to staff when unsure, in an emergency, or on a complaint.</div>
+            <div class="form-group"><label>Extra rules (optional)</label><input id="waRules" class="form-control" placeholder="e.g. Always end with 'Mahadsanid'"></div>
+            <div class="form-group"><label>Words that call a human (comma separated)</label><input id="waHandoff" class="form-control"></div>
+            <div class="form-grid">
+              <div class="form-group"><label>Max AI replies per contact / day</label><input id="waMaxReplies" type="number" class="form-control"></div>
+              <div class="form-group"><label>Max bulk messages / day</label><input id="waDailyCap" type="number" class="form-control"></div>
+              <div class="form-group"><label>Random extra gap (sec)</label><input id="waJitter" type="number" class="form-control"></div>
+            </div>
+            <button class="btn btn-success btn-sm" style="margin-top:.6rem;" onclick="WA.saveConfig()">Save settings</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header"><span class="card-title"><i class="bi bi-person-check"></i> Doctor availability (bot answers "Dr ma joogaa?")</span></div>
+          <div class="card-body">
+            <div class="form-grid">
+              <div class="form-group"><label>Dr. Harith (Neurology)</label>
+                <select id="waHStatus" class="form-select"><option value="available">Available</option><option value="away">Away / on leave</option><option value="unknown">Not confirmed</option></select></div>
+              <div class="form-group"><label>Harith away until (date)</label><input type="date" id="waHUntil" class="form-control"></div>
+              <div class="form-group"><label>Dr. Yaxye (Pediatrics)</label>
+                <select id="waYStatus" class="form-select"><option value="available">Available</option><option value="away">Away / on leave</option><option value="unknown">Not confirmed</option></select></div>
+              <div class="form-group"><label>Yaxye away until (date)</label><input type="date" id="waYUntil" class="form-control"></div>
+            </div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin:.4rem 0;">Hospital hours used by the bot: Saturday-Thursday 06:30-20:00 (Mogadishu time), Friday closed. If a date is set, the doctor counts as away until that date.</div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;"><button class="btn btn-success btn-sm" onclick="WA.saveConfig()">Save</button>
+              <button class="btn btn-light btn-sm" onclick="WA.syncRegistry()">Sync patient list to bot</button></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="bi bi-inbox"></i> Inbox</span><button class="btn btn-light btn-sm" onclick="WA.loadInbox()">Refresh</button></div>
+          <div class="card-body" style="padding:0;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
+              <div id="waConvList" style="max-height:60vh;overflow:auto;border-right:1px solid var(--border);"></div>
+              <div style="display:flex;flex-direction:column;max-height:60vh;">
+                <div id="waThreadHead" style="padding:.5rem .7rem;border-bottom:1px solid var(--border);min-height:38px;font-size:13px;">Select a conversation</div>
+                <div id="waThread" style="flex:1;overflow:auto;padding:.5rem .7rem;min-height:160px;"></div>
+                <div id="waReplyBox" style="display:none;padding:.5rem;border-top:1px solid var(--border);">
+                  <div style="display:flex;gap:.4rem;"><textarea id="waReplyText" class="form-control" rows="2" placeholder="Reply..."></textarea><button class="btn btn-primary btn-sm" onclick="WA.sendReply()"><i class="bi bi-send-fill"></i></button></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div><!-- /hospitalApp -->
 </div><!-- /hospitalSystem -->
 
@@ -846,247 +1026,6 @@ table.dtable td.actions{text-align:right;white-space:nowrap;}
   </div>
 </div>
 
-<!-- LAB SYSTEM -->
-<div id="labSystem" style="display:none;">
-  <div id="labLogin" style="display:none;">
-    <div class="login-wrap" style="background:linear-gradient(135deg,#0a3d4a,#17a2b8);">
-      <div class="login-card">
-        <img src="https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png" alt="Logo">
-        <h2 style="color:#0a3d4a;">🔬 BAXNAANO LAB</h2>
-        <input id="lLoginUser" class="login-input" placeholder="Username" autocomplete="username">
-        <input id="lLoginPass" class="login-input" type="password" placeholder="Password" autocomplete="current-password">
-        <button class="login-btn" style="background:var(--info);" onclick="LAB.login()">Login</button>
-        <div id="lLoginAlert" class="alert alert-danger d-none" style="margin-top:.5rem;"></div>
-        <div class="login-back"><a onclick="goHome()">← Back to Main Menu</a></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="labApp" style="display:none;">
-    <div class="topbar" style="background:linear-gradient(135deg,#0f6e82,#17a2b8);">
-      <div class="topbar-logo">
-        <img src="https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png">
-        Lab POS
-      </div>
-      <div class="topbar-nav" id="labTopNav"></div>
-      <div class="topbar-right">
-        <span class="topbar-user" id="labUserDisp"></span>
-        <button class="topbar-logout" onclick="LAB.logout()">Logout</button>
-      </div>
-    </div>
-
-    <div id="lv-dashboard" class="view active">
-      <div class="page-wrap">
-        <div class="stats-row" id="lDashStats"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-          <div class="card">
-            <div class="card-header"><span class="card-title"><i class="bi bi-exclamation-triangle text-warning"></i> Stock & Expiry Alerts</span></div>
-            <div class="card-body" id="lDashAlerts"></div>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title"><i class="bi bi-graph-up"></i> Last 7 Days Sales</span></div>
-            <div class="card-body" id="lSalesChart" style="height:200px;display:flex;align-items:flex-end;gap:6px;padding:8px 0;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="lv-products" class="view">
-      <div class="page-wrap">
-        <div class="card">
-          <div class="card-header"><span class="card-title"><i class="bi bi-box-seam"></i> Products / Tests</span></div>
-          <div class="card-body">
-            <form id="lProdForm" onsubmit="LAB.saveProd(event)" class="form-grid" style="margin-bottom:.75rem;">
-              <input type="hidden" id="lProdId">
-              <div class="form-group"><label>Name*</label><input id="lPName" class="form-control" placeholder="Test / Item Name" required></div>
-              <div class="form-group"><label>Stock Qty*</label><input id="lPQty" class="form-control" type="number" min="0" required></div>
-              <div class="form-group"><label>Cost ($)*</label><input id="lPCost" class="form-control" type="number" min="0" step="0.01" required></div>
-              <div class="form-group"><label>Sell ($)*</label><input id="lPSell" class="form-control" type="number" min="0" step="0.01" required></div>
-              <div class="form-group"><label>Expiry*</label><input id="lPExpiry" class="form-control" type="date" required></div>
-              <div class="form-group" style="align-self:flex-end;"><button class="btn btn-primary" type="submit"><i class="bi bi-floppy"></i> Save</button></div>
-            </form>
-            <div class="toolbar">
-              <div class="search-wrap"><i class="bi bi-search"></i><input id="lProdFilter" placeholder="Filter products..." oninput="LAB.renderProds()"></div>
-            </div>
-            <div class="tbl-wrap">
-              <table class="dtable">
-                <thead><tr><th>Name</th><th>Stock</th><th>Cost</th><th>Sell</th><th>Margin</th><th>Expiry</th><th>Status</th><th class="actions">Action</th></tr></thead>
-                <tbody id="lProdBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="lv-pos" class="view">
-      <div class="page-wrap" style="padding-bottom:0;">
-        <div class="pos-layout">
-          <div class="pos-products">
-            <div class="toolbar" style="margin-bottom:.5rem;">
-              <div class="search-wrap" style="max-width:none;"><i class="bi bi-search"></i><input id="lPosSearch" placeholder="Search tests / products..." oninput="LAB.renderPOS()"></div>
-            </div>
-            <div class="pos-products-grid" id="lPosGrid"></div>
-          </div>
-          <div class="cart-panel">
-            <div class="cart-header"><i class="bi bi-cart3"></i> Current Sale</div>
-            <div style="padding:.5rem .75rem;border-bottom:1px solid var(--border);">
-              <input id="lCartCustomer" class="form-control" placeholder="Patient / Customer Name">
-            </div>
-            <div class="cart-items" id="lCartItems">
-              <p style="text-align:center;color:var(--text-muted);padding:2rem 0;">Cart is empty</p>
-            </div>
-            <div class="cart-footer" id="lCartFooter" style="display:none;">
-              <div class="pi-row"><span>Subtotal</span><span id="lSubtotal">$0.00</span></div>
-              <div class="pi-row"><span>Discount ($)</span><input id="lDiscount" type="number" min="0" step="0.01" value="0" class="form-control" style="width:80px;padding:2px 6px;text-align:right;" oninput="LAB.updateTotal()"></div>
-              <div class="pi-row pi-total"><span>Total</span><strong id="lTotal">$0.00</strong></div>
-              <div class="form-group" style="margin:.5rem 0;"><label>Payment Method</label>
-                <select id="lPayMethod" class="form-select">
-                  <option value="Cash">Cash</option><option value="Card">Card</option>
-                  <option value="Mobile Money">Mobile Money</option><option value="Insurance">Insurance</option>
-                </select>
-              </div>
-              <div style="display:flex;gap:.4rem;">
-                <button class="btn btn-danger" style="flex:1;" onclick="LAB.clearCart()">Clear</button>
-                <button class="btn btn-success" style="flex:2;" onclick="LAB.checkout()"><i class="bi bi-cash"></i> Pay & Print</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="lv-results" class="view">
-      <div class="page-wrap">
-        <div class="card" style="margin-bottom:1rem;">
-          <div class="card-header"><span class="card-title"><i class="bi bi-journal-medical"></i> Laboratory Result Generator</span></div>
-          <div class="card-body">
-            <div class="form-grid-4" style="gap:.6rem;margin-bottom:.75rem;">
-              <div class="form-group"><label>Patient Name*</label><input id="lrPatient" class="form-control" placeholder="Patient name"></div>
-              <div class="form-group"><label>Report #</label><input id="lrPatientId" class="form-control" placeholder="Auto generated"><input type="hidden" id="lrRecordId"></div>
-              <div class="form-group"><label>Phone Number</label><input id="lrPhone" class="form-control" placeholder="e.g. 0612345678" type="tel"></div>
-              <div class="form-group"><label>Age</label><input id="lrAge" class="form-control" type="number" min="0" max="120" placeholder="Age"></div>
-              <div class="form-group"><label>Gender</label><select id="lrGender" class="form-select"><option value="">Select gender</option><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
-            </div>
-            <div class="form-grid-3" style="gap:.6rem;margin-bottom:.75rem;">
-              <div class="form-group"><label>Doctor Name</label><input id="lrDoctor" class="form-control" placeholder="Attending doctor"></div>
-              <div class="form-group"><label>Technician</label><input id="lrTech" class="form-control" placeholder="Lab technician"></div>
-              <div class="form-group"><label>Test Type*</label>
-                <select id="lrTestType" class="form-select" onchange="LAB.renderTemplate()">
-                  <option value="">Select test type</option>
-                  <option value="CBC">CBC - Complete Blood Count</option>
-                  <option value="Urine">Urine Test</option>
-                  <option value="Stool">Stool Test</option>
-                  <option value="BloodChem">Blood Chemistry</option>
-                  <option value="LipidProfile">Lipid Profile</option>
-                </select>
-              </div>
-              <div class="form-group"><label>Status</label>
-                <select id="lrStatus" class="form-select">
-                  <option value="Pending">Pending</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Printed">Printed</option>
-                </select>
-              </div>
-            </div>
-            <div id="lrTable" style="margin-bottom:.75rem;"></div>
-            <div class="form-group" style="margin-bottom:.75rem;"><label>Doctor Comment</label><textarea id="lrComment" class="form-control" rows="3" placeholder="Clinical notes..."></textarea></div>
-            <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
-              <button class="btn btn-primary btn-sm" onclick="LAB.saveResult()"><i class="bi bi-floppy"></i> Save Result</button>
-              <button class="btn btn-success btn-sm" onclick="LAB.previewResult()"><i class="bi bi-eye"></i> Preview</button>
-              <button class="btn btn-info btn-sm" onclick="LAB.printResult()"><i class="bi bi-printer"></i> Print</button>
-              <button class="btn btn-warning btn-sm" onclick="LAB.clearResultForm()"><i class="bi bi-arrow-counterclockwise"></i> Clear</button>
-            </div>
-            <div id="lrPreview" style="margin-top:1rem;"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title"><i class="bi bi-clock-history"></i> Result History</span>
-            <div style="display:flex;gap:.5rem;">
-              <input id="lrHistSearch" class="form-control" style="height:30px;width:220px;" placeholder="Search patient, report#, doctor...">
-              <select id="lrHistFilter" class="form-select" style="height:30px;width:130px;">
-                <option value="all">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Completed">Completed</option>
-                <option value="Printed">Printed</option>
-              </select>
-              <button class="btn btn-light btn-sm" onclick="LAB.renderHistory()">Filter</button>
-            </div>
-          </div>
-          <div class="card-body" style="padding:0;">
-            <div class="tbl-wrap">
-              <table class="dtable">
-                <thead><tr><th>Report #</th><th>Date</th><th>Patient</th><th>Test Type</th><th>Status</th><th class="actions">Actions</th></tr></thead>
-                <tbody id="lrHistBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="lv-sales" class="view">
-      <div class="page-wrap">
-        <div class="card">
-          <div class="card-header"><span class="card-title"><i class="bi bi-receipt"></i> Sales History</span>
-            <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
-              <input type="date" id="lSalesDate" class="form-control" style="height:30px;width:155px;" onchange="LAB.renderSales()">
-              <input id="lSalesSearch" class="form-control" style="height:30px;width:200px;" placeholder="Receipt # or customer..." oninput="LAB.renderSales()">
-            </div>
-          </div>
-          <div class="card-body" style="padding:0;">
-            <div class="tbl-wrap">
-              <table class="dtable">
-                <thead><tr><th>Receipt #</th><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Profit</th><th>Method</th><th class="actions">Actions</th></tr></thead>
-                <tbody id="lSalesBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="lv-reports" class="view">
-      <div class="page-wrap">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-          <div class="card">
-            <div class="card-header"><span class="card-title">Expiry Report</span>
-              <select id="lRepRange" class="form-select" style="height:30px;width:auto;" onchange="LAB.renderExpiry()">
-                <option value="30">Next 30 days</option><option value="60">Next 60 days</option>
-                <option value="90">Next 90 days</option><option value="0">All</option>
-              </select>
-            </div>
-            <div class="card-body">
-              <div class="stats-row" style="grid-template-columns:1fr 1fr;">
-                <div class="stat-box"><small>Expiring Soon</small><div class="val" id="lRepExpiringSoon">0</div></div>
-                <div class="stat-box"><small>Expired</small><div class="val red" id="lRepExpired">0</div></div>
-              </div>
-              <div id="lRepExpiryList" style="max-height:300px;overflow-y:auto;"></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">Sales Report</span>
-              <div style="display:flex;gap:.4rem;">
-                <input type="date" id="lRepFrom" class="form-control" style="height:30px;width:140px;" onchange="LAB.renderSalesRep()">
-                <input type="date" id="lRepTo" class="form-control" style="height:30px;width:140px;" onchange="LAB.renderSalesRep()">
-                <button class="btn btn-primary btn-sm" onclick="LAB.renderSalesRep()">Load</button>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="stats-row" style="grid-template-columns:1fr 1fr 1fr;">
-                <div class="stat-box"><small>Revenue</small><div class="val" id="lRepRev">$0</div></div>
-                <div class="stat-box"><small>Profit</small><div class="val green" id="lRepProfit">$0</div></div>
-                <div class="stat-box"><small>Orders</small><div class="val" id="lRepOrders">0</div></div>
-              </div>
-              <div id="lRepSalesDetail" style="max-height:250px;overflow-y:auto;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /labApp -->
-</div><!-- /labSystem -->
 
 <script>
 'use strict';
@@ -1094,12 +1033,10 @@ const $ = id => document.getElementById(id);
 function goHome(){
   $('landingPage').style.display='';
   $('hospitalSystem').style.display='none';
-  $('labSystem').style.display='none';
 }
 function enterSystem(sys){
   $('landingPage').style.display='none';
-  if(sys==='hospital'){$('hospitalSystem').style.display='';HOSP.init();}
-  else{$('labSystem').style.display='';LAB.init();}
+  $('hospitalSystem').style.display='';HOSP.init();
 }
 function fmtMoney(n){return '$'+(parseFloat(n)||0).toFixed(2);}
 function todayStr(){
@@ -6199,6 +6136,9 @@ const HOSP = {
       {v:'hv-appointments',l:'Appointments',roles:['admin','cashier','reception','pharmacy']},
       {v:'hv-payments',l:'Billing',roles:['admin','cashier','reception']},
       {v:'hv-followup',l:'Follow-Up Messages',roles:['admin','cashier','reception']},
+      {v:'hv-bulk',l:'Bulk Messages',roles:['admin','cashier','reception']},
+      {v:'hv-csai',l:'CS AI',roles:['admin','cashier','reception']},
+      {v:'hv-wa',l:'WhatsApp',roles:['admin','cashier','reception']},
       {v:'hv-doctor',l:'Doctor Panel',roles:['admin','doctor']},
       {v:'hv-reports',l:'Reports',roles:['admin']},
       {v:'hv-users',l:'Users',roles:['admin']},
@@ -6233,6 +6173,9 @@ const HOSP = {
     if(vid==='hv-users')this.renderUsers();
     if(vid==='hv-reports')this.renderReports();
     if(vid==='hv-followup')this.renderFollowup();
+    if(vid==='hv-bulk')BULK.render();
+    if(vid==='hv-csai')CSAI.render();
+    if(vid==='hv-wa')WA.render();
   },
 
   renderAppts(){
@@ -7291,17 +7234,6 @@ Thank you.`;
       </div>`).join('')||'<p style="color:var(--text-muted)">No results.</p>';
   },
 
-  sendLabReq(){
-    const pat=$('dLabPatient').value.trim(),test=$('dLabTest').value,notes=$('dLabNotes').value.trim();
-    if(!pat||!test){Swal.fire({icon:'warning',title:'Enter patient name and select a test'});return;}
-    const results=ls_get('bax_lab_results');
-    const req={id:gid('LR'),reportNumber:'LR-'+Date.now().toString().slice(-8),reportDate:new Date().toISOString(),
-      patientName:pat,requestedTest:test,doctorName:this.cur.username,comment:notes,status:'Pending',results:[]};
-    results.unshift(req);ls_set('bax_lab_results',results);
-    Swal.fire({icon:'success',title:'Lab request sent: '+req.reportNumber,timer:1500});
-    $('dLabPatient').value='';$('dLabTest').value='';$('dLabNotes').value='';
-  },
-
   savePrescription(){
     const pat=$('dRxPatient').value.trim(),med=$('dRxMed').value.trim();
     if(!pat||!med){Swal.fire({icon:'warning',title:'Enter patient and medication'});return;}
@@ -7748,535 +7680,1269 @@ link:https://baxnaanohospital.github.io/BAXNAANO/
 };
 
 // ═══════════════════════════════════════════
-// LAB MODULE
+// BULK MESSAGES MODULE (editable message, timed sending)
 // ═══════════════════════════════════════════
-const LAB = window.LAB = {
-  K:{USERS:'bax_lab_users',PRODUCTS:'bax_lab_products',SALES:'bax_lab_sales',SESSION:'bax_lab_sess'},
-  RESULTS_KEY:'bax_lab_results',
-  TEMPLATES:{
-    CBC:[
-      {name:'White Blood Cells (WBC)',unit:'x10^9/L',range:'4.0-11.0'},
-      {name:'Red Blood Cells (RBC)',unit:'x10^12/L',range:'4.5-5.9'},
-      {name:'Hemoglobin',unit:'g/dL',range:'13.5-17.5'},
-      {name:'Hematocrit',unit:'%',range:'41-53'},
-      {name:'Platelets',unit:'x10^9/L',range:'150-450'},
-      {name:'MCV',unit:'fL',range:'80-100'},
-      {name:'MCH',unit:'pg',range:'27-31'},
-      {name:'MCHC',unit:'g/dL',range:'33-36'}
-    ],
-    Urine:[
-      {name:'Color',unit:'',range:'Yellow'},{name:'Appearance',unit:'',range:'Clear'},
-      {name:'pH',unit:'',range:'4.5-8.0'},{name:'Specific Gravity',unit:'',range:'1.005-1.030'},
-      {name:'Protein',unit:'mg/dL',range:'Negative'},{name:'Glucose',unit:'mg/dL',range:'Negative'},
-      {name:'Ketones',unit:'mg/dL',range:'Negative'},{name:'Nitrites',unit:'',range:'Negative'},
-      {name:'Leukocyte Esterase',unit:'',range:'Negative'}
-    ],
-    Stool:[
-      {name:'Color',unit:'',range:'Brown'},{name:'Consistency',unit:'',range:'Formed'},
-      {name:'Occult Blood',unit:'',range:'Negative'},{name:'Parasites',unit:'',range:'Negative'},
-      {name:'Ova',unit:'',range:'Negative'},{name:'Mucus',unit:'',range:'Negative'}
-    ],
-    BloodChem:[
-      {name:'Glucose (Fasting)',unit:'mg/dL',range:'70-100'},{name:'Urea',unit:'mg/dL',range:'7-20'},
-      {name:'Creatinine',unit:'mg/dL',range:'0.6-1.3'},{name:'Uric Acid',unit:'mg/dL',range:'3.5-7.2'},
-      {name:'ALT',unit:'U/L',range:'7-56'},{name:'AST',unit:'U/L',range:'10-40'}
-    ],
-    LipidProfile:[
-      {name:'Total Cholesterol',unit:'mg/dL',range:'<200'},{name:'HDL Cholesterol',unit:'mg/dL',range:'>=40'},
-      {name:'LDL Cholesterol',unit:'mg/dL',range:'<100'},{name:'Triglycerides',unit:'mg/dL',range:'<150'}
-    ]
-  },
-  cur:null,cart:[],
+const BULK = window.BULK = {
+  K:{LIST:'bax_bulk_list',VER:'bax_bulk_list_ver',MSG:'bax_bulk_msg',STATUS:'bax_bulk_status',CFG:'bax_bulk_cfg'},
+  SEED_VER:'oct17-31-2026-v1',
+  SEED:`2026-10-17	SUNDUS MOHAMED ADDE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616101965	Female
+2026-10-17	HABIIBA MOHAMUD AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615215177	Female
+2026-10-17	FARDOWSO MUSSE HASSAN	Dr A Y Hersi (Internal Medicine)	0615734924	Female
+2026-10-17	SIDRA ABDIFATAH AHMED	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615563337	Female
+2026-10-17	ADAR YUSUF ABTIDOON	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616507508	Male
+2026-10-17	ALI ABSHIR ALI	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615456714	Male
+2026-10-17	MAZIM BASHIIR MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613683787	Male
+2026-10-17	MOHAMED MOHAMUD HUSSEIN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615853505	Male
+2026-10-17	YASMIIN MOHAMUD AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615555433	Female
+2026-10-17	ALI JAMA FARAH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615488868	Male
+2026-10-17	ABDIMALIK ABDI ABUKAR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0611657334	Male
+2026-10-17	JABIR ELMI GEEDI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615836969	Male
+2026-10-17	MALYUUN YUSUF ADAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615636371	Female
+2026-10-17	ABDI JAMA FARAH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616469019	Male
+2026-10-17	NIMA ABDIKARIIN DAHIR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615570820	Female
+2026-10-17	HALIIMA MUSE YUSUF	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615229069	Female
+2026-10-17	AMAAR AHMED OMAR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615634563	Male
+2026-10-17	LEYLA HASSAN GUURE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615567076	Female
+2026-10-17	ABDIRAHMAN MOHAMED ABDIRAHMAN 	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618715079	Male
+2026-10-17	ABDULLAHI ALI ISSE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615484087	Male
+2026-10-17	HAMDI MOHAMUD ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615018496	Female
+2026-10-17	WARDA HASSAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0611015612	Female
+2026-10-17	MUCTASIM MOHAMED IBRAHIM	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615803744	Male
+2026-10-17	FARTUUN SAID MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615967341	Female
+2026-10-17	MOHAMUD MOHAMED NUR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615518246	Male
+2026-10-17	HAMDI ABDIRAHIIM HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615423024	Female
+2026-10-17	BUSHRA FARAH ABDIKARIIN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615436383	Female
+2026-10-17	QADRA ABDULLAHI MOALIM HISRI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618606325	Female
+2026-10-17	IKRAAN ABDULLAHI ABDISALAM	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618832202	Female
+2026-10-17	ANZEL AHMED OMAR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615117968	Female
+2026-10-17	HASSAN ABDI AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615107785	Male
+2026-10-17	ABDIRAHMAN ABDULLAHI MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615077535	Male
+2026-10-17	RABIC MOHAMED ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0770880000	Male
+2026-10-17	MAXAMED KHALIIF CABDI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615191731	Male
+2026-10-17	DEQO MOHAMUD AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615227320	Female
+2026-10-17	FADUMO ABUKAR FARAH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615340088	Female
+2026-10-17	BUSHRA MOHAMED OMAR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615691680	Female
+2026-10-17	MOHAMED ABUKAR MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615405676	Male
+2026-10-17	SAFA AHMED MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0619114172	Female
+2026-10-17	ABDIRAHMAN ABDIKARIIN ABDULLAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615905975	Male
+2026-10-17	ARDA NUR AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615840563	Female
+2026-10-17	MOHAMED ABDULLAHI HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615399621	Male
+2026-10-17	ALI MOHAMED AFRAH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615521304	Male
+2026-10-17	MUHIIMA ALI HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617093787	Female
+2026-10-17	FADUMO ABDI ADAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618741455	Female
+2026-10-17	ALHAN ABDIFATH MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615677429	Female
+2026-10-17	OMAR MOHAMED SALAH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615542875	Male
+2026-10-17	ABDIRIHMAN ABDIFITAH ABUKAR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615701254	Male
+2026-10-17	ABSHIRO ABDI ROBLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615300592	Female
+2026-10-17	SUNDUS DAHIR HASHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615470691	Female
+2026-10-17	MOHAMEDA BDULLAHI MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618041954	Male
+2026-10-17	MUSTAQIIM ABDULLAHI ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615762087	Female
+2026-10-17	HAWA BURALE BUUX	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0634561022	Female
+2026-10-17	HASSAN MOHAMED OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612100731	Male
+2026-10-17	MAYMUUN ABDISALAM OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615965141	Female
+2026-10-17	IFRAH ISMAIL HASHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618874717	Female
+2026-10-17	FEYSAL ABDIKARIIN AMIIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619143319	Male
+2026-10-17	MOHAMED ABDULKADIR OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617249391	Male
+2026-10-17	MUAD MOHAMED AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619862447	Male
+2026-10-17	HASSAN SHUUTE ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615496626	Male
+2026-10-17	HABIIBA ADAN ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615650801	Female
+2026-10-17	AHMED NUR MUSE ISSE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0613669352	Male
+2026-10-17	DAHIR ALI MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615868452	Male
+2026-10-17	ISSE AHMED NUR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0613669352	Male
+2026-10-17	FADUMO DAUD ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615444466	Female
+2026-10-17	HANI MOHAMED ARALE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615597623	Female
+2026-10-17	ABDIRAHMAN ABDULKADIR HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615194302	Male
+2026-10-17	FADUMO HASSAN OMAR 	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615200417	Female
+2026-10-18	NURAAN ALI ABDI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615347353	Male
+2026-10-18	HALAWE HIRSI HASHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618434375	Female
+2026-10-18	MICRAJ YAHYE ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618434375	Male
+2026-10-18	SAID ABDIRAHMAN SAID	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0906816029	Male
+2026-10-18	ABDULAHI KAAHIYE DHIBLAWE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615508881	Male
+2026-10-18	CAFIIFA ABDISALAM ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615720866	Female
+2026-10-18	MOHAMED JAMA OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612172768	Male
+2026-10-18	SHUKRI MOHAMED ABDIRAHMAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615320246	Female
+2026-10-18	HAADSAN SH DOON KULANE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615211043	Female
+2026-10-18	SUFYAAN SULEYMAN YACQUB	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612378845	Male
+2026-10-18	SENAB ABDISALAN HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616784568	Female
+2026-10-18	ABDULKADIR MOHAMED SANEEY	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612222319	Male
+2026-10-18	ILYAS ABUBAKAR MUKHTAR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615512801	Male
+2026-10-18	MAHIR MUSSE ABDULLAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616666917	Male
+2026-10-18	SUMAYO MOHAMED TAKOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618555044	Female
+2026-10-18	ABDULLAHI SAYID ALI ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615569356	Male
+2026-10-18	MUNIIRA MUQTAR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615277274	Female
+2026-10-18	MOHAMED ABDIHAMID AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615186385	Male
+2026-10-18	ANAAM QALIIF OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615445353	Female
+2026-10-18	MARYAN ABDULKADIR FARAH	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618161773	Female
+2026-10-18	SIRAJI KHALIIF OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616675899	Male
+2026-10-18	FADUMO MOHAMED HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615830548	Female
+2026-10-18	UMULQEYRE SH ABDIRAHIIN SH HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616946832	Female
+2026-10-18	HAWO QADAR AWEIS	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616485644	Female
+2026-10-18	MOHAMED ABDIRIZAK SALAH	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615818871	Male
+2026-10-18	ABDIRAHMAN MOHAMED NOR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612334335	Male
+2026-10-18	FADUMO MOHAMED WEHLIYE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618959264	Female
+2026-10-18	ABDULLAHI HASSAN OMAR SABRIYE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615557160	Male
+2026-10-18	QAALI OSMAN ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616066442	Female
+2026-10-18	NIMA DAHIR ABTIDOON	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612621432	Female
+2026-10-18	AISHA AHMED HASHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615154224	Female
+2026-10-18	RAGE ALI AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615851814	Male
+2026-10-18	ABDIRAHMAN MOHAMED GARANE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612630487	Male
+2026-10-18	CANBARO SEDOW JIMALE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0613198844	Female
+2026-10-18	FADUMO ABDIRAHMAN MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615568307	Female
+2026-10-18	FADUMO HAJI MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615770056	Female
+2026-10-18	HIDAYO HUSSEIN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615660904	Female
+2026-10-18	ASIA MOHAMUD ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618921348	Female
+2026-10-18	QADRO NUR ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615130159	Female
+2026-10-18	ABDI SANEY OSMAN 	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615847768	Male
+2026-10-18	MOHAMED MOHAMUD DIRSHE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615568330	Male
+2026-10-18	MOHAMUD ABDULLAHI MUHUMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618837740	Male
+2026-10-18	FARDOWSA AHMED KAHIYE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618386345	Female
+2026-10-18	ABDULLAHI HUSSEIN ADOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614789437	Male
+2026-10-18	ALI ABDULLE HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615395066	Male
+2026-10-18	GAABO ALI ABDULLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615830714	Female
+2026-10-18	ABDISHAKUR MOHAMED ABDULLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615517227	Female
+2026-10-18	MULKI ABDI ELMI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617941521	Female
+2026-10-18	ABDIHAKIIN HUSSEIN ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616661586	Male
+2026-10-18	ISTAR ABDINASIR MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615254470	Female
+2026-10-19	SADO HIRSI JAMA	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614230684	Female
+2026-10-19	RAYAN HASSAN SHAFICI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618721239	Female
+2026-10-19	BARRE MOHAMED BARRE	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615054699	Male
+2026-10-19	SIDRA ABDALLE AHMED 	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615553925	Female
+2026-10-19	ABDISALAM HAJI NUUR HEYLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616444333	Male
+2026-10-19	MOHAMED ABDILADIF HUSSEIN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612222200	Male
+2026-10-19	KHADIIJO MOHAMED DAUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618807475	Female
+2026-10-19	ALI ABSHIR ALI	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615456714	Male
+2026-10-19	MOHAMED ABDIFATAH ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615467414	Male
+2026-10-19	FADUMO HUSSEIN GABEYRE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614513308	Female
+2026-10-19	RAZAAN ZAKARIYE ISSE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615690512	Female
+2026-10-19	ABDIRAHMAN ABDULLAHI HIRSI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0610271666	Male
+2026-10-19	ABDIJABAR SAID HASHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615285843	Male
+2026-10-19	ASRA ABDINAFAC QASIM	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617278169	Female
+2026-10-19	MAHFUUD NURADIIN ALI HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618322229	Male
+2026-10-19	UBAH OSMAN NUR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615242619	Female
+2026-10-19	ABDULLAHI BASHIIR ABDULLAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617508314	Male
+2026-10-19	HASSAN MUHUDIIN ALASOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616573413	Male
+2026-10-19	YASIR ABDULKADIR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0619020008	Male
+2026-10-19	ABDURRAHMAN HASSAN OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614075322	Male
+2026-10-19	ISNIINO OSMAN IBRAHIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615715267	Female
+2026-10-19	MANHA YUSUF ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612014637	Female
+2026-10-19	HAMDI ADOW HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615741420	Female
+2026-10-19	AMAAR ABDIFATAH AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615190277	Male
+2026-10-19	NAGAAL ANSHUUR OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615727616	Male
+2026-10-19	MINHAJ ABDULLAHI ABDI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613370031	Female
+2026-10-19	MAZIM AHMED HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612455167	Male
+2026-10-19	SADIA ABDULKADIR MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615920405	Female
+2026-10-19	LUQMAN MOHAMED WARSAME	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613733775	Male
+2026-10-19	SIHAAM MUMIN MUHUMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615628447	Female
+2026-10-19	ASMA SALAAD FARAH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614270569	Female
+2026-10-19	SABIIHA FAYSAL HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0610855792	Female
+2026-10-19	ABDI MAHAD ABDULLAHI ADAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618484809	Male
+2026-10-19	ABDULLAHI YUSUF ISMAIL	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0907284762	Male
+2026-10-19	ABAS BILE BARIISE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617020450	Male
+2026-10-19	LIIBAN ABDIRAHMAN HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612666484	Male
+2026-10-19	LUUL OMAR AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617709790	Female
+2026-10-19	FARTUN DAHIR OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615234545	Female
+2026-10-19	QADIIJA MOHAMED QAASIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615819377	Female
+2026-10-19	ZEYNAB ABDISHAKUR OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0906020277	Female
+2026-10-19	MAJID SHACIR ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619226402	Male
+2026-10-19	HASSAN XAJI CADOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615521553	Male
+2026-10-19	HUSSEIN MOHAMUD HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615630317	Male
+2026-10-19	ABDI AHMED ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616321742	Male
+2026-10-20	RAYAAN MOHAMED NUUR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0619246343	Female
+2026-10-20	FADUMO WARSAME SHAWEEL	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615538661	Female
+2026-10-20	MOHAMUD ABDULKADIR ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615201630	Male
+2026-10-20	ADAN ABDIHAKIIN ADAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615341399	Male
+2026-10-20	MOHAMED ABDIRAHMAN HASHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615222357	Male
+2026-10-20	RUBIYO MOHAMED ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615915125	Female
+2026-10-20	MOHAMED HANAD MUHUDIIN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0614222951	Male
+2026-10-20	ABDIWAHAB MOHAMED NUR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0613505352	Male
+2026-10-20	SACAD ALI NUUR MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612004160	Male
+2026-10-20	ABDIRAHMAN AHMED JAMA	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618649964	Male
+2026-10-20	MUNASAR ABDIFATAH SAID	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618854300	Male
+2026-10-20	HAWA ALASOW ADOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615142895	Female
+2026-10-20	ZAKARIYE FARAH AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615124532	Male
+2026-10-20	HAJIYO OMAR AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615194302	Female
+2026-10-20	SAID MOHAMED SUUBANANE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613653924	Male
+2026-10-20	MOHAMED OMAR YABAROW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618103317	Male
+2026-10-20	MOHAMED QALIIF ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615565531	Male
+2026-10-20	ABDIRIHMAN MOHAMED SACIID	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612888048	Male
+2026-10-20	AMIIRA ABDIRAHMAN AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617494339	Female
+2026-10-20	RUQIYA ABDULLAHI AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615454981	Male
+2026-10-20	AYMAN OSMAN SAYID	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615603457	Male
+2026-10-20	NAJIIB ABDIQADAR ABDULLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615081010	Male
+2026-10-20	ARIIJ FUAD AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618319839	Female
+2026-10-20	KIIN AHMED JAMA	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615880123	Female
+2026-10-20	MOHAMED JAMA MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615008702	Male
+2026-10-20	HALIIMA MOHAMED HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612798708	Female
+2026-10-20	HAFSA OMAR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618501018	Female
+2026-10-20	SHUURE ABDULLE BIYOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619520299	Female
+2026-10-20	AHMED ABDULLAHI AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0611856282	Male
+2026-10-20	FARAH MOHAMED AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615542153	Male
+2026-10-20	FAHMO ABDIRIZAK MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615062656	Female
+2026-10-20	MOHAMED OMAR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617390301	Male
+2026-10-20	AISHA ALI FARAH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612527137	Female
+2026-10-20	BADRAAN MOHAMED HUSSEIN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0611897928	Male
+2026-10-20	MUSE AHMED WEHLIYE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617228458	Male
+2026-10-20	ZAHRA NUUR ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618890952	Female
+2026-10-20	MARYAM ABDIRIHMAN ELMI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615555631	Female
+2026-10-20	ASLI DIINI XOOSH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618079772	Female
+2026-10-20	SABARIIN ABDULLAHI ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615554348	Female
+2026-10-20	ABDIHALIIM AHMED MUSE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0611091088	Male
+2026-10-20	MOHAMED ALI HASHI MUHUMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615206633	Male
+2026-10-20	HANI HASSAN MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612526420	Female
+2026-10-20	SAHRO OSMAN IBRAHIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615537634	Female
+2026-10-20	BASHIIR ALI ADAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615512529	Male
+2026-10-20	MASUD LIIBAN OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616449768	Male
+2026-10-20	HAMDI GAARANE SANEY	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615503426	Female
+2026-10-20	SAFIA SH AHMED ADAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615142926	Female
+2026-10-20	HIBO MOHAMED OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618753038	Female
+2026-10-20	SAFIYO MOHAMED ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615600714	Female
+2026-10-20	ASHO MUDEY HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615967337	Female
+2026-10-20	HAMDI WARSAME ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615050008	Female
+2026-10-20	AHMED ABDULLAHI OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618100500	Male
+2026-10-20	ADAN ABDIFITAH ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619730200	Male
+2026-10-20	AMINA ABDIRIZAK ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612361671	Female
+2026-10-20	AYAN ISSE FARAH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0611216744	Female
+2026-10-20	JAMAC ALI JAMAC	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617625012	Male
+2026-10-20	ZEYNAB IBRAHIM OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615619455	Female
+2026-10-21	MAIDO UGAAS ABDIRAHMAN	SADIA OMAR SALIM (Psychology & Speech Therapy)	0619660486	Female
+2026-10-21	MANAAL ALI ABDULLE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0610414008	Female
+2026-10-21	SAFIA HAJI MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615566705	Female
+2026-10-21	ALI ABSHIR ALI	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615456714	Male
+2026-10-21	MOHAMED ABDIKARIIN MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0619017007	Male
+2026-10-21	SAIDO MOHAMED KHALIIF	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615154945	Female
+2026-10-21	SHAFICI MOHAMED ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615874339	Male
+2026-10-21	MUMINO OSOBLE FIIDOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615967375	Female
+2026-10-21	FADUMO IBRAHIM FARAH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615510619	Female
+2026-10-21	AISHA ABDIRAHMAN ABDINUUR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615654754	Female
+2026-10-21	ALI ABDULLAHI SIYAAD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615235752	Male
+2026-10-21	MOHAMED ZAKARIYE QEYLSHE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0610747385	Male
+2026-10-21	SABIR MOHAMUD MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615084716	Male
+2026-10-21	MOHAMUD ALI ROBLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615836557	Male
+2026-10-21	BUULO YUSUF ADAM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618321590	Female
+2026-10-21	ISHAK ABDIRAHAMN OSMAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617971436	Male
+2026-10-21	MARYAN ISSE ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619727177	Female
+2026-10-21	ILYAAS ABDIRAHMAN OSMAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617971436	Male
+2026-10-21	ABDIAZIIZ OMAR SH AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615178929	Male
+2026-10-21	MUNASAR ABDIFATAH HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615853157	Male
+2026-10-21	AYMAN ABDIHAKIIN SHARIIF	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617537064	Male
+2026-10-21	SARA YASIR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0771720977	Female
+2026-10-21	AHMED YABROW RAGE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618860778	Male
+2026-10-21	AZHAAR ABDISHAKUUR MUHUDIIN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615980214	Female
+2026-10-21	NABIIL ABDIQEYR MOHAME	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618696722	Male
+2026-10-21	HALIMO HASSAN OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612377373	Female
+2026-10-21	ANAS AHMED MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615334872	Male
+2026-10-21	KALTUMA SHARMAKE ABDIKARIM	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0619987950	Female
+2026-10-21	ABDULLAHI MOHAMED ABDULLAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615840735	Male
+2026-10-21	MARYAN ADAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618301847	Female
+2026-10-21	AHMED ABDULLAHI AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613699972	Male
+2026-10-21	IBRAHIM ABDULLAHI IBRAHIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615646087	Male
+2026-10-21	HAMDI HASHI MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619891349	Female
+2026-10-21	MOHAMED ABDIRIZAK HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613348650	Male
+2026-10-21	MUHIIM ABDI ISMAIL	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615444327	Female
+2026-10-21	NIMA MUSTAF ABDISALAM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618358712	Female
+2026-10-21	ALI ADAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0613732225	Male
+2026-10-21	AMINA AHMED NUR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0610599398	Female
+2026-10-21	FADUMO MUHUDIIN OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615439305	Female
+2026-10-21	LUUL ALI HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615152079	Female
+2026-10-21	MUSTAF ILYAS MUSTAF	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618519008	Male
+2026-10-21	RAALIYO AHMED OSLOSW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615270856	Female
+2026-10-21	ABDULLAHI MOHAMED AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615291205	Male
+2026-10-21	MOHAMED HASSAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615157433	Male
+2026-10-21	MAHAD NOR ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619144662	Male
+2026-10-21	HAFIDO SHARMARKE NUR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615120016	Female
+2026-10-21	AHMED ALI HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615466446	Male
+2026-10-21	MOWLIID ABDIRIZAK QALIIF	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617224888	Male
+2026-10-21	HUSSEIN MOHAMED JOWLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614117878	Male
+2026-10-21	AISHA MOHAMUD ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612662037	Female
+2026-10-21	SAHRO AHMED ADAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617743371	Female
+2026-10-21	ABDULLAHI ABDIRIHMAN ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615192870	Male
+2026-10-21	SADIA HASSAN JAMA	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615709139	Female
+2026-10-21	JANA ABDIRAHMAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618653385	Female
+2026-10-22	ZAMZAM MOHAMED MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615169370	Female
+2026-10-22	FARHIA ABDI MUUDEY	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615281978	Female
+2026-10-22	MUMTAZ AHMED MOHAMED	SADIA OMAR SALIM (Psychology & Speech Therapy)	0619311110	Female
+2026-10-22	ASIYO DAHIR BOOTAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615184647	Female
+2026-10-22	SAMIRO YUSUF MATAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615375911	Female
+2026-10-22	ASIA AYUUB SHARIIF	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612908611	Female
+2026-10-22	ZAKARIYE HUSSEIN MIRE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615514405	Male
+2026-10-22	FADUMO GESEY GACAL	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615835347	Female
+2026-10-22	MOHAMED SHARMARKE HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617790019	Male
+2026-10-22	MOHAMED ABDIRIZAK AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615918802	Male
+2026-10-22	ABDIRAHMAN JAMA SAID	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615515063	Male
+2026-10-22	ZEYNAB MOHAMED ISAK	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618852008	Female
+2026-10-22	ABDIRAHMAN AHMED MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615879196	Male
+2026-10-22	SAFIA ABDULKADIR ABUKAR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615618519	Female
+2026-10-22	QEYRO SHARIIF HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615419170	Female
+2026-10-22	Aalaa Omar Abdulkadir	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0614528629	Female
+2026-10-22	NIMA HASSAN WADHOWR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618612485	Female
+2026-10-22	ABDIFATAH ZAKARIYE ABDIRAHIN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615898868	Male
+2026-10-22	AMINO MOHAMED MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615580903	Female
+2026-10-22	TIMIRO HUSSEIN ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615140135	Female
+2026-10-22	MUAD HUSSEIN OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616439397	Male
+2026-10-22	QORAN ELMI HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615498327	Female
+2026-10-22	HALIIMA NUR SAGAAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615575094	Female
+2026-10-22	FARTUUN ABDIWALI IGAAL	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615566563	Female
+2026-10-22	AXMED CARAB CIROOBE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615973624	Male
+2026-10-22	NIMCO ABDIFATAH AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615848710	Female
+2026-10-22	YUSRA MOHAMED HASSAN 	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615308999	Female
+2026-10-22	AYAAN MOHAMED ALASOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614156554	Female
+2026-10-22	MOHAMED SIICOW HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618250662	Male
+2026-10-22	JAMILLA HUSSEIN NOR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615530707	Female
+2026-10-22	MOHAMED ISSE DAHIR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616336118	Male
+2026-10-22	FADUMO ARAB MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618377458	Female
+2026-10-22	EDABO SH MURSAL HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618870911	Female
+2026-10-22	IBRAHIM OMAR KEYNAAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616269495	Male
+2026-10-22	HALIIMA ABDIRAHMAN ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615084610	Female
+2026-10-22	SAFIYO ABDULKADIR MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618944440	Female
+2026-10-24	FADUMO DAHIR BOOTAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0614925488	Female
+2026-10-24	AYAAN ADAN ABDI	Dr A Y Hersi (Internal Medicine)	0618141515	Female
+2026-10-24	MOHAMED MUSE OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0611108877	Male
+2026-10-24	ALI ABSHIR ALI	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615456714	Male
+2026-10-24	MOHAMED ALI YUSUF 	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616352371	Male
+2026-10-24	KHADIJA AHMED MAHAD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615152818	Female
+2026-10-24	ABDULLAHI HASSAN YARE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615522617	Male
+2026-10-24	DAYIB ABDIRAHMAN DALMAR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615019660	Male
+2026-10-24	JANA AHMED MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616193841	Female
+2026-10-24	LEYLA YUSUF JADEED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615223011	Female
+2026-10-24	HAYAT LIBAN BASHIR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0610772123	Female
+2026-10-24	MARIAN MOHAMOUD KHALIF	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619257997	Female
+2026-10-24	SADIA ALI OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615710117	Female
+2026-10-24	AALA ABDULLAHI MOHAMED 	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617936538	Female
+2026-10-24	DIIROW ALI HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615908503	Male
+2026-10-24	MOHAMED ZAKARIYE ABDIRAHMAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615737985	Male
+2026-10-24	AISHA AHMED DIIRIYE 	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615605624	Female
+2026-10-24	SALMAN SADAM ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615621836	Male
+2026-10-24	HARUUN ABDIWAHAB AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615986905	Male
+2026-10-24	HAWA ABDIRAHMAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614635218	Female
+2026-10-24	MAHIR ISMAIL MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615572938	Male
+2026-10-24	MADIINA ALI IBRAHIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615085877	Female
+2026-10-24	HAMZA AHMED MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615836412	Male
+2026-10-24	ABDI HASSAN NUR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615020192	Male
+2026-10-24	NASRO TOXOW MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615802475	Female
+2026-10-24	DUALE DAUD SAID	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617083712	Male
+2026-10-24	IKHLAS SHARIIF MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615441362	Female
+2026-10-24	HABIIBA MOHAMUD HIRABE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616070785	Female
+2026-10-24	MINHAAJ OMAR ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615180663	Female
+2026-10-24	ANISA ISSACK ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614504721	Female
+2026-10-24	ABDIQADAR HASHI HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615316734	Male
+2026-10-24	CASIM ABDULLAHI ABDI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617163131	Male
+2026-10-24	FADUMO SH HUSSEIN SH MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617247023	Female
+2026-10-24	HAMDI OSMAN SH ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615460208	Female
+2026-10-24	ANAB HASSAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617329720	Female
+2026-10-24	HAWA AHMED MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615524222	Female
+2026-10-24	MUHUDIIN ADAN HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615574628	Male
+2026-10-24	MARWAN ABDINUUR AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615719201	Male
+2026-10-24	LEYLA SUUDI MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618107230	Female
+2026-10-24	CEYNI MAXAMED CALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617705415	Female
+2026-10-24	KHADIIJO MOHAMED IBRAHIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615137523	Female
+2026-10-24	MEYMUUN MUSE MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615871303	Female
+2026-10-24	AISHA MOHAMED SHIKOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619608017	Female
+2026-10-24	MASCUD ABDI ALI 	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618847643	Male
+2026-10-24	MOHAMED SIIDOW HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615470827	Male
+2026-10-24	MUMINO HAMUD ISLAW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615656507	Female
+2026-10-24	ATOOSH MOHAMUD MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0907774370	Male
+2026-10-24	AHMED IBRAHIM MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615639131	Male
+2026-10-24	FADUMO MOHAMUD MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615190589	Female
+2026-10-24	ZAHRA ABDIMALIK ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0610749494	Female
+2026-10-24	FARTUUN AHMED GACAL	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615802570	Female
+2026-10-24	MUMINO SHEIKH MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612795550	Female
+2026-10-24	FADUMO SHARIIF IBRAHIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616857722	Female
+2026-10-24	SEYNAB CEYNAB BURALE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615525805	Female
+2026-10-24	ABDIRASHIID ABDULLAHI KHALIIF	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616466720	Male
+2026-10-24	HASSAN ILYAAS AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615446888	Male
+2026-10-24	FAHAD YUSUF DAHIR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617244088	Female
+2026-10-24	MOHAMED ABDULLE OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615539331	Male
+2026-10-24	AISHA ZAKARIYE ABDIHALIIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618541208	Female
+2026-10-24	HASSAN SHAFICI ABDLLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615699700	Male
+2026-10-24	SHEIKH MOHAMED NOR ADAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617288236	Male
+2026-10-24	HANI ABDIKARIM MOHAMED 	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615837246	Female
+2026-10-25	HAKIIMA MOHAMUD HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615511077	Female
+2026-10-25	ABDISALAN OSMAN MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615824023	Male
+2026-10-25	MOHAMED ABSHIR MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616219908	Male
+2026-10-25	ABDIRAHMAN OSMAN MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615824023	Male
+2026-10-25	MAZIM HASSAN MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0619942828	Male
+2026-10-25	NUURA MOHAMED ABDULLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615973277	Female
+2026-10-25	SAFWAN SAKARIYE ABDULLE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0614438082	Male
+2026-10-25	AMINA ABDI MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615669846	Female
+2026-10-25	HASSAN MOHAMED AHMED 	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617699635	Male
+2026-10-25	ALI JAMA DUALE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615746468	Female
+2026-10-25	MUAYID ABDISALAN IMAN 	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616138882	Male
+2026-10-25	HARUN HASSAN HARUN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615050072	Male
+2026-10-25	MUAD MUSE OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615048120	Male
+2026-10-25	ABDALLA ABDIRIHMAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617974968	Male
+2026-10-25	AZHAR AMIIR ABDULLAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616653635	Female
+2026-10-25	FAHMO MOHAMUD ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615400886	Female
+2026-10-25	CAZAAM NUUR GEELE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618229566	Male
+2026-10-25	MUMIN CULOW MACOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617308842	Male
+2026-10-25	AXLAM OSMAN JAMAC	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613641377	Female
+2026-10-25	MOHAMED ABDIRIHMAN BASHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0614959007	Male
+2026-10-25	NUURA MOHAMED ELMI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615273433	Female
+2026-10-25	YUSRA MASUD MUSE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619959505	Female
+2026-10-25	SIDRA ABDI AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615024971	Female
+2026-10-25	ABDULKADIR MUKHTAAR HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618517830	Male
+2026-10-25	MUAYID MUQTAR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613215033	Male
+2026-10-25	SHUKRI NUUR GEEDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615129016	Female
+2026-10-25	RANDA ABDULLAHI IBRAHIM	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618979734	Female
+2026-10-25	MAIDO FARAH ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619635434	Female
+2026-10-25	MALIYA YUSUF ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612014637	Female
+2026-10-25	ABDIRISAQ MOHAMED MURSAL	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614386677	Male
+2026-10-25	MAJID AYUB ABDULLE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615118951	Male
+2026-10-25	HAWO AHMED MACALIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615929534	Female
+2026-10-25	MACALIN AHAMED HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615899645	Female
+2026-10-25	HALIIMO ALI GEEDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615913661	Female
+2026-10-25	SAHRO ABDI ALI 	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615399849	Female
+2026-10-25	XAWO HUSSEIN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618041562	Female
+2026-10-25	KHADRO AHMED IBRAHIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619932157	Female
+2026-10-25	NADIFO HASSAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615098968	Female
+2026-10-25	SACDIYO MOHAMED ALI CADLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618801244	Male
+2026-10-25	HAWO MOHAMED HUSSEIN 	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615324602	Female
+2026-10-25	FADUMO AHMED OSMAN ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615008290	Female
+2026-10-25	AYAAN YUSUF AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615854099	Female
+2026-10-25	MAKA AHMED ASEYR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618250662	Female
+2026-10-25	MAHIR ABDISALAM HASHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617871588	Male
+2026-10-26	JANAAD AHMED SAHAL	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0610482402	Female
+2026-10-26	AHMED ABDULLAHI MOHAMUD	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615092660	Male
+2026-10-26	ABSHIR OSMAN ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615550689	Male
+2026-10-26	MOHAMED AHMED LIBAN	DR. MOHAMED SANEY ABDI (OTOLARYNGOLOGISTS)	0613366999	Male
+2026-10-26	ALMAAS ABDIWAHAB AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618068087	Female
+2026-10-26	SUCDI MOAHMUD ELMI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615104474	Female
+2026-10-26	ALI ABSHIR ALI	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615456714	Male
+2026-10-26	AHMED ABDIWAHAB AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618068087	Male
+2026-10-26	AALIM ABDI ADAAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612607993	Male
+2026-10-26	MAHIR ABDULLAHI HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615670024	Male
+2026-10-26	MANDEQ ADAN OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615477025	Female
+2026-10-26	HASSAN KAMAAL HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615112576	Male
+2026-10-26	FARHIA OMAR MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616594895	Female
+2026-10-26	YAZID ABDIWAHAB MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612355187	Male
+2026-10-26	ZAHRA OMAR ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0613572521	Female
+2026-10-26	SABARIIN HASSAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612020680	Female
+2026-10-26	CUMEER AMIIN ABDI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615112082	Male
+2026-10-26	NASTEHA ALI HEYDAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612020680	Female
+2026-10-26	ABDIRIHMAN ABDIFITAH ADAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615003010	Male
+2026-10-26	ABDULLAHI ABDIFITAH ADAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615003010	Male
+2026-10-26	KATIIN MOHAMED ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615887630	Female
+2026-10-26	HAWA ABDULLAHI KADIYE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618451633	Female
+2026-10-26	SAIDO ALI HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615968939	Female
+2026-10-26	HAWO MOHAMED IBRAHIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612709270	Female
+2026-10-26	FURQAAN ABDULLE ADOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615966441	Female
+2026-10-26	SIMRAN ALI YUSUF	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618947066	Female
+2026-10-26	ABDIRAHMAN MOHAMED ABDALLA	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615370061	Male
+2026-10-26	HIRSI ABDI ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615556828	Male
+2026-10-26	DAHABO MOALIM ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617541724	Female
+2026-10-26	FADUMO BISHAAR BUULE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612774490	Female
+2026-10-26	NAIMA SAYID ALI BINICOOF	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618506982	Female
+2026-10-26	MOHAMED ALI ABDULLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612241895	Male
+2026-10-26	ABDULKADIR ALI SALAAD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612271285	Male
+2026-10-26	MUNASAR ASAD MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618652665	Male
+2026-10-26	MARIA NOR ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615872228	Female
+2026-10-26	IKRAAN AHMED HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612118755	Female
+2026-10-26	SAFIA ABDI BOOTAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0611656044	Female
+2026-10-26	FADUMO HIRSI ABDIRAHMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0770515459	Female
+2026-10-26	MAIDA MOHAMED HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615112990	Female
+2026-10-26	SAHAL MAHAD DAHIR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615195555	Male
+2026-10-26	HANI HASSAN ABDISAMAD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615639131	Female
+2026-10-26	ALI DIRIYE KULMIYE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615496118	Male
+2026-10-26	MOHAMED ABDI ADEN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0907790112	Male
+2026-10-27	AISHA IBRAHIM DHAQANE	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615594292	Female
+2026-10-27	MOHAMED ABDIRAHMAN MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616636481	Male
+2026-10-27	SADEQ MOHAMUD ABDULLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619248745	Male
+2026-10-27	SOWDA ADAN HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616089409	Female
+2026-10-27	ABDULLAHI SAID AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618257729	Male
+2026-10-27	MOHAMED NAJI AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615597029	Male
+2026-10-27	SADIA ABDULLAHI MIRE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616079224	Female
+2026-10-27	MOHAMED FEYSAL ABDALLA	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618735887	Male
+2026-10-27	ABDINASIR HUSSEIN MOALIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615825996	Male
+2026-10-27	MUSE MOHAMED AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612338140	Male
+2026-10-27	AISHA ANWAR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618009308	Female
+2026-10-27	CAWAD CALI QAALIB	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618080909	Male
+2026-10-27	MULKI SHARIIF BARE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613176747	Female
+2026-10-27	AMRAZ ABDIRIZAK ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0619024309	Female
+2026-10-27	KHADIIJA SUUFI KUULE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618235098	Female
+2026-10-27	HASSAN ADAN ABDULKADIR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615453944	Male
+2026-10-27	MAHIR ABDIKARIN HUSSEIN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612151627	Male
+2026-10-27	ANWAR MOHAMED IBRAHIM	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0614151028	Male
+2026-10-27	ZAHRA ABDIRAHMAN ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615509174	Female
+2026-10-27	MUQTAR MOHAMUD SACIID	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615050086	Male
+2026-10-27	HAKIIMA AHMED ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619625930	Female
+2026-10-27	MUAD ABDIKARIIN WARSAME	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613886551	Male
+2026-10-27	AISHA HUSSEIN GESEY	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619610909	Female
+2026-10-27	MOHAMED ABDISHAKUR IBRAHIM	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615798952	Male
+2026-10-27	SEYNAB MOHAMED ABDIKARIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616318511	Female
+2026-10-27	MUHIIM YACQUB ABDULAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615282989	Male
+2026-10-27	RAHMO IBRAHIM MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619684900	Female
+2026-10-27	RUWEYDA ABDULKADIR JEYLANI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615395989	Female
+2026-10-27	SAIDO YONIS IBRAHIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615070066	Male
+2026-10-27	ABDULLE MOHAMED MOALIM AYBAKAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615576614	Male
+2026-10-27	AMIIRA AHMED ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612683188	Female
+2026-10-27	FATIMA OMAR SALEM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0758204205	Male
+2026-10-27	RAMLO AHMED ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615666498	Female
+2026-10-27	DAHIR ALI GEEDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614160119	Male
+2026-10-27	BASHIIR BUULE MOALIM SAMAAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618501650	Male
+2026-10-27	RAGE JINOW BASEY	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615661739	Male
+2026-10-27	ALI FEYSAL MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615278571	Male
+2026-10-27	MARYAN OSMAN XAAJI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615506986	Female
+2026-10-27	NOUR MOHAMED HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615343443	Male
+2026-10-28	HAWO AHMED HAJI AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617223724	Female
+2026-10-28	AKRAM OMAR ABDULLAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615398731	Male
+2026-10-28	ALI ABSHIR ALI	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615456714	Male
+2026-10-28	FARDOWSA ABDI HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615970308	Female
+2026-10-28	ALI ABUKAR OSMAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615788406	Male
+2026-10-28	ANFAAL ABDULLAHI AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615213935	Female
+2026-10-28	ABDISHAKUUR ABUKAR SAYID	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615170868	Male
+2026-10-28	HAWA ARTAN MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617199715	Female
+2026-10-28	ASMA ABDIKARIIN ABDULLE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617263980	Female
+2026-10-28	MUNA ALI HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612340864	Female
+2026-10-28	NASIIM OMAR OSMAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0614182103	Female
+2026-10-28	WARIS TARAH IGAAL	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0614186489	Female
+2026-10-28	FAIZO ABDINUR MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617501308	Female
+2026-10-28	MAJID ASAD ABDULKADIR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617230016	Male
+2026-10-28	MISKI MUSE AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618658533	Female
+2026-10-28	NIMCO MOHAMED ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615529647	Female
+2026-10-28	IKRAAN AWEIS HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0610437878	Female
+2026-10-28	MANHA ALI ISSE ABDULLAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616065474	Female
+2026-10-28	AHMED ABTIDOON KULMIYE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615522231	Male
+2026-10-28	SIDRA MOHAMED ABDULLAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615577860	Female
+2026-10-28	AHMED MOHAMED ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616590104	Male
+2026-10-28	FADUMO YUSUF ABDINUR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619869393	Female
+2026-10-28	ABDIMALIK AHMED MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615933900	Male
+2026-10-28	ABDIRAHMAN MOHAMED IBRAHIM	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619559900	Male
+2026-10-28	AISHA AHMED MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615933900	Female
+2026-10-28	MASAR ABDULKADIR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617393675	Female
+2026-10-28	FAWZIA YUSUF HAJI AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615879946	Female
+2026-10-28	XABIIBO OSMAN ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615941704	Female
+2026-10-28	SALMAAN HASSAN MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615557855	Male
+2026-10-28	ZAMZAM ABI BOCOR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615591990	Female
+2026-10-28	MUSSE FAISAL MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615206669	Male
+2026-10-28	SIDRA HANAD MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617661089	Female
+2026-10-28	HAWA SHARDI HILOWLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615196323	Female
+2026-10-28	SUSAN MOHAMED HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615592930	Female
+2026-10-28	ASCAD ABDIRAHMAN MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0619597978	Male
+2026-10-29	ABDIMAJID MOHAMED SHIRE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619858999	Male
+2026-10-29	RAIDA ABDIRAHMAN ADAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615538863	Female
+2026-10-29	ABDULLAHI HUSSEIN GUDEY	Dr A Y Hersi (Internal Medicine)	0616525795	Male
+2026-10-29	TAHLIIL ALISIYAAD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615554035	Male
+2026-10-29	NASRA ABDISALAM TAHLIIL	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615199137	Female
+2026-10-29	SALMAN ABDULLAHI ADAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612159536	Male
+2026-10-29	SUMAYO ABDIRAHMAN ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615635958	Female
+2026-10-29	AISHA HASSAN IIDLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616307343	Female
+2026-10-29	IMRAN OMAR ELMI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0611501609	Male
+2026-10-29	MOHAMUD HASSAN ABDULLAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0619077671	Male
+2026-10-29	YUSRA ASAD NUUR ABDULKADIR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618455580	Female
+2026-10-29	SIDRA SAYID OMAR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615781725	Female
+2026-10-29	MARYAMA AHMED MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617953338	Female
+2026-10-29	HASSAN MOHAMED ABUKAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615849908	Male
+2026-10-29	ZAHRA SAYID OMAR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615781725	Female
+2026-10-29	LUUL AWALE HEYLE 	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615816616	Female
+2026-10-29	BUREEQA ABDIDAHIR ABDIRAHMAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0611530045	Female
+2026-10-29	QAALI OMAR ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618884098	Female
+2026-10-29	SIHAAM ABDIWALI IBRAHIM	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0614117001	Female
+2026-10-29	NAFISA AHMED IIMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618063960	Female
+2026-10-29	MOHAMED ABDIMAJIID OMAR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618978077	Male
+2026-10-29	SAFA ABDIRAHMAN ABDULKADIR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617934092	Female
+2026-10-29	IDIL HUSSEIN ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617058736	Female
+2026-10-29	RUQIYO MOHAMED HUSSEIN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615544288	Female
+2026-10-29	AHMED ABDIHAKIIN ISMAIL	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617224513	Male
+2026-10-29	ZAKARIYE MOHAMED AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0613631387	Male
+2026-10-29	MUCAD ABDIRIHIM IBRAHIM	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616343558	Male
+2026-10-29	SIMAN MOHAMED AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0613631387	Female
+2026-10-29	RAHMA NURE MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615398949	Female
+2026-10-29	MUCAWIYE ABDIRIHIM MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616343558	Male
+2026-10-29	ISMAIL ABDI ISAK	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615680893	Male
+2026-10-29	AYUUB ABUKAR OMAR 	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618650662	Male
+2026-10-29	QADIIJO ABDIQANI ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615657726	Female
+2026-10-29	ABDIMUDALIB ABDIRIHMAN SHARIF	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615905704	Male
+2026-10-29	FARHIA OSMAN ABDULLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618468774	Female
+2026-10-29	FARHIA ABDIWAHID AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615719512	Female
+2026-10-29	AQIILA SH MUSE HAJI AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615676187	Female
+2026-10-29	MOHAMUD JIMALE OSOBLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618930361	Male
+2026-10-29	FADUMO ABDI MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612519145	Female
+2026-10-29	MARYAM ALI AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618839557	Female
+2026-10-29	MARYAN HIRSI MUSSE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615339413	Female
+2026-10-29	SHARIFO NOUR ALI 	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619006950	Female
+2026-10-29	SHAMSO ALI HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615582208	Female
+2026-10-29	MOHAMED HASHI FARAH	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617886903	Male
+2026-10-29	MOHAMED YUSUF AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615057143	Male
+2026-10-29	SUMAYO IBRAHIM MADKEER	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615955545	Female
+2026-10-31	ADAN QEYRE ADAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615828893	Male
+2026-10-31	YASIR ABDIHAKIIN DAHIR	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615912743	Male
+2026-10-31	ABDIRIZAK MOHAMUD MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615548633	Male
+2026-10-31	HAMDI MAHAD MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615109222	Female
+2026-10-31	BILAN OMAR AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615066865	Female
+2026-10-31	IYAD ABDIXAMID ABDULLLAHI	SADIA OMAR SALIM (Psychology & Speech Therapy)	0618193788	Male
+2026-10-31	ALI ABSHIR ALI	SADIA OMAR SALIM (Psychology & Speech Therapy)	0615456714	Male
+2026-10-31	MOHAMED HUSSEIN WARSAME	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615250392	Male
+2026-10-31	ZEYDA LIIBAN ABDIRAHMAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615816300	Female
+2026-10-31	MOHAMED ALI IIMAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615648811	Male
+2026-10-31	ZEYNAB ABDULKADIR SHARIIF	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618725430	Female
+2026-10-31	AHMED ABDULLAHI MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0612225288	Male
+2026-10-31	THABIT MUSTAFA HASHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615803737	Male
+2026-10-31	SAMIIRA ALI ADOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617077424	Female
+2026-10-31	ABDULLAHI ABUKAR AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615778098	Male
+2026-10-31	MOHAMED SAKARIYE MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615702616	Male
+2026-10-31	ABDULLAHI NOR OSMAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615345436	Male
+2026-10-31	FATIMA ABDIHAFID NUR	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618900744	Female
+2026-10-31	ZAKARIYE ARAB SOYAAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615720304	Male
+2026-10-31	ANAS ABDI MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615200202	Male
+2026-10-31	ABDIQAFAR SAID HASHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617330637	Male
+2026-10-31	FADUMO SUUDI TOHOW	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615321104	Female
+2026-10-31	MARYAMA ABDI MAHAD ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615772692	Female
+2026-10-31	ABDIRIZAK OMAR ADAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616855074	Male
+2026-10-31	HUSSEIN AHMED MOHAMUD	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618635729	Male
+2026-10-31	MUMTAZ HASSAN JIMALE	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0612498211	Female
+2026-10-31	DAUD ABDI ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0611136437	Male
+2026-10-31	HODAN ABDI IGAAL	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0613466785	Female
+2026-10-31	SALMAN ABDALLA MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617138616	Male
+2026-10-31	SAMIA MOHAMED HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0613990995	Female
+2026-10-31	MOHAMED ABDIQANI ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615551233	Male
+2026-10-31	ASMA HASSAN IBRAHIM	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615028603	Female
+2026-10-31	SABARIN HASSAN ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615337641	Female
+2026-10-31	ABDIAZIIZ MOALIM IBRAHIM HASSAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618504262	Male
+2026-10-31	ANHAR IBRAHIM MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615691680	Female
+2026-10-31	IBRAHIM BUULE ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615402752	Male
+2026-10-31	IBRAHIM DAHIR BOOTAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615184647	Male
+2026-10-31	ABSHIR ALI KHEYRE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615555563	Male
+2026-10-31	ZAKARIE HUSSEIN OSMAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0619950341	Male
+2026-10-31	FARTUUN MOHAMED ALI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615358901	Female
+2026-10-31	MIRZAN ILYAAS NOR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0617250784	Male
+2026-10-31	RUQIYO ABDULLAHI AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615274322	Female
+2026-10-31	ABYAN ABDIMAJIID ABDULKADIR	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615617257	Female
+2026-10-31	NASTEHA ABDULLAHI MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618193788	Female
+2026-10-31	IYAD ABDIXAMID ABDULLLAHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618193788	Male
+2026-10-31	AFNAAN ABDIRISAQ MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615617257	Female
+2026-10-31	ALIA ABDULKADIR MIRE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619757373	Female
+2026-10-31	AYAAT MOHAMED HASSAN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615917772	Female
+2026-10-31	TASMIA BASHIIR FARAH	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615892541	Female
+2026-10-31	MOHAMED ABDIRAHMAN ELMI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619868681	Male
+2026-10-31	FAWAS MUSTAFA ABDULLAHI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615387038	Male
+2026-10-31	NIMA MOHAMED ISHAK KULANE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615830064	Female
+2026-10-31	MUSTAF ABDULKADIR MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615688460	Male
+2026-10-31	SABIR ZAKARIYE HUSSEIN	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616299723	Male
+2026-10-31	JABIR MOHAMED ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617235747	Male
+2026-10-31	MAJID MOHAMUD AHMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618310909	Male
+2026-10-31	ABDI AHMED ABDULLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0616507554	Male
+2026-10-31	MOHAMED MOWLIID MOHAMUD	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615408466	Male
+2026-10-31	ABDIHAFIID SH ABDULLAHI SH MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615001660	Male
+2026-10-31	NASHAD ABDIQEYR MOHAMED	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0618696722	Female
+2026-10-31	ABDIQANI MOHAMED JEYLANI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615359560	Male
+2026-10-31	MUNTASIR MOHAMED SHARIIF	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0615303190	Male
+2026-10-31	JAMA ABDI AHMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615562753	Male
+2026-10-31	AMINA ALI ABDI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615490006	Female
+2026-10-31	RUWEYDA MOHAMED ALI	DR. YAHYA SHOOLE (Pediatric Gastroenterology)	0616757129	Female
+2026-10-31	DAHIR HASSAN MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0619855211	Male
+2026-10-31	QATUMO ADAWE ABDULLE	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0618974933	Female
+2026-10-31	WATIIN AHMED BOTAN	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617488142	Male
+2026-10-31	FARXIYO ALI XASHI	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0617958125	Female
+2026-10-31	HAFSO ABDULLAHI MOHAMED	Dr. HARITH ABDULKADIR SHEIKH MOHAMUD (Neurology)	0615542032	Female`,
+  DEFAULT_MSG:`Asc {name},
 
-  load(k,def=[]){return ls_get(k,def);},
-  save(k,d){ls_set(k,d);},
-  isExpired(d){const t=new Date();t.setHours(0,0,0,0);return new Date(d)<t;},
-  isExpiring(d){const t=new Date();t.setHours(0,0,0,0);const s=new Date(t.getTime()+30*864e5);const e=new Date(d);return e>=t&&e<=s;},
+Walaal waa qeybta soo dhaweynta macaamiisha Baxnaano Hospital.
 
-  async init(){
-    const users=this.load(this.K.USERS);
-    if(!users.length){
-      this.save(this.K.USERS,[
-        {id:gid('U'),username:'admin',password:await hashPw('admin123','_lab_'),role:'admin'},
-        {id:gid('U'),username:'cashier',password:await hashPw('cashier123','_lab_'),role:'cashier'}
-      ]);
-    }
-    const sess=ls_get(this.K.SESSION, null);
-    if(sess){const u=this.load(this.K.USERS).find(x=>x.username===sess);if(u){this.cur=u;this.showApp();return;}}
-    this.showLogin();
-  },
+{visit_date} ayaad soo booqatey {doctor}.
 
-  showLogin(){$('labLogin').style.display='';$('labApp').style.display='none';},
-  showApp(){
-    $('labLogin').style.display='none';$('labApp').style.display='';
-    $('labUserDisp').textContent='👤 '+this.cur.username+' ('+this.cur.role+')';
-    this.buildNav();this.showView('lv-pos');
-  },
+Kawaran xaaladda caafimaad {name}?
+Daawooyinkii ma qaadataa?
 
-  async login(){
-    const u=$('lLoginUser').value.trim(),p=$('lLoginPass').value;
-    const al=$('lLoginAlert');
-    if(!u||!p){al.textContent='Enter credentials';al.classList.remove('d-none');return;}
-    const users=this.load(this.K.USERS);
-    const user=users.find(x=>x.username===u);
-    if(!user||user.password!==await hashPw(p,'_lab_')){
-      al.textContent='Invalid credentials';al.classList.remove('d-none');return;
-    }
-    al.classList.add('d-none');
-    this.cur=user;ls_set(this.K.SESSION,u);
-    this.showApp();
-    Swal.fire({icon:'success',title:'Welcome '+u,timer:1200,showConfirmButton:false});
-  },
+Waxaa muhiim ah in dawada iyo wax tarkeeda aad la socodsiisid dhakhtarka.
+La socodka dhakhtarka waa kuu muhiim.
 
-  logout(){
-    Swal.fire({title:'Logout?',icon:'question',showCancelButton:true}).then(r=>{
-      if(!r.isConfirmed)return;
-      ls_remove(this.K.SESSION);this.cur=null;
-      $('labLogin').style.display='';$('labApp').style.display='none';
-    });
-  },
+Haddii aadan wali imaanin, nala socodsii si waqti aan kuugu qabanno.
 
-  buildNav(){
-    const menu=$('labTopNav');menu.innerHTML='';
-    const isAdmin=this.cur.role==='admin';
-    const items=[
-      {v:'lv-dashboard',l:'Dashboard'},
-      {v:'lv-pos',l:'POS'},
-      ...(isAdmin?[{v:'lv-products',l:'Products'}]:[]),
-      {v:'lv-results',l:'Results'},
-      {v:'lv-sales',l:'Sales'},
-      ...(isAdmin?[{v:'lv-reports',l:'Reports'}]:[])
-    ];
-    items.forEach(it=>{
-      const b=document.createElement('button');b.className='tnav-btn';b.dataset.v=it.v;
-      b.textContent=it.l;b.onclick=()=>this.showView(it.v);menu.appendChild(b);
-    });
-  },
+Mahadsanid.
+Waa noo sharaf doorashada aad na dooratey.`,
+  run:{active:false,paused:false,busy:false,list:[],i:0,nextAt:0,pausedLeft:0,sent:0,failed:0,fails:0,worker:null,timer:null,wake:null},
+  _inited:false,
 
-  showView(vid){
-    document.querySelectorAll('#labApp .view').forEach(v=>v.classList.remove('active'));
-    document.querySelectorAll('#labTopNav .tnav-btn').forEach(b=>b.classList.remove('active'));
-    const t=$(vid);if(t)t.classList.add('active');
-    const b=document.querySelector('#labTopNav [data-v="'+vid+'"]');if(b)b.classList.add('active');
-    if(vid==='lv-dashboard')this.renderDash();
-    if(vid==='lv-products')this.renderProds();
-    if(vid==='lv-pos')this.renderPOS();
-    if(vid==='lv-results'){this.renderHistory();this.clearResultForm();}
-    if(vid==='lv-sales')this.renderSales();
-    if(vid==='lv-reports'){this.renderExpiry();this.renderSalesRep();}
-  },
-
-  renderDash(){
-    const prods=this.load(this.K.PRODUCTS);
-    const sales=this.load(this.K.SALES);
-    const today=todayStr();
-    const ts=sales.filter(s=>s.date.startsWith(today));
-    const rev=ts.reduce((s,x)=>s+x.total,0);
-    const profit=ts.reduce((s,x)=>s+x.profit,0);
-    $('lDashStats').innerHTML=`
-      <div class="stat-box"><small>Today\'s Sales</small><div class="val">${fmtMoney(rev)}</div></div>
-      <div class="stat-box"><small>Today\'s Profit</small><div class="val green">${fmtMoney(profit)}</div></div>
-      <div class="stat-box"><small>Total Products</small><div class="val">${prods.length}</div></div>
-      <div class="stat-box"><small>Today Transactions</small><div class="val">${ts.length}</div></div>
-      <div class="stat-box"><small>Expired/Expiring</small><div class="val red">${prods.filter(p=>this.isExpired(p.expiry)||this.isExpiring(p.expiry)).length}</div></div>
-      <div class="stat-box"><small>Low Stock (≤5)</small><div class="val red">${prods.filter(p=>p.qty<=5).length}</div></div>
-    `;
-    const al=$('lDashAlerts');al.innerHTML='';
-    const expired=prods.filter(p=>this.isExpired(p.expiry));
-    const expiring=prods.filter(p=>!this.isExpired(p.expiry)&&this.isExpiring(p.expiry));
-    const lowStock=prods.filter(p=>p.qty<=5&&!this.isExpired(p.expiry));
-    if(!expired.length&&!expiring.length&&!lowStock.length){al.innerHTML='<p style="color:var(--text-muted)">✅ No alerts</p>';return;}
-    expired.forEach(p=>{al.innerHTML+=`<div class="alert alert-danger">❌ <strong>EXPIRED:</strong> ${p.name} (${fmtDate(p.expiry)}) — Qty:${p.qty}</div>`;});
-    expiring.forEach(p=>{al.innerHTML+=`<div class="alert alert-warning">⚠️ <strong>Expiring Soon:</strong> ${p.name} (${fmtDate(p.expiry)}) — Qty:${p.qty}</div>`;});
-    lowStock.forEach(p=>{al.innerHTML+=`<div class="alert alert-info">📦 <strong>Low Stock:</strong> ${p.name} — Only ${p.qty} left</div>`;});
-    const chart=$('lSalesChart');chart.innerHTML='';
-    const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push({date:d.toISOString().split('T')[0],label:d.toLocaleDateString(undefined,{weekday:'short'})});}
-    const bars=days.map(day=>{const ds=sales.filter(s=>s.date.startsWith(day.date));return{...day,rev:ds.reduce((s,x)=>s+x.total,0)};});
-    const max=Math.max(...bars.map(b=>b.rev),1);
-    chart.innerHTML=bars.map(b=>{const h=Math.max(4,(b.rev/max)*180);const isT=b.date===today;
-      return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
-        <div style="width:100%;background:${isT?'var(--primary)':'#ddb7c2'};border-radius:3px 3px 0 0;height:${h}px;"></div>
-        <div style="font-size:.65rem;color:#666;">${b.label}</div>
-        ${b.rev>0?`<div style="font-size:.65rem;font-weight:700;color:var(--primary);">${fmtMoney(b.rev)}</div>`:''}
-      </div>`;}).join('');
-  },
-
-  renderProds(){
-    $('lProdId').value='';$('lProdForm').reset();
-    const filter=($('lProdFilter').value||'').toLowerCase();
-    const prods=this.load(this.K.PRODUCTS).filter(p=>!filter||p.name.toLowerCase().includes(filter));
-    $('lProdBody').innerHTML=prods.map(p=>{
-      const exp=this.isExpired(p.expiry),exp2=this.isExpiring(p.expiry);
-      const margin=p.sell-p.cost;
-      return`<tr>
-        <td><strong>${p.name}</strong>${exp?' ❌':exp2?' ⚠️':''}</td>
-        <td>${p.qty}</td><td>${fmtMoney(p.cost)}</td><td>${fmtMoney(p.sell)}</td>
-        <td style="color:${margin>=0?'var(--success)':'var(--danger)'};">${margin>=0?'+':''}${fmtMoney(margin)}</td>
-        <td>${fmtDate(p.expiry)}</td>
-        <td><span class="badge ${exp?'badge-danger':exp2?'badge-warning':'badge-success'}">${exp?'Expired':exp2?'Expiring':'Good'}</span></td>
-        <td class="actions">
-          <button class="btn btn-primary btn-sm" onclick="LAB.editProd('${p.id}')">Edit</button>
-          <button class="btn btn-danger btn-sm" onclick="LAB.deleteProd('${p.id}')">Delete</button>
-        </td></tr>`;
-    }).join('');
-  },
-
-  saveProd(e){
-    e.preventDefault();
-    const id=$('lProdId').value;
-    const obj={name:$('lPName').value.trim(),qty:parseInt($('lPQty').value)||0,
-      cost:parseFloat($('lPCost').value)||0,sell:parseFloat($('lPSell').value)||0,expiry:$('lPExpiry').value};
-    const prods=this.load(this.K.PRODUCTS);
-    if(id){const i=prods.findIndex(p=>p.id===id);if(i!==-1)prods[i]={...prods[i],...obj};}
-    else prods.push({...obj,id:gid('P')});
-    this.save(this.K.PRODUCTS,prods);
-    Swal.fire({icon:'success',title:'Saved',timer:1000,showConfirmButton:false});
-    this.renderProds();
-  },
-  editProd(id){
-    const p=this.load(this.K.PRODUCTS).find(x=>x.id===id);if(!p)return;
-    $('lProdId').value=p.id;$('lPName').value=p.name;$('lPQty').value=p.qty;
-    $('lPCost').value=p.cost;$('lPSell').value=p.sell;$('lPExpiry').value=p.expiry;
-  },
-  deleteProd(id){
-    Swal.fire({title:'Delete product?',icon:'warning',showCancelButton:true}).then(r=>{
-      if(!r.isConfirmed)return;
-      this.save(this.K.PRODUCTS,this.load(this.K.PRODUCTS).filter(p=>p.id!==id));this.renderProds();
-    });
-  },
-
-  renderPOS(){
-    const prods=this.load(this.K.PRODUCTS).filter(p=>!this.isExpired(p.expiry));
-    const q=($('lPosSearch').value||'').toLowerCase();
-    const filtered=prods.filter(p=>!q||p.name.toLowerCase().includes(q));
-    $('lPosGrid').innerHTML=filtered.map(p=>`
-      <div class="pos-card ${p.qty<=5&&p.qty>0?'low':''} ${p.qty===0?'out':''}"
-        onclick="${p.qty>0?`LAB.addToCart('${p.id}')`:''}"
-        style="${p.qty===0?'cursor:not-allowed;':''}">
-        <div class="name">${p.name}</div>
-        <div class="price">${fmtMoney(p.sell)}</div>
-        <div class="stock">${p.qty} in stock</div>
-      </div>`).join('');
-  },
-
-  addToCart(pid){
-    const p=this.load(this.K.PRODUCTS).find(x=>x.id===pid);if(!p||p.qty===0)return;
-    const ex=this.cart.find(c=>c.id===pid);
-    if(ex){if(ex.qty>=p.qty){Swal.fire({icon:'warning',title:'Stock limit',timer:1000,showConfirmButton:false});return;}ex.qty++;}
-    else this.cart.push({id:pid,name:p.name,price:p.sell,cost:p.cost,qty:1,max:p.qty});
-    this.renderCart();
-  },
-
-  renderCart(){
-    const items=$('lCartItems');
-    if(!this.cart.length){
-      items.innerHTML='<p style="text-align:center;color:var(--text-muted);padding:2rem 0;">Cart is empty</p>';
-      $('lCartFooter').style.display='none';return;
-    }
-    $('lCartFooter').style.display='';
-    items.innerHTML=this.cart.map((c,i)=>`
-      <div class="cart-item">
-        <div style="flex:1;"><div style="font-weight:600;font-size:.85rem;">${c.name}</div><div style="font-size:.75rem;color:var(--text-muted);">${fmtMoney(c.price)} each</div></div>
-        <div class="cart-qty">
-          <button class="qty-btn" onclick="LAB.changeQty(${i},-1)">−</button>
-          <span style="min-width:20px;text-align:center;">${c.qty}</span>
-          <button class="qty-btn" onclick="LAB.changeQty(${i},1)">+</button>
-          <button class="qty-btn" style="color:var(--danger);" onclick="LAB.removeItem(${i})">×</button>
-        </div>
-      </div>`).join('');
-    this.updateTotal();
-  },
-
-  changeQty(i,d){
-    const item=this.cart[i];const nq=item.qty+d;
-    if(nq<1){this.removeItem(i);return;}
-    if(nq>item.max){Swal.fire({icon:'warning',title:'Stock limit',timer:800,showConfirmButton:false});return;}
-    item.qty=nq;this.renderCart();
-  },
-  removeItem(i){this.cart.splice(i,1);this.renderCart();},
-  clearCart(){this.cart=[];$('lCartCustomer').value='';$('lDiscount').value='0';this.renderCart();},
-
-  updateTotal(){
-    const sub=this.cart.reduce((s,c)=>s+c.price*c.qty,0);
-    const disc=parseFloat($('lDiscount').value)||0;
-    $('lSubtotal').textContent=fmtMoney(sub);
-    $('lTotal').textContent=fmtMoney(Math.max(0,sub-disc));
-  },
-
-  checkout(){
-    if(!this.cart.length)return;
-    const cust=$('lCartCustomer').value.trim()||'Walk-in Customer';
-    const disc=parseFloat($('lDiscount').value)||0;
-    const method=$('lPayMethod').value;
-    const sub=this.cart.reduce((s,c)=>s+c.price*c.qty,0);
-    const total=Math.max(0,sub-disc);
-    const profit=total-this.cart.reduce((s,c)=>s+c.cost*c.qty,0);
-    const prods=this.load(this.K.PRODUCTS);
-    this.cart.forEach(c=>{const p=prods.find(x=>x.id===c.id);if(p)p.qty=Math.max(0,p.qty-c.qty);});
-    this.save(this.K.PRODUCTS,prods);
-    const sale={id:gid('S'),receiptNo:'LAB-'+Date.now().toString().slice(-6),date:new Date().toISOString(),
-      customer:cust,items:this.cart.map(c=>({id:c.id,name:c.name,qty:c.qty,unitPrice:c.price,total:c.price*c.qty})),
-      subtotal:sub,discount:disc,total,profit,paymentMethod:method,cashier:this.cur.username};
-    const sales=this.load(this.K.SALES);sales.unshift(sale);this.save(this.K.SALES,sales);
-    try{
-      const hist=this.load(this.RESULTS_KEY);
-      sale.items.forEach(it=>{
-        hist.unshift({id:gid('LR'),reportNumber:'LR-'+Date.now().toString().slice(-8),reportDate:sale.date,
-          patientName:cust,requestedTest:it.name,status:'Pending',paymentStatus:'Paid',saleRef:sale.id,results:[]});
-      });
-      this.save(this.RESULTS_KEY,hist);
-    }catch(e){}
-    this.printSaleReceipt(sale);
-    Swal.fire({icon:'success',title:'Payment Successful',text:'Receipt #'+sale.receiptNo,timer:1800,showConfirmButton:false});
-    this.clearCart();this.renderPOS();
-  },
-
-  printSaleReceipt(sale){
-    const rows=sale.items.map(it=>`<tr><td>${it.qty}x ${it.name}</td><td style="text-align:right;">${fmtMoney(it.unitPrice)}</td><td style="text-align:right;">${fmtMoney(it.total)}</td></tr>`).join('');
-    doPrint(`<div style="max-width:320px;margin:0 auto;font-family:'Courier New',monospace;font-size:12px;padding:20px;">
-      <div style="text-align:center;margin-bottom:15px;border-bottom:1px dashed #333;padding-bottom:10px;">
-        <h3 style="margin:0 0 5px;">🧪 BAXNAANO LAB</h3><p style="margin:0;">Lab Management System</p>
-        <p style="margin:3px 0;">${new Date(sale.date).toLocaleString()}</p>
-      </div>
-      <p><strong>Receipt:</strong> ${sale.receiptNo}</p><p><strong>Customer:</strong> ${sale.customer}</p>
-      <p><strong>Cashier:</strong> ${sale.cashier}</p>
-      <table style="width:100%;border-collapse:collapse;margin:10px 0;">
-        <tr><th style="text-align:left;">Item</th><th style="text-align:right;">Price</th><th style="text-align:right;">Total</th></tr>
-        ${rows}
-      </table>
-      <div style="border-top:1px dashed #333;padding-top:10px;">
-        <div style="display:flex;justify-content:space-between;"><span>Subtotal:</span><span>${fmtMoney(sale.subtotal)}</span></div>
-        ${sale.discount>0?`<div style="display:flex;justify-content:space-between;"><span>Discount:</span><span>-${fmtMoney(sale.discount)}</span></div>`:''}
-        <div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-top:5px;"><span>TOTAL:</span><span>${fmtMoney(sale.total)}</span></div>
-        <div style="display:flex;justify-content:space-between;"><span>Method:</span><span>${sale.paymentMethod}</span></div>
-      </div>
-      <div style="text-align:center;margin-top:15px;border-top:1px dashed #333;padding-top:10px;">Thank you for choosing Baxnaano Lab!</div>
-    </div>`);
-  },
-
-  renderTemplate(){
-    const type=$('lrTestType').value;
-    const container=$('lrTable');container.innerHTML='';
-    if(!type||!this.TEMPLATES[type])return;
-    const rows=this.TEMPLATES[type].map((item,i)=>`
-      <tr><td>${item.name}</td>
-          <td><input type="text" class="form-control" style="height:28px;padding:2px 8px;" data-ri="${i}" placeholder="Result"></td>
-          <td>${item.unit}</td><td>${item.range}</td></tr>`).join('');
-    container.innerHTML=`<div class="alert alert-info" style="margin-bottom:.5rem;">Fill in test values below</div>
-      <table class="rtbl"><thead><tr><th>Test</th><th>Result</th><th>Unit</th><th>Normal Range</th></tr></thead>
-      <tbody>${rows}</tbody></table>`;
-  },
-
-  assembleResult(){
-    const type=$('lrTestType').value;
-    const template=this.TEMPLATES[type]||[];
-    const vals=[...$('lrTable').querySelectorAll('input[data-ri]')].map(i=>i.value.trim()||'—');
-    return{
-      id:$('lrRecordId').value.trim()||gid('LR'),
-      reportNumber:$('lrPatientId').value.trim()||('LR-'+Date.now().toString().slice(-8)),
-      reportDate:new Date().toISOString(),
-      patientName:$('lrPatient').value.trim(),
-      patientPhone:$('lrPhone').value.trim()||'',
-      patientAge:$('lrAge').value,
-      patientGender:$('lrGender').value,
-      doctorName:$('lrDoctor').value.trim(),
-      technician:$('lrTech').value.trim(),
-      testType:type,
-      status:$('lrStatus').value,
-      comment:$('lrComment').value.trim(),
-      results:template.map((item,i)=>({test:item.name,result:vals[i]||'—',unit:item.unit,range:item.range}))
+  esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));},
+  cfg(){return Object.assign({from:'2026-10-17',to:'2026-10-31',doctor:'',delay:30,mode:'link',endpoint:'',token:'',search:''},ls_get(this.K.CFG,{})||{});},
+  saveCfg(){
+    const c={
+      from:$('bulkFrom').value,to:$('bulkTo').value,doctor:$('bulkDoctor').value,
+      delay:Math.max(5,parseInt($('bulkDelay').value,10)||30),mode:$('bulkMode').value,
+      endpoint:$('bulkEndpoint').value.trim(),token:$('bulkToken').value.trim(),search:$('bulkSearch').value
     };
+    ls_set(this.K.CFG,c);return c;
+  },
+  getMsg(){const m=ls_get(this.K.MSG,'');return (typeof m==='string'&&m.trim())?m:this.DEFAULT_MSG;},
+  saveMsg(){ls_set(this.K.MSG,$('bulkMsg').value);this.renderPreview();},
+  resetMsg(){$('bulkMsg').value=this.DEFAULT_MSG;this.saveMsg();},
+  getStatus(){return ls_get(this.K.STATUS,{})||{};},
+
+  // ---- parsing ----
+  MONTHS:{jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11},
+  _iso(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');},
+  _dateFrom(s){
+    s=(s||'').trim();
+    let m=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return s;
+    m=s.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/);
+    if(m&&this.MONTHS[m[2].slice(0,3).toLowerCase()]!==undefined)return this._iso(+m[3],this.MONTHS[m[2].slice(0,3).toLowerCase()],+m[1]);
+    return null;
+  },
+  parse(text){
+    const out=[];let cur=null;
+    String(text||'').split(/\r?\n/).forEach(raw=>{
+      const line=raw.trim();if(!line)return;
+      let parts=line.indexOf('\t')>=0?line.split('\t').map(x=>x.trim()):line.split(',').map(x=>x.trim());
+      if(/^(date|patient)$/i.test(parts[0]))return;
+      const hdr=this._dateFrom(line.replace(/\s*\(\d+\)\s*$/,''));
+      if(hdr&&parts.length<3){cur=hdr;return;}
+      let date=cur;
+      if(parts.length>=5&&this._dateFrom(parts[0])){date=this._dateFrom(parts[0]);parts=parts.slice(1);}
+      if(parts.length<3||!/\d{6,}/.test(parts[2]||''))return;
+      out.push({date:date||'',name:parts[0],doctor:parts[1],phone:parts[2],sex:parts[3]||''});
+    });
+    return out;
+  },
+  waPhone(p){
+    let d=String(p||'').replace(/\D/g,'');
+    if(d.startsWith('00'))d=d.slice(2);
+    if(d.startsWith('0'))d='252'+d.slice(1);
+    else if(d.length===9&&!d.startsWith('252'))d='252'+d;
+    return d.length>=11?d:'';
+  },
+  cleanDoctor(d){return String(d||'').replace(/\s*\([^)]*\)/g,'').replace(/\s+/g,' ').trim();},
+  titleCase(s){return String(s||'').toLowerCase().replace(/\b[a-z]/g,c=>c.toUpperCase());},
+  fmtVisit(iso){
+    const m=String(iso||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);if(!m)return iso||'';
+    return (+m[3])+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m[2]-1]+' '+m[1];
   },
 
-  saveResult(){
-    const data=this.assembleResult();
-    if(!data.patientName||!data.testType){Swal.fire({icon:'warning',title:'Patient name and test type required'});return;}
-    const hist=this.load(this.RESULTS_KEY);
-    const hasVals=data.results.some(r=>r.result&&r.result!=='—');
-    if(hasVals&&data.status==='Pending')data.status='Completed';
-    const idx=hist.findIndex(h=>h.id===data.id);
-    if(idx!==-1)hist[idx]=data;else hist.unshift(data);
-    this.save(this.RESULTS_KEY,hist);
-    $('lrRecordId').value=data.id;$('lrPatientId').value=data.reportNumber;
-    Swal.fire({icon:'success',title:'Result saved',timer:1200,showConfirmButton:false});
-    this.renderHistory();
+  // ---- data ----
+  ensureSeed(){
+    if(ls_get(this.K.VER,'')===this.SEED_VER)return;
+    const cur=ls_get(this.K.LIST,[])||[];
+    this.addRows(this.parse(this.SEED),cur);
+    ls_set(this.K.VER,this.SEED_VER);
   },
-
-  previewResult(){
-    const data=this.assembleResult();
-    if(!data.patientName||!data.testType){Swal.fire({icon:'warning',title:'Fill required fields'});return;}
-    $('lrPreview').innerHTML=this.buildReportHtml(data);
+  addRows(rows,base){
+    const list=base||ls_get(this.K.LIST,[])||[];
+    const seen=new Set(list.map(r=>r.date+'|'+this.waPhone(r.phone)+'|'+(r.name||'').toLowerCase()));
+    let added=0;
+    rows.forEach(r=>{
+      const k=r.date+'|'+this.waPhone(r.phone)+'|'+(r.name||'').toLowerCase();
+      if(seen.has(k))return;seen.add(k);list.push(r);added++;
+    });
+    ls_set(this.K.LIST,list);
+    return added;
   },
-
-  printResult(){
-    const data=this.assembleResult();
-    if(!data.patientName||!data.testType){Swal.fire({icon:'warning',title:'Fill required fields'});return;}
-    data.status='Printed';data.printedAt=new Date().toISOString();
-    const hist=this.load(this.RESULTS_KEY);
-    const idx=hist.findIndex(h=>h.id===data.id);
-    if(idx!==-1)hist[idx]=data;else hist.unshift(data);
-    this.save(this.RESULTS_KEY,hist);
-    $('lrPreview').innerHTML=this.buildReportHtml(data);
-    this.renderHistory();
-    doPrint(this.buildReportHtml(data));
-  },
-
-  buildReportHtml(data){
-    const rows=(data.results||[]).map(r=>`<tr><td>${r.test}</td><td>${r.result}</td><td>${r.unit}</td><td>${r.range}</td></tr>`).join('');
-    const sc=data.status==='Pending'?'badge-warning':data.status==='Completed'?'badge-success':'badge-info';
-    return`<div class="report-shell">
-      <div class="report-brand">
-        <img src="https://raw.githubusercontent.com/cs-company2/baxnaano-ogansho/main/images.png" style="width:60px;">
-        <div><div class="report-title">BAXNAANO LABORATORY</div><div class="report-sub">Laboratory Result Report</div></div>
-        <span class="badge ${sc}" style="margin-left:auto;">${data.status}</span>
-      </div>
-      <div class="report-grid">
-        <div class="report-card"><h4>Patient</h4><p><strong>Name:</strong> ${data.patientName||'—'}</p><p><strong>Phone Number:</strong> ${data.patientPhone||data.patientId||'—'}</p><p><strong>Age:</strong> ${data.patientAge||'—'}</p><p><strong>Gender:</strong> ${data.patientGender||'—'}</p></div>
-        <div class="report-card"><h4>Report</h4><p><strong>Report #:</strong> ${data.reportNumber}</p><p><strong>Date:</strong> ${fmtDate(data.reportDate)}</p><p><strong>Test:</strong> ${data.testType}</p><p><strong>Doctor:</strong> ${data.doctorName||'—'}</p></div>
-        <div class="report-card"><h4>Laboratory</h4><p><strong>Technician:</strong> ${data.technician||'—'}</p><p><strong>Location:</strong> Baxnaano Lab</p></div>
-        <div class="report-card"><h4>Notes</h4><p>${data.comment||'No additional comments.'}</p></div>
-      </div>
-      <table class="rtbl"><thead><tr><th>Laboratory Test</th><th>Result</th><th>Unit</th><th>Normal Range</th></tr></thead>
-      <tbody>${rows}</tbody></table>
-      <div style="padding:1rem;border:1px solid var(--border);border-radius:var(--radius);background:#f8fbff;font-size:.85rem;margin-bottom:1rem;">Results are suitable for A4 printing.</div>
-      <div class="sig-row">
-        <div class="sig-box">Technician Signature</div>
-        <div class="sig-box">Doctor Signature</div>
-        <div class="sig-box" style="border:1px dashed #ccc;min-height:60px;display:flex;align-items:center;justify-content:center;color:#aaa;">Hospital Stamp</div>
-      </div>
-    </div>`;
-  },
-
-  clearResultForm(){
-    ['lrPatient','lrPhone','lrPatientId','lrAge','lrDoctor','lrTech','lrComment'].forEach(id=>{const el=$(id);if(el)el.value='';});
-    ['lrGender','lrTestType','lrStatus'].forEach(id=>{const el=$(id);if(el)el.value=id==='lrStatus'?'Pending':'';});
-    $('lrRecordId').value='';$('lrTable').innerHTML='';$('lrPreview').innerHTML='';
-  },
-
-  renderHistory(){
-    const q=($('lrHistSearch').value||'').toLowerCase();
-    const f=$('lrHistFilter').value;
-    const hist=this.load(this.RESULTS_KEY);
-    const filtered=hist.filter(item=>{
-      if(f!=='all'&&item.status!==f)return false;
-      if(q){const h=`${item.patientName||''} ${item.reportNumber||''} ${item.doctorName||''} ${item.testType||item.requestedTest||''} ${item.patientPhone||item.patientId||''}`.toLowerCase();if(!h.includes(q))return false;}
+  recipients(){
+    const c=this.cfg();const q=(c.search||'').toLowerCase();
+    const all=(ls_get(this.K.LIST,[])||[]).filter(r=>{
+      if(c.from&&r.date&&r.date<c.from)return false;
+      if(c.to&&r.date&&r.date>c.to)return false;
+      if(c.doctor&&this.cleanDoctor(r.doctor)!==c.doctor)return false;
+      if(q&&!((r.name||'')+' '+r.phone+' '+r.doctor).toLowerCase().includes(q))return false;
       return true;
     });
-    const sc=s=>s==='Pending'?'badge-warning':s==='Completed'?'badge-success':'badge-info';
-    const frag=document.createDocumentFragment();
-    filtered.forEach(item=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`
-        <td><strong>${item.reportNumber||'—'}</strong></td>
-        <td>${fmtDate(item.reportDate||item.createdAt)}</td>
-        <td>${item.patientName||'—'}</td>
-        <td>${item.testType||item.requestedTest||'—'}</td>
-        <td><span class="badge ${sc(item.status)}">${item.status}</span></td>
-        <td class="actions">
-          <button class="btn btn-primary btn-sm" onclick="LAB.openResult('${item.id}')">View</button>
-          <button class="btn btn-info btn-sm" onclick="LAB.reprintResult('${item.id}')">Print</button>
-          <button class="btn btn-success btn-sm" onclick="LAB.setStatus('${item.id}','Completed')">Complete</button>
-          <button class="btn btn-warning btn-sm" onclick="LAB.setStatus('${item.id}','Pending')">Pending</button>
-        </td>`;
-      frag.appendChild(tr);
+    const byPhone=new Map();let noPhone=0;
+    all.forEach(r=>{
+      const wa=this.waPhone(r.phone);
+      if(!wa){noPhone++;return;}
+      const prev=byPhone.get(wa);
+      if(!prev||r.date>=prev.date)byPhone.set(wa,Object.assign({},r,{wa}));
     });
-    $('lrHistBody').innerHTML='';
-    $('lrHistBody').appendChild(frag);
+    const list=[...byPhone.values()].sort((a,b)=>(a.date||'').localeCompare(b.date||'')||a.name.localeCompare(b.name));
+    return {list,total:all.length,noPhone};
+  },
+  buildMsg(r,tpl){
+    const first=this.titleCase((r.name||'').split(/\s+/)[0]);
+    return (tpl||this.getMsg())
+      .replace(/\{name\}/g,this.titleCase(r.name))
+      .replace(/\{first_name\}/g,first)
+      .replace(/\{doctor\}/g,this.cleanDoctor(r.doctor))
+      .replace(/\{visit_date\}/g,this.fmtVisit(r.date))
+      .replace(/\{phone\}/g,r.phone||'');
   },
 
-  setStatus(id,status){
-    const hist=this.load(this.RESULTS_KEY);
-    const idx=hist.findIndex(h=>h.id===id);if(idx===-1)return;
-    hist[idx].status=status;this.save(this.RESULTS_KEY,hist);this.renderHistory();
+  // ---- UI ----
+  render(){
+    this.ensureSeed();
+    const c=this.cfg();
+    if(!this._inited){
+      this._inited=true;
+      $('bulkMsg').value=this.getMsg();
+    }
+    const all=ls_get(this.K.LIST,[])||[];
+    const docs=[...new Set(all.map(r=>this.cleanDoctor(r.doctor)).filter(Boolean))].sort();
+    $('bulkDoctor').innerHTML='<option value="">All doctors</option>'+docs.map(d=>`<option value="${this.esc(d)}">${this.esc(d)}</option>`).join('');
+    $('bulkFrom').value=c.from;$('bulkTo').value=c.to;$('bulkDoctor').value=c.doctor;
+    $('bulkDelay').value=c.delay;$('bulkMode').value=c.mode;
+    $('bulkEndpoint').value=c.endpoint;$('bulkToken').value=c.token;$('bulkSearch').value=c.search;
+    this.onMode();this.renderList();this.renderRun();
+    if(c.mode==='gateway')this.gwAttach();
+  },
+  onMode(){$('bulkApiBox').style.display=$('bulkMode').value==='api'?'':'none';if($('bulkMode').value!=='gateway')this.gwDetach();},
+  onFilter(){this.saveCfg();this.renderList();},
+  badge(s){
+    if(!s)return '<span class="badge badge-secondary">Pending</span>';
+    if(s.s==='sent')return '<span class="badge badge-success">Sent</span>';
+    if(s.s==='opened')return '<span class="badge badge-info">WhatsApp opened</span>';
+    return `<span class="badge badge-danger" title="${this.esc(s.err||'')}">Failed</span>`;
+  },
+  renderPreview(){
+    const {list}=this.recipients();
+    const r=list[0];
+    $('bulkPreview').textContent=r?this.buildMsg(r,$('bulkMsg').value):'(no recipients in this range)';
+  },
+  renderList(){
+    const {list,total,noPhone}=this.recipients();
+    const st=this.getStatus();
+    const done=list.filter(r=>st[r.wa]&&(st[r.wa].s==='sent'||st[r.wa].s==='opened')).length;
+    const failed=list.filter(r=>st[r.wa]&&st[r.wa].s==='failed').length;
+    const left=list.length-done;
+    const eta=Math.round(left*(this.cfg().delay)/60);
+    $('bulkStats').innerHTML=[
+      ['Visits in range',total,'var(--primary)'],['Unique numbers',list.length,'var(--info)'],
+      ['Sent / opened',done,'var(--success)'],['Remaining',left,'var(--warning)'],['Failed',failed,'var(--danger)'],
+      ['Est. time left',eta>=60?(Math.floor(eta/60)+'h '+(eta%60)+'m'):(eta+' min'),'var(--text-muted)']
+    ].map(x=>`<div class="stat-card" style="border-left:4px solid ${x[2]};background:#fff;padding:.6rem .8rem;border-radius:4px;box-shadow:var(--shadow);"><div style="font-size:11px;color:var(--text-muted);">${x[0]}</div><div style="font-size:20px;font-weight:700;">${x[1]}</div></div>`).join('');
+    $('bulkCount').textContent=`${list.length} unique numbers (${total} visits${noPhone?`, ${noPhone} without a valid phone skipped`:''}). Duplicate numbers get one message only.`;
+    $('bulkBody').innerHTML=list.map((r,i)=>`<tr>
+      <td>${i+1}</td><td>${this.esc(this.fmtVisit(r.date))}</td><td>${this.esc(this.titleCase(r.name))}</td>
+      <td>${this.esc(r.phone)}</td><td>${this.esc(this.cleanDoctor(r.doctor))}</td>
+      <td>${this.badge(st[r.wa])}</td>
+      <td class="actions"><button class="btn btn-light btn-sm" onclick="BULK.openOne('${r.wa}')"><i class="bi bi-whatsapp"></i></button></td></tr>`).join('')
+      ||'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:1rem;">No recipients in this range.</td></tr>';
+    this.renderPreview();
+  },
+  renderRun(){
+    const r=this.run;
+    $('bulkBtnStart').style.display=r.active?'none':'';
+    $('bulkBtnPause').style.display=(r.active&&!r.paused)?'':'none';
+    $('bulkBtnResume').style.display=(r.active&&r.paused)?'':'none';
+    $('bulkBtnStop').style.display=r.active?'':'none';
+    const total=r.list.length;
+    $('bulkBar').style.width=(total?Math.round(r.i/total*100):0)+'%';
+    if(!r.active){$('bulkRunState').textContent=total&&r.i>=total?`Finished: ${r.sent} done, ${r.failed} failed.`:'Idle.';return;}
+    if(r.paused){$('bulkRunState').textContent=`Paused at ${r.i}/${total}.`;return;}
+    const left=Math.max(0,Math.ceil((r.nextAt-Date.now())/1000));
+    $('bulkRunState').textContent=r.busy?`Sending ${r.i+1}/${total}...`:`Sent ${r.i}/${total}. Next message in ${left}s.`;
   },
 
-  openResult(id){
-    const item=this.load(this.RESULTS_KEY).find(r=>r.id===id);if(!item)return;
-    $('lrPatient').value=item.patientName||'';
-    $('lrPhone').value=item.patientPhone||item.patientId||'';
-    $('lrPatientId').value=item.reportNumber||'';
-    $('lrRecordId').value=item.id;$('lrAge').value=item.patientAge||'';
-    $('lrGender').value=item.patientGender||'';$('lrDoctor').value=item.doctorName||'';
-    $('lrTech').value=item.technician||'';$('lrTestType').value=item.testType||'';
-    $('lrStatus').value=item.status||'Pending';$('lrComment').value=item.comment||'';
-    this.renderTemplate();
-    const inputs=[...$('lrTable').querySelectorAll('input[data-ri]')];
-    (item.results||[]).forEach((r,i)=>{if(inputs[i])inputs[i].value=r.result==='—'?'':r.result;});
-    $('lrPreview').innerHTML=this.buildReportHtml(item);
-    this.showView('lv-results');
+  // ---- import ----
+  importText(){
+    const rows=this.parse($('bulkImportText').value);
+    if(!rows.length){Swal.fire({icon:'warning',title:'No valid rows found',text:'Use: date header lines (17 Oct 2026) followed by NAME,DOCTOR,PHONE,SEX lines.'});return;}
+    const added=this.addRows(rows);
+    $('bulkImportText').value='';
+    Swal.fire({icon:'success',title:'Imported',text:`${rows.length} rows read, ${added} new added.`,timer:2200,showConfirmButton:false});
+    this.render();
   },
-
-  reprintResult(id){
-    const item=this.load(this.RESULTS_KEY).find(r=>r.id===id);if(!item)return;
-    doPrint(this.buildReportHtml(item));
+  importFile(inp){
+    const f=inp.files&&inp.files[0];if(!f)return;
+    const fr=new FileReader();
+    fr.onload=()=>{$('bulkImportText').value=fr.result;inp.value='';this.importText();};
+    fr.readAsText(f);
   },
-
-  renderSales(){
-    const sales=this.load(this.K.SALES);
-    const dateF=$('lSalesDate').value;
-    const q=($('lSalesSearch').value||'').toLowerCase();
-    const filtered=sales.filter(s=>{
-      if(dateF&&!s.date.startsWith(dateF))return false;
-      if(q&&!s.receiptNo.toLowerCase().includes(q)&&!s.customer.toLowerCase().includes(q))return false;
-      return true;
-    });
-    $('lSalesBody').innerHTML=filtered.map(s=>`<tr>
-      <td><strong>${s.receiptNo}</strong></td>
-      <td>${fmtDT(s.date)}</td>
-      <td>${s.customer}</td>
-      <td>${s.items.length} items</td>
-      <td>${fmtMoney(s.total)}</td>
-      <td style="color:${s.profit>=0?'var(--success)':'var(--danger)'};">${fmtMoney(s.profit)}</td>
-      <td><span class="badge badge-info">${s.paymentMethod}</span></td>
-      <td class="actions">
-        <button class="btn btn-info btn-sm" onclick="LAB.reprintSale('${s.id}')">Print</button>
-        ${this.cur.role==='admin'?`<button class="btn btn-danger btn-sm" onclick="LAB.deleteSale('${s.id}')">Delete</button>`:''}
-      </td></tr>`).join('');
-  },
-
-  reprintSale(id){const s=this.load(this.K.SALES).find(x=>x.id===id);if(s)this.printSaleReceipt(s);},
-
-  deleteSale(id){
-    Swal.fire({title:'Delete sale?',icon:'warning',showCancelButton:true}).then(r=>{
+  clearList(){
+    Swal.fire({title:'Clear the whole recipient list?',text:'Sent statuses are also cleared.',icon:'warning',showCancelButton:true}).then(r=>{
       if(!r.isConfirmed)return;
-      this.save(this.K.SALES,this.load(this.K.SALES).filter(s=>s.id!==id));this.renderSales();
+      ls_set(this.K.LIST,[]);ls_set(this.K.STATUS,{});ls_set(this.K.VER,this.SEED_VER);this.render();
+    });
+  },
+  resetStatus(){
+    Swal.fire({title:'Reset all sent statuses?',icon:'question',showCancelButton:true}).then(r=>{
+      if(!r.isConfirmed)return;ls_set(this.K.STATUS,{});this.renderList();
     });
   },
 
-  renderExpiry(){
-    const days=parseInt($('lRepRange').value)||30;
-    const prods=this.load(this.K.PRODUCTS);
-    const today=new Date();today.setHours(0,0,0,0);
-    const expired=prods.filter(p=>this.isExpired(p.expiry));
-    const expiring=prods.filter(p=>{
-      if(this.isExpired(p.expiry))return false;
-      const e=new Date(p.expiry);
-      return days===0?true:e<=new Date(today.getTime()+days*864e5);
-    });
-    $('lRepExpiringSoon').textContent=expiring.length;
-    $('lRepExpired').textContent=expired.length;
-    const list=$('lRepExpiryList');list.innerHTML='';
-    expired.forEach(p=>{list.innerHTML+=`<div class="alert alert-danger" style="padding:6px;margin-bottom:4px;">❌ <strong>${p.name}</strong> — ${fmtDate(p.expiry)} (Qty:${p.qty})</div>`;});
-    expiring.forEach(p=>{list.innerHTML+=`<div class="alert alert-warning" style="padding:6px;margin-bottom:4px;">⚠️ <strong>${p.name}</strong> — ${fmtDate(p.expiry)} (Qty:${p.qty})</div>`;});
-    if(!expired.length&&!expiring.length)list.innerHTML='<p style="color:var(--text-muted)">No alerts in this range.</p>';
+
+  // ---- WhatsApp Gateway mode (server-side queue) ----
+  gwTimer:null,
+  async gwStart(c,list){
+    let st;
+    try{st=await WA.api('/status');}catch(e){Swal.fire({icon:'error',title:'Gateway not reachable',text:e.message});return;}
+    if(st.state!=='open'){Swal.fire({icon:'warning',title:'WhatsApp is not linked',text:'Open the WhatsApp tab and link it first (QR or phone number).'});return;}
+    if(['running','paused'].includes(st.queue.status)){this.gwAttach();Swal.fire({icon:'info',title:'A queue is already running',text:'Showing its progress.'});return;}
+    const tpl=$('bulkMsg').value;
+    const items=list.map(r=>({to:r.wa,name:this.titleCase(r.name),doctor:this.cleanDoctor(r.doctor),visit:r.date,message:this.buildMsg(r,tpl)}));
+    const ok=await Swal.fire({title:`Send to ${items.length} patients?`,html:`The gateway sends one message every <b>${c.delay} seconds</b> (about ${Math.ceil(items.length*c.delay/60)} min). You can close this page.`,icon:'question',showCancelButton:true,confirmButtonText:'Start'});
+    if(!ok.isConfirmed)return;
+    try{await WA.api('/bulk','POST',{items,delaySec:c.delay});}catch(e){Swal.fire({icon:'error',title:'Could not start',text:e.message});return;}
+    this.gwAttach();
+  },
+  gwAttach(){if(!this.gwTimer){this.gwTimer=setInterval(()=>this.gwPoll(),3000);}this.gwPoll();},
+  gwDetach(){clearInterval(this.gwTimer);this.gwTimer=null;},
+  async gwPoll(){
+    try{
+      const b=await WA.api('/bulk');
+      const st=this.getStatus();let ch=false;
+      b.items.forEach(it=>{
+        const want=it.status==='sent'?'sent':(it.status==='failed'||it.status==='skipped')?'failed':null;
+        if(want&&(!st[it.to]||st[it.to].s!==want)){st[it.to]={s:want,t:new Date().toISOString(),err:it.err||''};ch=true;}
+      });
+      if(ch){ls_set(this.K.STATUS,st);this.renderList();}
+      this.gwShow(b);
+      if(['done','stopped','idle'].includes(b.status))this.gwDetach();
+    }catch(e){$('bulkRunState').textContent='Gateway: '+e.message;}
+  },
+  gwShow(b){
+    const s=b.stats,act=b.status==='running'||b.status==='paused';
+    $('bulkBtnStart').style.display=act?'none':'';
+    $('bulkBtnPause').style.display=b.status==='running'?'':'none';
+    $('bulkBtnResume').style.display=b.status==='paused'?'':'none';
+    $('bulkBtnStop').style.display=act?'':'none';
+    const doneN=s.sent+s.failed+s.skipped;
+    $('bulkBar').style.width=(s.total?Math.round(doneN/s.total*100):0)+'%';
+    $('bulkRunState').textContent=b.status==='idle'?'Idle.':`Server queue: ${b.status} · ${s.sent}/${s.total} sent, ${s.failed} failed${s.skipped?(', '+s.skipped+' skipped'):''}${b.status==='running'&&b.nextInSec?(' · next in '+b.nextInSec+'s'):''}${b.note?(' · '+b.note):''}`;
   },
 
-  renderSalesRep(){
-    const from=$('lRepFrom').value,to=$('lRepTo').value;
-    const sales=this.load(this.K.SALES).filter(s=>{
-      const d=s.date.split('T')[0];
-      if(from&&d<from)return false;if(to&&d>to)return false;return true;
+  // ---- sending ----
+  async deliver(r,msg){
+    const c=this.cfg();
+    if(c.mode==='api'){
+      if(!c.endpoint)return {s:'failed',err:'No endpoint URL set'};
+      try{
+        const res=await fetch(c.endpoint,{method:'POST',
+          headers:Object.assign({'Content-Type':'application/json'},c.token?{Authorization:'Bearer '+c.token}:{}),
+          body:JSON.stringify({to:r.wa,phone:r.wa,number:r.wa,name:r.name,message:msg,text:msg})});
+        if(!res.ok)return {s:'failed',err:'HTTP '+res.status};
+        return {s:'sent'};
+      }catch(e){return {s:'failed',err:String(e&&e.message||e)};}
+    }
+    const w=window.open('https://wa.me/'+r.wa+'?text='+encodeURIComponent(msg),'bax_bulk_wa');
+    if(!w)return {s:'blocked'};
+    return {s:'opened'};
+  },
+  setStatus(wa,o){const st=this.getStatus();st[wa]=Object.assign({t:new Date().toISOString()},o);ls_set(this.K.STATUS,st);},
+  async step(){
+    const run=this.run;
+    if(!run.active||run.paused)return;
+    const r=run.list[run.i];
+    if(!r){this.finish();return;}
+    run.busy=true;this.renderRun();
+    const out=await this.deliver(r,this.buildMsg(r,$('bulkMsg').value));
+    run.busy=false;
+    if(out.s==='blocked'){
+      this.pause();
+      Swal.fire({icon:'info',title:'Browser blocked the WhatsApp window',text:'Allow pop-ups for this page, then press Resume.'});
+      return;
+    }
+    this.setStatus(r.wa,out);
+    if(out.s==='failed'){run.failed++;run.fails++;}else{run.sent++;run.fails=0;}
+    run.i++;
+    if(run.fails>=3){this.pause();Swal.fire({icon:'error',title:'3 failures in a row',text:'Paused. Check your connection / endpoint, then Resume.'});this.renderList();return;}
+    if(run.i>=run.list.length){this.finish();this.renderList();return;}
+    run.nextAt=Date.now()+this.cfg().delay*1000;
+    this.renderList();this.renderRun();
+  },
+  tick(){
+    const run=this.run;
+    if(!run.active||run.paused)return;
+    this.renderRun();
+    if(!run.busy&&Date.now()>=run.nextAt)this.step();
+  },
+  startTicker(){
+    this.stopTicker();
+    // main-thread timer (always) + worker timer (not throttled when the tab is in the background)
+    this.run.timer=setInterval(()=>this.tick(),500);
+    try{
+      const blob=new Blob(['setInterval(function(){postMessage(1)},500)'],{type:'text/javascript'});
+      const w=new Worker(URL.createObjectURL(blob));
+      w.onmessage=()=>this.tick();this.run.worker=w;
+    }catch(e){}
+    try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(l=>{this.run.wake=l;}).catch(()=>{});}catch(e){}
+  },
+  stopTicker(){
+    const run=this.run;
+    if(run.timer){clearInterval(run.timer);run.timer=null;}
+    if(run.worker){try{run.worker.terminate();}catch(e){}}
+    run.worker=null;
+    try{if(run.wake){run.wake.release();run.wake=null;}}catch(e){}
+  },
+  start(){
+    const c=this.saveCfg();
+    if(c.mode==='api'&&!c.endpoint){Swal.fire({icon:'warning',title:'Enter the bot / API endpoint URL first'});return;}
+    const st=this.getStatus();
+    const list=this.recipients().list.filter(r=>!(st[r.wa]&&(st[r.wa].s==='sent'||st[r.wa].s==='opened')));
+    if(!list.length){Swal.fire({icon:'info',title:'Nothing to send',text:'Everyone in this range was already messaged.'});return;}
+    if(!$('bulkMsg').value.trim()){Swal.fire({icon:'warning',title:'Message is empty'});return;}
+    if(c.mode==='gateway'){this.gwStart(c,list);return;}
+    Swal.fire({
+      title:`Send to ${list.length} patients?`,
+      html:`One message every <b>${c.delay} seconds</b> (about ${Math.ceil(list.length*c.delay/60)} min).<br>Keep this page open.`,
+      icon:'question',showCancelButton:true,confirmButtonText:'Start'
+    }).then(res=>{
+      if(!res.isConfirmed)return;
+      Object.assign(this.run,{active:true,paused:false,busy:false,list,i:0,sent:0,failed:0,fails:0,nextAt:Date.now()});
+      this.startTicker();this.renderRun();
+      this.step(); // first message right away
     });
-    const rev=sales.reduce((s,x)=>s+x.total,0);
-    const profit=sales.reduce((s,x)=>s+x.profit,0);
-    $('lRepRev').textContent=fmtMoney(rev);
-    $('lRepProfit').textContent=fmtMoney(profit);
-    $('lRepOrders').textContent=sales.length;
-    $('lRepSalesDetail').innerHTML=sales.length?`<div class="tbl-wrap"><table class="dtable">
-      <thead><tr><th>Date</th><th>Receipt</th><th>Customer</th><th>Total</th><th>Profit</th></tr></thead>
-      <tbody>${sales.slice(0,50).map(s=>`<tr><td>${fmtDate(s.date)}</td><td>${s.receiptNo}</td><td>${s.customer}</td><td>${fmtMoney(s.total)}</td><td style="color:${s.profit>=0?'var(--success)':'var(--danger)'};">${fmtMoney(s.profit)}</td></tr>`).join('')}</tbody></table></div>`:
-      '<p style="color:var(--text-muted)">No sales in this period.</p>';
+  },
+  pause(){if(this.cfg().mode==='gateway'&&this.gwTimer){WA.api('/bulk/pause','POST').then(()=>this.gwPoll());return;}const r=this.run;if(!r.active)return;r.paused=true;r.pausedLeft=Math.max(0,r.nextAt-Date.now());this.renderRun();},
+  resume(){if(this.cfg().mode==='gateway'&&this.gwTimer){WA.api('/bulk/resume','POST').then(()=>this.gwPoll());return;}const r=this.run;if(!r.active)return;r.paused=false;r.nextAt=Date.now()+(r.pausedLeft||0);r.fails=0;this.renderRun();},
+  stop(){if(this.cfg().mode==='gateway'&&this.gwTimer){WA.api('/bulk/stop','POST').then(()=>this.gwPoll());return;}const r=this.run;r.active=false;r.paused=false;this.stopTicker();this.renderRun();this.renderList();},
+  finish(){
+    const r=this.run;r.active=false;this.stopTicker();this.renderRun();
+    Swal.fire({icon:'success',title:'Finished',text:`${r.sent} done, ${r.failed} failed.`});
+  },
+  openOne(wa){
+    const r=this.recipients().list.find(x=>x.wa===wa);if(!r)return;
+    window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(this.buildMsg(r,$('bulkMsg').value)),'_blank');
   }
+};
+window.addEventListener('beforeunload',e=>{if(window.BULK&&BULK.run.active){e.preventDefault();e.returnValue='';}});
+
+
+
+// ═══════════════════════════════════════════
+// CS AI (connected to the CS AI "ai-partner" edge function) + link with BULK
+// ═══════════════════════════════════════════
+const CSAI = window.CSAI = {
+  URL:'https://jqsiqkwtpihryvceovxt.supabase.co',
+  KEY:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impxc2lxa3d0cGlocnl2Y2Vvdnh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc5OTY1ODIsImV4cCI6MjEwMzU3MjU4Mn0.xLZC4jxTqD9lsXFGpXnd2FDOn1PAo_pcczebQvSKjY4',
+  history:[],busy:false,
+  esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));},
+  sanitize(arr){
+    const out=[];
+    arr.forEach(m=>{
+      if(!m||!m.content)return;
+      const last=out[out.length-1];
+      if(last&&last.role===m.role)last.content+='\n'+m.content;else out.push({role:m.role,content:m.content});
+    });
+    if(out.length&&out[0].role!=='user')out.shift();
+    return out;
+  },
+  // only totals are sent to the AI: no patient names or phone numbers
+  context(){
+    let info='';
+    try{
+      BULK.ensureSeed();
+      const rec=BULK.recipients();const st=BULK.getStatus();const c=BULK.cfg();
+      const done=rec.list.filter(r=>st[r.wa]&&(st[r.wa].s==='sent'||st[r.wa].s==='opened')).length;
+      const failed=rec.list.filter(r=>st[r.wa]&&st[r.wa].s==='failed').length;
+      const byDoc={},byDay={};
+      rec.list.forEach(r=>{const d=BULK.cleanDoctor(r.doctor);byDoc[d]=(byDoc[d]||0)+1;byDay[r.date]=(byDay[r.date]||0)+1;});
+      const run=BULK.run;
+      info=`Taariikhda: ${c.from} ilaa ${c.to}. Booqashooyin: ${rec.total}. Lambarro gaar ah: ${rec.list.length}. La diray/la furay: ${done}. Hadhay: ${rec.list.length-done}. Fashilmay: ${failed}. Daahitaanka: ${c.delay} sekan. Habka: ${c.mode}.\n`+
+        `Hadda: ${run.active?(run.paused?'la hakiyay':'wuu shaqeynayaa')+` (${run.i}/${run.list.length})`:'ma shaqeynayo'}.\n`+
+        `Dhakhtar kasta: ${Object.entries(byDoc).map(x=>x[0]+'='+x[1]).join('; ')}.\n`+
+        `Maalin kasta: ${Object.entries(byDay).sort().map(x=>x[0]+'='+x[1]).join('; ')}.\n`+
+        `Fariinta hadda jirta:\n"""\n${(document.getElementById('bulkMsg')&&document.getElementById('bulkMsg').value)||BULK.getMsg()}\n"""`;
+    }catch(e){info='(xogta Bulk Messages lama heli karo)';}
+    return info;
+  },
+  systemPrompt(){
+    const u=(HOSP.cur&&HOSP.cur.username)||'friend';
+    return 'Waxaad tahay CS AI, caawiyaha gudaha ee Baxnaano Hospital system. Ku jawaab Af-Soomaali, si gaaban oo cad. User-ka magaciisa waa '+u+'. '+
+      'Waxaad la shaqaysaa qaybta Bulk Messages, taas oo bukaanada u dirta fariin WhatsApp ah 30 sekan kasta. '+
+      'Haddii lagu weydiiyo inaad qorto ama hagaajiso fariinta bukaanka, fariinta buuxda ku qor gudaha [[MESSAGE]] ... [[/MESSAGE]] (ku qor Af-Soomaali, ixtiraam leh, gaaban, adigoo isticmaalaya {name}, {doctor}, {visit_date} haddii ay habboon tahay). '+
+      'Haddii user-ku si cad u weydiisto inaad bilowdo, hakiso, sii wado ama joojiso dirista, jawaabta ku dar sadar kaligeed ah: [[ACTION:start]], [[ACTION:pause]], [[ACTION:resume]] ama [[ACTION:stop]]. Ha ku darin ficil haddii aan la weydiin. '+
+      'Ha samayn magacyo ama lambaro bukaan; xogta hoose waa wadarta kaliya.\n\nXOGTA HADDA:\n'+this.context();
+  },
+  async call(messages,system){
+    const res=await fetch(this.URL+'/functions/v1/ai-partner',{method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+this.KEY,'apikey':this.KEY},
+      body:JSON.stringify({messages:this.sanitize(messages),system})});
+    let data=null;try{data=await res.json();}catch(e){}
+    if(!res.ok||!data||data.error){
+      const e=data&&data.error;throw new Error((typeof e==='string'?e:(e&&e.message))||('HTTP '+res.status));
+    }
+    const parts=((data.candidates&&data.candidates[0]&&data.candidates[0].content&&data.candidates[0].content.parts)||[]);
+    const text=parts.filter(p=>typeof p.text==='string').map(p=>p.text).join('\n').trim();
+    if(!text)throw new Error('Jawaab madhan');
+    return text;
+  },
+  extract(text){
+    const m=text.match(/\[\[MESSAGE\]\]([\s\S]*?)\[\[\/MESSAGE\]\]/);
+    const actions=[...text.matchAll(/\[\[ACTION:(start|pause|resume|stop)\]\]/g)].map(x=>x[1]);
+    const clean=text.replace(/\[\[ACTION:[a-z]+\]\]/g,'').replace(/\[\[\/?MESSAGE\]\]/g,'').trim();
+    return {message:m?m[1].trim():null,actions,clean};
+  },
+  addBubble(role,html){
+    const log=$('csaiLog');
+    const d=document.createElement('div');
+    d.style.cssText='margin:.4rem 0;display:flex;'+(role==='user'?'justify-content:flex-end;':'');
+    d.innerHTML=`<div style="max-width:82%;padding:.55rem .8rem;border-radius:10px;font-size:13px;line-height:1.5;white-space:pre-wrap;${role==='user'?'background:var(--primary);color:#fff;':'background:#f1f3f5;color:var(--text);'}">${html}</div>`;
+    log.appendChild(d);log.scrollTop=log.scrollHeight;return d;
+  },
+  render(){
+    if(!this._r){this._r=true;this.addBubble('ai','Asc! Waxaan ahay CS AI. Waan ku caawin karaa inaan qoro ama hagaajiyo fariinta bukaanada, kuuna sheego inta hadhay, ama aan bilaabo/hakiyo dirista. Waxaan arkaa kaliya wadarta xogta, ma arko magacyada iyo lambarada bukaanada.');}
+  },
+  chip(t){$('csaiInput').value=t;this.send();},
+  async send(){
+    if(this.busy)return;
+    const inp=$('csaiInput');const q=inp.value.trim();if(!q)return;
+    inp.value='';this.addBubble('user',this.esc(q));
+    this.history.push({role:'user',content:q});if(this.history.length>20)this.history=this.history.slice(-20);
+    this.busy=true;$('csaiSend').disabled=true;
+    const typing=this.addBubble('ai','...');
+    try{
+      const raw=await this.call(this.history,this.systemPrompt());
+      typing.remove();
+      this.history.push({role:'assistant',content:raw});
+      const ex=this.extract(raw);
+      const d=this.addBubble('ai',this.esc(ex.clean));
+      if(ex.message){
+        const b=document.createElement('button');b.className='btn btn-success btn-sm';b.style.marginTop='.5rem';
+        b.innerHTML='<i class="bi bi-check2"></i> Use as bulk message';
+        b.onclick=()=>{this.applyMessage(ex.message);b.disabled=true;b.textContent='Applied';};
+        d.firstChild.appendChild(document.createElement('br'));d.firstChild.appendChild(b);
+      }
+      ex.actions.forEach(a=>this.doAction(a));
+    }catch(e){
+      typing.remove();this.history.pop();
+      this.addBubble('ai','Khalad: '+this.esc(e.message||e));
+    }finally{this.busy=false;$('csaiSend').disabled=false;}
+  },
+  applyMessage(text){
+    BULK.render();
+    $('bulkMsg').value=text;BULK.saveMsg();
+    Swal.fire({icon:'success',title:'Fariinta waa la dhigay',text:'Waxaad ka eegi kartaa tab-ka Bulk Messages.',timer:1800,showConfirmButton:false});
+  },
+  doAction(a){
+    BULK.render();
+    if(a==='start')BULK.start();           // asks for confirmation itself
+    else if(a==='pause')BULK.pause();
+    else if(a==='resume')BULK.resume();
+    else if(a==='stop')BULK.stop();
+    this.addBubble('ai','✔ Ficil: '+a.toUpperCase());
+  },
+  // button inside Bulk Messages: let CS AI improve the current message
+  async improveBulk(){
+    const cur=$('bulkMsg').value.trim();
+    if(!cur){Swal.fire({icon:'warning',title:'Fariinta waa madhan'});return;}
+    Swal.fire({title:'CS AI wuu hagaajinayaa...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    try{
+      const raw=await this.call([{role:'user',content:'Hagaaji fariintan bukaanka loo dirayo: ka dhig mid dabiici ah, ixtiraam leh, gaaban oo cad. Ha beddelin macnaha, oo ilaali {name}, {doctor}, {visit_date}. Ku soo celi kaliya [[MESSAGE]] ... [[/MESSAGE]].\n\n'+cur}],
+        'Waxaad tahay CS AI, tafatiraha fariimaha Baxnaano Hospital. Ku qor Af-Soomaali.');
+      const ex=this.extract(raw);const txt=ex.message||ex.clean;
+      const r=await Swal.fire({title:'Fariinta la hagaajiyay',html:'<pre style="text-align:left;white-space:pre-wrap;font-family:inherit;font-size:13px;max-height:320px;overflow:auto;">'+this.esc(txt)+'</pre>',showCancelButton:true,confirmButtonText:'Isticmaal',cancelButtonText:'Ha isticmaalin'});
+      if(r.isConfirmed){$('bulkMsg').value=txt;BULK.saveMsg();}
+    }catch(e){Swal.fire({icon:'error',title:'CS AI ma jawaabin',text:String(e.message||e)});}
+  }
+};
+
+// ═══════════════════════════════════════════
+// WHATSAPP MODULE (talks to the Baxnaano WhatsApp Gateway: QR link, inbox, AI auto-reply, queue)
+// ═══════════════════════════════════════════
+const WA = window.WA = {
+  esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));},
+  cfg(){try{return Object.assign({url:'http://localhost:3000',token:''},JSON.parse(localStorage.getItem('bax_wa_gw')||'{}'));}catch(e){return {url:'http://localhost:3000',token:''};}},
+  saveGw(){
+    const c={url:$('waUrl').value.trim().replace(/\/$/,''),token:$('waToken').value.trim()};
+    try{localStorage.setItem('bax_wa_gw',JSON.stringify(c));}catch(e){}
+    this.poll();
+    Swal.fire({icon:'success',title:'Saved',timer:1000,showConfirmButton:false});
+  },
+  async api(p,method,body){
+    const c=this.cfg();
+    if(!c.url||!c.token)throw new Error('Enter the gateway URL and token first (WhatsApp tab).');
+    const res=await fetch(c.url+p,{method:method||'GET',headers:{'Content-Type':'application/json',Authorization:'Bearer '+c.token},body:body?JSON.stringify(body):undefined});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok)throw new Error(j.error||('HTTP '+res.status));
+    return j;
+  },
+  _timer:null,_sel:null,_inbox:[],_cfgLoaded:false,
+  render(){
+    const c=this.cfg();$('waUrl').value=c.url;$('waToken').value=c.token;
+    if(!this._timer)this._timer=setInterval(()=>{if(!$('hv-wa').classList.contains('active')){clearInterval(this._timer);this._timer=null;return;}this.poll();},3000);
+    this.poll();this.loadConfig();this.loadInbox();
+  },
+  async poll(){
+    const box=$('waState');
+    try{
+      const s=await this.api('/status');
+      const label={open:'Connected',qr:'Waiting for scan',connecting:'Connecting...',closed:'Disconnected'}[s.state]||s.state;
+      const col=s.state==='open'?'badge-success':s.state==='qr'?'badge-warning':'badge-danger';
+      box.innerHTML=`<span class="badge ${col}">${label}</span> ${s.me?('<b>+'+this.esc(s.me)+'</b>'):''} <span style="color:var(--text-muted);font-size:12px;">Today: ${s.sentToday}/${s.dailyCap} · Opt-outs: ${s.optouts} · Needs a human: ${s.needsHuman}</span>`;
+      $('waQrBox').style.display=s.state==='open'?'none':'';
+      $('waLogout').style.display=s.state==='open'?'':'none';
+      if(s.state!=='open'){const q=await this.api('/qr');$('waQrImg').innerHTML=q.qr?`<img src="${q.qr}" style="width:240px;height:240px;">`:`<span style="color:var(--text-muted);">${q.state==='connecting'?'Preparing QR...':'No QR yet'}</span>`;if(q.pairCode)$('waPairCode').textContent=q.pairCode;}
+      const k=s.queue;
+      $('waQueue').innerHTML=k.status==='idle'?'No bulk queue.':`<b>${k.status.toUpperCase()}</b> · sent ${k.sent}/${k.total} · failed ${k.failed} · skipped ${k.skipped} · pending ${k.pending}${k.nextInSec?(' · next in '+k.nextInSec+'s'):''}${k.note?('<br><span style="color:var(--danger);">'+this.esc(k.note)+'</span>'):''}`;
+      $('waAutoState').checked=!!s.autoReply;
+      this.loadInbox(true);
+    }catch(e){
+      box.innerHTML=`<span class="badge badge-danger">No gateway</span> <span style="color:var(--text-muted);font-size:12px;">${this.esc(e.message)}</span>`;
+    }
+  },
+  async pair(){
+    const p=$('waPairPhone').value.trim();if(!p){Swal.fire({icon:'warning',title:'Enter the WhatsApp number'});return;}
+    try{const r=await this.api('/pair','POST',{phone:p});$('waPairCode').textContent=r.code;}
+    catch(e){Swal.fire({icon:'error',title:'Could not get a code',text:e.message});}
+  },
+  logout(){
+    Swal.fire({title:'Disconnect WhatsApp?',icon:'warning',showCancelButton:true}).then(async r=>{
+      if(!r.isConfirmed)return;try{await this.api('/logout','POST');}catch(e){}this.poll();
+    });
+  },
+  async test(){
+    const to=$('waTestTo').value.trim();if(!to)return;
+    try{await this.api('/send','POST',{to,message:'Baxnaano Hospital: fariin tijaabo ah ✅'});Swal.fire({icon:'success',title:'Sent',timer:1200,showConfirmButton:false});}
+    catch(e){Swal.fire({icon:'error',title:'Failed',text:e.message});}
+  },
+  qpost(p){this.api(p,'POST').then(()=>this.poll()).catch(e=>Swal.fire({icon:'error',title:e.message}));},
+  async loadConfig(){
+    try{
+      const c=await this.api('/config');
+      if(!this._cfgLoaded){
+        this._cfgLoaded=true;
+        $('waKnowledge').value=c.knowledge||'';$('waRules').value=c.extraRules||'';
+        $('waHandoff').value=(c.handoffKeywords||[]).join(', ');
+        $('waHStatus').value=c.harithStatus||'available';$('waHUntil').value=c.harithLeaveUntil||'';$('waYStatus').value=c.yaxyeStatus||'available';$('waYUntil').value=c.yaxyeLeaveUntil||'';
+        $('waMaxReplies').value=c.maxRepliesPerContactPerDay;$('waDailyCap').value=c.dailyCap;$('waJitter').value=c.jitterSec;
+      }
+    }catch(e){}
+  },
+  async saveConfig(){
+    try{
+      await this.api('/config','POST',{
+        autoReply:$('waAutoState').checked,knowledge:$('waKnowledge').value,extraRules:$('waRules').value,
+        handoffKeywords:$('waHandoff').value.split(',').map(x=>x.trim()).filter(Boolean),
+        harithStatus:$('waHStatus').value,harithLeaveUntil:$('waHUntil').value,yaxyeStatus:$('waYStatus').value,yaxyeLeaveUntil:$('waYUntil').value,
+        maxRepliesPerContactPerDay:parseInt($('waMaxReplies').value,10)||15,
+        dailyCap:parseInt($('waDailyCap').value,10)||1000,jitterSec:parseInt($('waJitter').value,10)||0});
+      Swal.fire({icon:'success',title:'Saved',timer:1000,showConfirmButton:false});
+    }catch(e){Swal.fire({icon:'error',title:'Save failed',text:e.message});}
+  },
+  async syncRegistry(){
+    const rows=(ls_get(BULK.K.LIST,[])||[]).map(r=>({number:BULK.waPhone(r.phone),name:BULK.titleCase(r.name),doctor:BULK.cleanDoctor(r.doctor),visit:r.date})).filter(r=>r.number);
+    if(!rows.length){Swal.fire({icon:'info',title:'No patients in the Bulk list yet'});return;}
+    try{const r=await this.api('/registry','POST',{rows});Swal.fire({icon:'success',title:'Synced',text:r.total+' patients known to the bot.',timer:1800,showConfirmButton:false});}
+    catch(e){Swal.fire({icon:'error',title:'Sync failed',text:e.message});}
+  },
+  async toggleAuto(el){
+    try{await this.api('/config','POST',{autoReply:el.checked});}catch(e){el.checked=!el.checked;Swal.fire({icon:'error',title:e.message});}
+  },
+  async loadInbox(quiet){
+    try{this._inbox=await this.api('/inbox?limit=600');this.renderInbox();}catch(e){if(!quiet)console.warn(e);}
+  },
+  convs(){
+    const m=new Map();
+    this._inbox.forEach(x=>{
+      const c=m.get(x.number)||{number:x.number,jid:x.jid,name:'',msgs:[],last:0,human:false};
+      c.msgs.push(x);c.last=x.at;if(x.name)c.name=x.name;if(x.jid)c.jid=x.jid;
+      if(x.dir==='in'&&x.needsHuman&&!x.handled)c.human=true;
+      m.set(x.number,c);
+    });
+    return [...m.values()].sort((a,b)=>(b.human-a.human)||(b.last-a.last));
+  },
+  renderInbox(){
+    const list=this.convs();
+    $('waConvList').innerHTML=list.map(c=>{
+      const last=c.msgs[c.msgs.length-1];
+      return `<div onclick="WA.open('${c.number}')" style="padding:.5rem .6rem;border-bottom:1px solid var(--border);cursor:pointer;${this._sel===c.number?'background:#eef2ff;':''}">
+        <div style="display:flex;justify-content:space-between;gap:.4rem;"><b style="font-size:13px;">${this.esc(c.name||('+'+c.number))}</b>${c.human?'<span class="badge badge-danger">Needs human</span>':''}</div>
+        <div style="font-size:11.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${last.dir==='out'?'↩ ':''}${this.esc(last.text)}</div></div>`;}).join('')||'<div style="padding:1rem;color:var(--text-muted);">No messages yet.</div>';
+    if(this._sel)this.renderThread();
+  },
+  open(n){this._sel=n;this.renderInbox();},
+  renderThread(){
+    const c=this.convs().find(x=>x.number===this._sel);if(!c){return;}
+    const th=$('waThread');
+    const atBottom=th.scrollTop+th.clientHeight>=th.scrollHeight-40;
+    th.innerHTML=c.msgs.slice(-80).map(m=>`<div style="display:flex;${m.dir==='out'?'justify-content:flex-end;':''}margin:.25rem 0;"><div style="max-width:85%;padding:.4rem .6rem;border-radius:9px;font-size:12.5px;white-space:pre-wrap;${m.dir==='out'?'background:#dcf8c6;':'background:#f1f3f5;'}">${this.esc(m.text)}<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${new Date(m.at).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}${m.auto?' · AI':m.manual?' · you':m.bulk?' · bulk':''}${m.aiError?' · AI error':''}</div></div></div>`).join('');
+    $('waThreadHead').innerHTML=`<b>${this.esc(c.name||('+'+c.number))}</b> <span style="color:var(--text-muted);font-size:12px;">+${this.esc(c.number)}</span> ${c.human?'<button class="btn btn-success btn-sm" onclick="WA.handled()">Mark handled</button>':''}`;
+    $('waReplyBox').style.display='';
+    if(atBottom||this._justOpened!==this._sel){th.scrollTop=th.scrollHeight;this._justOpened=this._sel;}
+  },
+  async sendReply(){
+    const t=$('waReplyText').value.trim();if(!t||!this._sel)return;
+    const c=this.convs().find(x=>x.number===this._sel);
+    try{await this.api('/reply','POST',{to:this._sel,jid:c&&c.jid,message:t});$('waReplyText').value='';this.loadInbox();}
+    catch(e){Swal.fire({icon:'error',title:'Failed',text:e.message});}
+  },
+  async handled(){try{await this.api('/inbox/handled','POST',{number:this._sel});this.loadInbox();}catch(e){}}
 };
 
 // INIT
@@ -8292,8 +8958,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   DB.init();
   $('hLoginUser')?.addEventListener('keypress',e=>{if(e.key==='Enter')$('hLoginPass').focus();});
   $('hLoginPass')?.addEventListener('keypress',e=>{if(e.key==='Enter')HOSP.login();});
-  $('lLoginUser')?.addEventListener('keypress',e=>{if(e.key==='Enter')$('lLoginPass').focus();});
-  $('lLoginPass')?.addEventListener('keypress',e=>{if(e.key==='Enter')LAB.login();});
   document.addEventListener('click',e=>{
     if(!e.target.closest('#hPatientInput')&&!e.target.closest('#hPatientDrop')){
       const drop=$('hPatientDrop');if(drop)drop.style.display='none';
@@ -8302,7 +8966,6 @@ document.addEventListener('DOMContentLoaded',()=>{
       const drop=$('hPatientAddressDrop');if(drop)drop.style.display='none';
     }
   });
-  $('lrHistSearch')?.addEventListener('keypress',e=>{if(e.key==='Enter')LAB.renderHistory();});
 
   $('hPatientAge')?.addEventListener('input',function(){
     const v=parseInt(this.value,10);
