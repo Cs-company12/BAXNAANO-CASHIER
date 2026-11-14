@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: baxnaano-whatsapp
+    runtime: docker
+    plan: starter          # free plan sleeps after 15 min and disconnects WhatsApp
+    healthCheckPath: /health
+    envVars:
+      - key: GATEWAY_TOKEN
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
